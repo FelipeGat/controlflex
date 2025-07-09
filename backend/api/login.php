@@ -46,6 +46,7 @@ if ($result && $result->num_rows === 1) {
         echo json_encode([
             'sucesso' => true,
             'msg' => 'Login bem-sucedido',
+            'id' => $user['id'], // ✅ Adiciona o ID aqui
             'email' => $user['email'],
             'nome' => $user['nome']
         ]);

@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Conexão com banco
 $conn = new mysqli('localhost', 'root', '', 'controleflex');
 if ($conn->connect_error) {
     http_response_code(500);
@@ -12,82 +11,107 @@ if ($conn->connect_error) {
     exit;
 }
 
-// 1. Receita x Despesas por mês (últimos 6 meses)
-$sql1 = "
-  SELECT DATE_FORMAT(data_recebimento, '%b/%Y') AS mes,
-         SUM(valor) AS total_receita
-  FROM receitas
-  WHERE data_recebimento >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-  GROUP BY YEAR(data_recebimento), MONTH(data_recebimento)
-  UNION ALL
-  SELECT DATE_FORMAT(data_compra, '%b/%Y') AS mes,
-         -SUM(valor) AS total_despesa
-  FROM despesas
-  WHERE data_compra >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-  GROUP BY YEAR(data_compra), MONTH(data_compra)
-  ORDER BY mes;
+$ano = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
+
+$res1 = $conn->query("SELECT SUM(valor) as total FROM receitas WHERE YEAR(data_recebimento) = $ano AND data_recebimento <= CURDATE()");
+$realizadaReceita = $res1->fetch_assoc()['total'] ?? 0;
+
+$res2 = $conn->query("SELECT SUM(valor) as total FROM despesas WHERE YEAR(data_compra) = $ano AND data_compra <= CURDATE()");
+$realizadaDespesa = $res2->fetch_assoc()['total'] ?? 0;
+
+$saldo = $realizadaReceita - $realizadaDespesa;
+
+$res3 = $conn->query("SELECT SUM(valor) as total FROM receitas WHERE YEAR(data_recebimento) = $ano AND MONTH(data_recebimento) = MONTH(CURDATE()) AND data_recebimento > CURDATE()");
+$aReceber = $res3->fetch_assoc()['total'] ?? 0;
+
+$res4 = $conn->query("SELECT SUM(valor) as total FROM despesas WHERE YEAR(data_compra) = $ano AND MONTH(data_compra) = MONTH(CURDATE()) AND data_compra > CURDATE()");
+$aPagar = $res4->fetch_assoc()['total'] ?? 0;
+
+$diferencaMes = $aReceber - $aPagar;
+
+$res5 = $conn->query("SELECT SUM(valor) as total FROM receitas WHERE YEAR(data_recebimento) = $ano AND data_recebimento > CURDATE()");
+$receitaPrevista = $res5->fetch_assoc()['total'] ?? 0;
+
+$res6 = $conn->query("SELECT SUM(valor) as total FROM despesas WHERE YEAR(data_compra) = $ano AND data_compra > CURDATE()");
+$despesaPrevista = $res6->fetch_assoc()['total'] ?? 0;
+
+$saldoPrevisto = $receitaPrevista - $despesaPrevista;
+
+$sqlChart = "
+  SELECT 
+    DATE_FORMAT(mes_ref, '%b/%Y') AS mes,
+    COALESCE(r.total_receita, 0) AS total_receita,
+    COALESCE(d.total_despesa, 0) AS total_despesa
+  FROM (
+    SELECT DISTINCT DATE_FORMAT(data_recebimento, '%Y-%m-01') as mes_ref FROM receitas WHERE YEAR(data_recebimento) = $ano
+    UNION
+    SELECT DISTINCT DATE_FORMAT(data_compra, '%Y-%m-01') as mes_ref FROM despesas WHERE YEAR(data_compra) = $ano
+  ) as base
+  LEFT JOIN (
+    SELECT DATE_FORMAT(data_recebimento, '%Y-%m-01') AS mes, SUM(valor) AS total_receita FROM receitas WHERE YEAR(data_recebimento) = $ano GROUP BY mes
+  ) r ON base.mes_ref = r.mes
+  LEFT JOIN (
+    SELECT DATE_FORMAT(data_compra, '%Y-%m-01') AS mes, SUM(valor) AS total_despesa FROM despesas WHERE YEAR(data_compra) = $ano GROUP BY mes
+  ) d ON base.mes_ref = d.mes
+  ORDER BY base.mes_ref
 ";
-$res1 = $conn->query($sql1);
 
-$months = []; $receitasMonth = []; $despesasMonth = [];
-$temp = [];
-while ($r = $res1->fetch_assoc()) {
-    $m = $r['mes'];
-    $v = (float)$r['total_receita'] + (float)$r['total_despesa'];
-    if (!isset($temp[$m])) $temp[$m] = 0;
-    $temp[$m] += $v;
-}
-foreach ($temp as $m => $v) {
-    $months[] = $m;
-    $receitasMonth[] = max(0, $v);
-    $despesasMonth[] = max(0, -$v);
+$resChart = $conn->query($sqlChart);
+$months = [];
+$receitasMonth = [];
+$despesasMonth = [];
+
+while ($r = $resChart->fetch_assoc()) {
+    $months[] = $r['mes'];
+    $receitasMonth[] = (float)$r['total_receita'];
+    $despesasMonth[] = (float)$r['total_despesa'];
 }
 
-// 2. Despesas por categoria
-$sql2 = "
-  SELECT c.nome AS categoria, SUM(d.valor) AS total
-  FROM despesas d
-  JOIN categorias c ON d.categoria_id = c.id
-  WHERE d.data_compra >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-  GROUP BY c.nome;
-";
-$res2 = $conn->query($sql2);
+$resumoAtual = [
+    'receitas' => $realizadaReceita,
+    'despesas' => $realizadaDespesa,
+    'saldo' => $saldo,
+    'aReceber' => $aReceber,
+    'aPagar' => $aPagar,
+    'atrasado' => $diferencaMes,
+    'receitaPrevista' => $receitaPrevista,
+    'despesaPrevista' => $despesaPrevista,
+    'saldoPrevisto' => $saldoPrevisto
+];
 
-$catLabels = []; $catValues = []; $catColors = [];
-$cores = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF']; $i=0;
-while ($r = $res2->fetch_assoc()) {
-    $catLabels[] = $r['categoria'];
-    $catValues[] = (float)$r['total'];
-    $catColors[] = $cores[$i++ % count($cores)];
-}
+$resumoSeguinte = [
+    'receitas' => $realizadaReceita,
+    'despesas' => $realizadaDespesa,
+    'saldo' => $saldo,
+    'aReceber' => $aReceber,
+    'aPagar' => $aPagar,
+    'atrasado' => $diferencaMes,
+    'receitaPrevista' => $receitaPrevista,
+    'despesaPrevista' => $despesaPrevista,
+    'saldoPrevisto' => $saldoPrevisto
+];
 
-// 3. Investidos versus Lucro
-$sql3 = "
-  SELECT DATE_FORMAT(data, '%b/%Y') AS mes,
-         SUM(investido) AS inv, SUM(lucro) AS lucro
-  FROM investimentos
-  WHERE data >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-  GROUP BY YEAR(data), MONTH(data)
-  ORDER BY MIN(data);
-";
-$res3 = $conn->query($sql3);
-
-$investidos = []; $lucros = [];
-while ($r = $res3->fetch_assoc()) {
-    $investidos[] = (float)$r['inv'];
-    $lucros[] = (float)$r['lucro'];
-}
-
-// Monta JSON de resposta
 echo json_encode([
-    'months' => $months,
-    'receitasMonth' => $receitasMonth,
-    'despesasMonth' => $despesasMonth,
-    'categoryLabels' => $catLabels,
-    'categoryValues' => $catValues,
-    'categoryColors' => $catColors,
-    'investidos' => $investidos,
-    'lucros' => $lucros
+    'mesAtual' => $resumoAtual,
+    'mesSeguinte' => $resumoSeguinte,
+
+    'realizadaReceita' => round($realizadaReceita, 2),
+    'realizadaDespesa' => round($realizadaDespesa, 2),
+    'saldo' => round($saldo, 2),
+
+    'aReceber' => round($aReceber, 2),
+    'aPagar' => round($aPagar, 2),
+    'diferencaMes' => round($diferencaMes, 2),
+
+    'receitaPrevista' => round($receitaPrevista, 2),
+    'despesaPrevista' => round($despesaPrevista, 2),
+    'saldoPrevisto' => round($saldoPrevisto, 2),
+
+    'annualChart' => [
+        'labels' => $months,
+        'receitas' => $receitasMonth,
+        'despesas' => $despesasMonth,
+    ],
 ]);
 
 $conn->close();
