@@ -46,9 +46,10 @@ if ($result && $result->num_rows === 1) {
         echo json_encode([
             'sucesso' => true,
             'msg' => 'Login bem-sucedido',
-            'id' => $user['id'], // ✅ Adiciona o ID aqui
+            'id' => $user['id'],
             'email' => $user['email'],
-            'nome' => $user['nome']
+            'nome' => $user['nome'],
+            'foto' => $user['foto']  // aqui está a foto adicionada
         ]);
     } else {
         http_response_code(401);
