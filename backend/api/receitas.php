@@ -4,7 +4,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET");
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once '../conexao.php';
+require_once __DIR__ . '/../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(["erro" => "Método não suportado"]);
@@ -20,23 +20,26 @@ if (!$usuarioId || !$inicio || !$fim) {
     exit;
 }
 
-$sql = "
-    SELECT r.*, c.nome AS categoria_nome
-    FROM receitas r
-    LEFT JOIN categorias c ON r.categoria_id = c.id
-    WHERE r.usuario_id = ?
-    AND DATE(r.data_recebimento) BETWEEN ? AND ?
-    ORDER BY r.data_recebimento DESC
-";
+try {
+    $stmt = $pdo->prepare("
+        SELECT r.*, c.nome AS categoria_nome
+        FROM receitas r
+        LEFT JOIN categorias c ON r.categoria_id = c.id
+        WHERE r.usuario_id = :usuario_id
+        AND DATE(r.data_recebimento) BETWEEN :inicio AND :fim
+        ORDER BY r.data_recebimento DESC
+    ");
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("iss", $usuarioId, $inicio, $fim);
-$stmt->execute();
-$result = $stmt->get_result();
+    $stmt->execute([
+        ':usuario_id' => $usuarioId,
+        ':inicio' => $inicio,
+        ':fim' => $fim
+    ]);
 
-$receitas = [];
-while ($row = $result->fetch_assoc()) {
-    $receitas[] = $row;
+    $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($receitas);
+
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["erro" => "Erro ao buscar receitas: " . $e->getMessage()]);
 }
-
-echo json_encode($receitas);

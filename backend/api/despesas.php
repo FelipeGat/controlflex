@@ -4,7 +4,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET");
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once '../conexao.php';
+require_once __DIR__ . '/../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(["erro" => "Método não suportado"]);
@@ -20,23 +20,26 @@ if (!$usuarioId || !$inicio || !$fim) {
     exit;
 }
 
-$sql = "
-    SELECT d.*, c.nome AS categoria_nome
-    FROM despesas d
-    LEFT JOIN categorias c ON d.categoria_id = c.id
-    WHERE d.usuario_id = ?
-    AND DATE(d.data_compra) BETWEEN ? AND ?
-    ORDER BY d.data_compra DESC
-";
+try {
+    $stmt = $pdo->prepare("
+        SELECT d.*, c.nome AS categoria_nome
+        FROM despesas d
+        LEFT JOIN categorias c ON d.categoria_id = c.id
+        WHERE d.usuario_id = :usuario_id
+        AND DATE(d.data_compra) BETWEEN :inicio AND :fim
+        ORDER BY d.data_compra DESC
+    ");
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("iss", $usuarioId, $inicio, $fim);
-$stmt->execute();
-$result = $stmt->get_result();
+    $stmt->execute([
+        ':usuario_id' => $usuarioId,
+        ':inicio' => $inicio,
+        ':fim' => $fim
+    ]);
 
-$despesas = [];
-while ($row = $result->fetch_assoc()) {
-    $despesas[] = $row;
+    $despesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($despesas);
+
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["erro" => "Erro ao buscar despesas: " . $e->getMessage()]);
 }
-
-echo json_encode($despesas);
