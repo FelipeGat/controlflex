@@ -3,16 +3,36 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 
-$host = 'localhost';
-$db = 'controleflex';
-$user = 'root';
-$pass = '';
-$conn = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
+// Detectar se está rodando localmente ou em produção
+$isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost';
+
+if ($isLocalhost) {
+    // Ambiente local (XAMPP)
+    $host = 'localhost';
+    $db   = 'controleflex';
+    $user = 'root';
+    $pass = '';
+} else {
+    // Ambiente produção (HostGator)
+    $host = 'localhost';
+    $db   = 'inves783_controleflex';
+    $user = 'inves783_control';
+    $pass = '100%Control!!';
+}
+
+// Conexão PDO
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['erro' => 'Erro ao conectar com o banco de dados: ' . $e->getMessage()]);
+    exit;
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'OPTIONS') {
-    // Responde OPTIONS e encerra
     exit(0);
 }
 
@@ -42,7 +62,6 @@ if ($method === 'POST') {
     }
 
     if ($id) {
-        // Atualizar via POST? (raro, mas pode implementar se quiser)
         $sql = "UPDATE usuarios SET nome = ?, email = ?, perfil = ?, status = ?";
         $params = [$nome, $email, $perfil, $status];
 
@@ -64,7 +83,6 @@ if ($method === 'POST') {
 
         echo json_encode(['sucesso' => true, 'tipo' => 'atualizacao']);
     } else {
-        // Inserir novo usuário
         $stmt = $conn->prepare("INSERT INTO usuarios (nome, email, senha, perfil, status, foto) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$nome, $email, $senhaHash, $perfil, $status, $foto]);
         echo json_encode(['sucesso' => true, 'id' => $conn->lastInsertId(), 'tipo' => 'insercao']);

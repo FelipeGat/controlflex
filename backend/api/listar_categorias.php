@@ -2,7 +2,23 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-$conn = new mysqli('localhost', 'root', '', 'controleflex');
+// Detectar ambiente local ou produção
+$isLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $_SERVER['HTTP_HOST'] === 'localhost';
+
+if ($isLocal) {
+    $dbHost = 'localhost';
+    $dbUser = 'root';
+    $dbPass = '';
+    $dbName = 'controleflex';
+} else {
+    $dbHost = 'localhost';
+    $dbUser = 'control';
+    $dbPass = '100%Control!!';
+    $dbName = 'inves783_controleflex';
+}
+
+$conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
+
 if ($conn->connect_error) {
     echo json_encode([]);
     exit;
@@ -18,4 +34,3 @@ while ($row = $result->fetch_assoc()) {
 
 echo json_encode($categorias);
 $conn->close();
-?>

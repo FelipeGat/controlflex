@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 
-$conn = new mysqli('localhost', 'root', '', 'controleflex');
+$conn = new mysqli('localhost', 'control', '100%Control!!', 'inves783_controleflex');
 if ($conn->connect_error) {
     echo json_encode(['erro' => 'Erro ao conectar ao banco']);
     exit;

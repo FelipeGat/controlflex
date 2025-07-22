@@ -1,6 +1,6 @@
 <?php
-// Headers CORS — permite acesso do frontend em localhost:3000
-header("Access-Control-Allow-Origin: http://localhost:3000");
+// Headers CORS
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
@@ -10,11 +10,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Conexão com o banco
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "controleflex";
+// === Conexão com o banco (automática: local ou produção) ===
+$isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost';
+
+if ($isLocalhost) {
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "controleflex";
+} else {
+    $servername = "localhost";
+    $username = "inves783_control";
+    $password = "100%Control!!";
+    $dbname = "inves783_controleflex";
+}
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {

@@ -4,7 +4,31 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET");
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once __DIR__ . '/../config/db.php';
+// Detectar ambiente local ou produção
+$isLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $_SERVER['HTTP_HOST'] === 'localhost';
+
+if ($isLocal) {
+    $dbHost = 'localhost';
+    $dbName = 'controleflex';
+    $dbUser = 'root';
+    $dbPass = '';
+} else {
+    $dbHost = 'localhost';
+    $dbName = 'inves783_controleflex';
+    $dbUser = 'control';
+    $dbPass = '100%Control!!';
+}
+
+// Criar conexão PDO
+try {
+    $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8", $dbUser, $dbPass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(["erro" => "Erro na conexão com o banco de dados"]);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(["erro" => "Método não suportado"]);

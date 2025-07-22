@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
-$conn = new mysqli('localhost', 'root', '', 'controleflex');
+$conn = new mysqli('localhost', 'control', '100%Control!!', 'inves783_controleflex');
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(['erro' => 'Erro conexão']);

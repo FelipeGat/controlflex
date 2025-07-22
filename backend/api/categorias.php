@@ -4,17 +4,28 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Conexão com banco
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "controleflex";
+// Detecta ambiente
+$isLocalhost = $_SERVER['HTTP_HOST'] === 'localhost';
 
+if ($isLocalhost) {
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "controleflex";
+} else {
+    $servername = "localhost";
+    $username = "inves783_control";
+    $password = "100%Control!!";
+    $dbname = "inves783_controleflex";
+}
+
+// Conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     http_response_code(500);
@@ -22,8 +33,8 @@ if ($conn->connect_error) {
     exit;
 }
 
+// === GET: listar categorias ===
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Retorna todas categorias
     $sql = "SELECT id, nome, tipo, icone FROM categorias ORDER BY tipo, nome";
     $result = $conn->query($sql);
     $categorias = [];
@@ -31,9 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     while ($row = $result->fetch_assoc()) {
         $categorias[] = $row;
     }
+
     echo json_encode($categorias);
+    $conn->close();
+    exit;
 }
 
+// === POST: adicionar categoria ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
@@ -54,6 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         http_response_code(500);
         echo json_encode(['erro' => 'Erro ao criar categoria']);
     }
+
+    $conn->close();
+    exit;
 }
 
-$conn->close();
+// Se chegou aqui, método não permitido
+http_response_code(405);
+echo json_encode(['erro' => 'Método não permitido']);
