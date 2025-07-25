@@ -1,0 +1,64 @@
+# Nome do Workflow
+name: Build e Deploy para HostGator
+
+# Gatilho: Executa quando houver um push na branch 'main'
+on:
+  push:
+    branches:
+      - main # ou 'master', dependendo da sua branch principal
+
+jobs:
+  build-and-deploy:
+    # Usa a última versão do Ubuntu como ambiente
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clona o repositório para o ambiente do Actions
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2. Configura o Node.js para o build do frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use a versão do Node que você usa localmente
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # 3. Instala as dependências e faz o build do React
+      - name: Build do Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      # 4. Faz o deploy dos arquivos para a HostGator via FTP
+      - name: Deploy Frontend para HostGator
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          # Secrets configurados no GitHub
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          
+          # Pasta de build do React (local no runner do Actions)
+          # Envia o conteúdo de 'frontend/build' para a raiz do site em produção
+          local-dir: ./frontend/build/
+          server-dir: ./public_html/controleflex/
+
+      # 5. Faz o deploy do backend (excluindo o .env)
+      - name: Deploy Backend para HostGator
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          
+          # Pasta do backend
+          local-dir: ./backend/
+          server-dir: ./public_html/controleflex/backend/
+          # Exclui arquivos e pastas desnecessários no servidor
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .env
