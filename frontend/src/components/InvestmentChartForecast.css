@@ -1,0 +1,33 @@
+.investment-chart-container {
+  margin-top: 30px;
+}
+
+.bank-icons-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.bank-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bank-icon-item:hover {
+  transform: scale(1.05);
+}
+
+.bank-icon-item.active img {
+  border: 2px solid #4caf50;
+}
+
+.bank-name {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  text-align: center;
+}

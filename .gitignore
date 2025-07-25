@@ -1,0 +1,37 @@
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs e arquivos de IDEs
+*.log
+.vscode/
+.idea/
+
+# === Frontend (React) ===
+
+# Pasta de dependências (nunca deve ir para o Git)
+/frontend/node_modules
+
+# Pasta de build (será gerada pelo GitHub Actions)
+/frontend/build
+
+# Arquivos de ambiente do frontend
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# Relatórios de teste e cobertura
+/frontend/coverage
+
+# === Backend (PHP/Composer) ===
+
+# Pasta de dependências do Composer
+/backend/vendor
+
+# Arquivo de ambiente do backend (contém senhas)
+/backend/.env
+
+# Arquivos gerados pelo Composer
+/backend/composer.lock

@@ -1,4 +1,8 @@
 <?php
+// Headers CORS
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 require_once '../conexao.php';
 
 $usuario_id = $_GET['usuario_id'];

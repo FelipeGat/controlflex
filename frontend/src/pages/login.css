@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f3f8fa;
+  height: 100%;
+}
+
+/* Fundo animado */
+.bg-animated {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #e0f7fa, #b2ebf2, #a5d6a7);
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-animated::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: moveBg 40s linear infinite;
+  z-index: 0;
+}
+
+@keyframes moveBg {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-50%, -50%); }
+}
+
+/* Card centralizado */
+.glass-card {
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
+  color: #333;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo estilizado */
+.cursive-logo {
+  font-family: 'Pacifico', cursive;
+  color: #1d3557;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Centraliza o conteúdo */
+.text-center {
+  text-align: center;
+}
+
+/* Inputs personalizados */
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  background-color: #f0f4f8;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.input-group-text {
+  background-color: #f0f4f8;
+  padding: 10px 12px;
+  font-size: 1.2rem;
+  color: #1d3557;
+  border: none;
+}
+
+.form-control {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background-color: #f0f4f8;
+  font-size: 1rem;
+  outline: none;
+}
+
+.form-control:focus {
+  background-color: #e8f1f5;
+}
+
+/* Botão */
+.btn-primary {
+  background-color: #1677ff;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px; /* mais arredondado */
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #125edc;
+}
+
+/* Onda opcional no rodapé */
+.wave-container {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.waves {
+  width: 200%;
+  display: block;
+  animation: waveAnimation 30s linear infinite;
+}
+
+@keyframes waveAnimation {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+}
+
+/* Animação do título */
+@keyframes floatText {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+.cursive-logo {
+  font-family: 'Pacifico', cursive;
+  color: #1d3557;
+  font-size: 2.5rem;
+  animation: floatText 3s ease-in-out infinite;
+  text-align: center;
+}

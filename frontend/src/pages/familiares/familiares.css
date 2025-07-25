@@ -1,0 +1,200 @@
+/* ========== CONTAINER PRINCIPAL ========== */
+.page-container {
+  padding: 8px 30px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f3f7fa;
+  min-height: 90vh;
+}
+
+.page-container > *:not(:last-child) {
+  margin-bottom: 20px;
+}
+
+/* ========== TÍTULOS ========== */
+.form-title {
+  color: #2c5aa0;
+  font-weight: 600;
+  font-size: 1.75rem;
+}
+
+/* ========== HEADER COM TÍTULO E BOTÃO ========== */
+.familiares-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.familiares-header .form-title {
+  margin-bottom: 0;
+}
+
+.familiares-header .btn-salvar {
+  flex-shrink: 0;
+}
+
+/* ========== BOTÃO "NOVO FAMILIAR" ========== */
+.btn-salvar {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.btn-salvar:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+/* ========== BOTÕES DE AÇÃO (ÍCONES) ========== */
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilo específico para botão editar (azul) */
+.btn-icon.btn-editar {
+  color: #2c5aa0;
+}
+
+.btn-icon.btn-editar:hover {
+  color: #1a3d70;
+}
+
+/* Estilo específico para botão excluir (vermelho) */
+.btn-icon.btn-excluir {
+  color: #dc3545;
+}
+
+.btn-icon.btn-excluir:hover {
+  color: #a71d2a;
+}
+
+.btn-icon:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.5); /* foco azul claro */
+}
+
+/* ========== CONTÊINER DOS BOTÕES DE AÇÃO ========== */
+/* Novo estilo para organizar os botões lado a lado com espaçamento */
+.acao-botoes {
+  display: flex;
+  gap: 8px; /* espaço entre os botões */
+  justify-content: center;
+  align-items: center;
+}
+
+/* ========== CARD PADRÃO ========== */
+.form-card,
+.familiares-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* ========== TABELA ========== */
+.tabela-familiares {
+  width: 100%;
+  border-collapse: separate; /* para aplicar espaçamento entre colunas */
+  border-spacing: 0 10px; /* espaçamento vertical (linhas) */
+  min-width: 600px;
+}
+
+/* Espaçamento horizontal maior entre colunas */
+.tabela-familiares th,
+.tabela-familiares td {
+  padding: 10px 20px; /* aumento do padding horizontal */
+  text-align: left;
+  border-bottom: none; /* removido para usar border-spacing */
+  vertical-align: middle;
+  white-space: nowrap;
+  background: white;
+  border-radius: 6px;
+}
+
+/* Sombreamento e hover nas linhas */
+.tabela-familiares tbody tr {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: background-color 0.2s ease;
+}
+
+.tabela-familiares tbody tr:hover {
+  background-color: #f5f9ff;
+  box-shadow: 0 3px 6px rgba(44, 90, 160, 0.15);
+}
+
+/* ========== LOADING ========== */
+.loading {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  padding: 20px;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+@media (max-width: 768px) {
+  .familiares-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .btn-salvar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabela-familiares {
+    min-width: 100%;
+    border-spacing: 0 5px;
+  }
+
+  .tabela-familiares th,
+  .tabela-familiares td {
+    padding: 8px 10px;
+    white-space: normal;
+  }
+}
+
+/* === TABELA RESPONSIVA === */
+.lista-familiares-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabela-scroll {
+  overflow-x: auto;
+}
+
+/* Imagem */
+.tabela-familiares img {
+  border-radius: 4px;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}

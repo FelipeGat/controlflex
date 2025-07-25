@@ -1,0 +1,49 @@
+.financial-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  text-align: center;
+}
+
+.financial-card .title {
+  font-size: 1rem;
+  color: #666;
+}
+
+.financial-card .value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.bank-icons-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.bank-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.bank-icon .icon {
+  font-size: 32px;
+}
+
+.bank-icon .name {
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.bank-icon.selected {
+  transform: scale(1.1);
+  font-weight: bold;
+}

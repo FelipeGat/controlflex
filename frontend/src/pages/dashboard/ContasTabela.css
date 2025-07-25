@@ -1,0 +1,216 @@
+.contas-tabela-container {
+  padding: 1rem;
+}
+
+.filtro-container {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtro-select {
+  max-width: 200px;
+  padding: 4px 8px;
+}
+
+.resumo-contas {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.resumo-item {
+  margin: 4px 0;
+}
+
+.resumo-item.receitas {
+  color: #155724;
+  background-color: #d4edda;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.resumo-item.despesas {
+  color: #721c24;
+  background-color: #f8d7da;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.titulo-secao {
+  font-size: 1.2rem;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.titulo-secao.receitas {
+  color: #218838; /* Verde mais suave */
+}
+
+.titulo-secao.despesas {
+  color: #c82333; /* Vermelho mais suave */
+}
+
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table th.sortable:hover {
+  text-decoration: underline;
+}
+
+.valor-receita {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.valor-despesa {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.observacoes-cell {
+  max-width: 200px;
+  overflow-wrap: break-word;
+}
+
+.acoes-cell {
+  white-space: nowrap;
+}
+
+.btn-acao {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 4px;
+  font-size: 1.1rem;
+}
+
+.btn-editar:hover {
+  color: #007bff;
+}
+
+.btn-excluir:hover {
+  color: #dc3545;
+}
+
+.tabela-vazia {
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+  color: #888;
+}
+
+.paginacao-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.paginacao-info {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.paginacao-botoes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-paginacao {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.btn-paginacao:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.btn-paginacao.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.btn-paginacao:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-detalhes {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.modal-acoes {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.card-box {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.card-box .titulo-secao {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

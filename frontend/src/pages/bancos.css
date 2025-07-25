@@ -1,0 +1,213 @@
+.page-container {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f3f7fa;
+  min-height: 90vh;
+}
+
+.form-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f8fafc;
+  font-size: 1rem;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.buttons-container .btn-success,
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.buttons-container .btn-success:hover,
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.buttons-container .btn-secondary {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.buttons-container .btn-secondary:hover {
+  background-color: #2980b9;
+}
+
+.table-container {
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 30px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.bancos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.bancos-table th,
+.bancos-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.bancos-table th {
+  background-color: #f3f7fa;
+  color: #333;
+  font-weight: 600;
+}
+
+.icone-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+  background-color: #f1f1f1;
+  padding: 4px;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #0a3b66;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .form-card,
+  .table-container {
+    padding: 20px;
+  }
+
+  .bancos-table th,
+  .bancos-table td {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}
+
+/* ===== Botões ícones na tabela ===== */
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container dos botões de ação na tabela */
+.table-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* Espaçamento entre ícones */
+}
+
+/* Lápis azul */
+.btn-edit i {
+  color: #3498db;
+}
+
+/* Lixeira vermelha */
+.btn-trash {
+  background: none !important;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.btn-trash i {
+  color: #dc3545;
+  font-size: 16px;
+}
+
+.btn-icon:hover i {
+  opacity: 0.8;
+}
+
+/* ===== Botões do formulário ===== */
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-top: 0;
+}
+
+.form-buttons button {
+  padding: 8px 20px;
+  background-color: var(--azul-botao);
+  color: var(--branco);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-buttons button:hover {
+  background-color: var(--azul-botao-hover);
+}
+
+.form-buttons button[type="submit"] {
+  background-color: var(--verde);
+}
+
+.form-buttons button[type="submit"]:hover {
+  background-color: var(--verde-hover);
+}
+
+.form-buttons button:nth-child(2) {
+  background-color: #dc3545;
+}
+
+.form-buttons button:nth-child(2):hover {
+  background-color: #b02a37;
+}
+
+.form-buttons i {
+  font-size: 16px;
+}
