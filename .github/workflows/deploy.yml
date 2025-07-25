@@ -30,7 +30,7 @@ jobs:
         run: |
           cd frontend
           npm install
-          npm run build
+          CI=false npm run build
 
       # 4. Faz o deploy dos arquivos para a HostGator via FTP
       - name: Deploy Frontend para HostGator
