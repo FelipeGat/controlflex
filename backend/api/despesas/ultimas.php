@@ -13,13 +13,19 @@ if (!$usuario_id) {
   exit;
 }
 
-$sql = "SELECT d.*, f.nome AS quem_comprou, c.nome AS categoria 
+$sql = "SELECT 
+          d.id, 
+          d.valor, 
+          d.data_compra, 
+          d.quem_comprou,  -- Adicionado para fallback no frontend
+          f.nome AS quem_comprou_nome, 
+          c.nome AS categoria 
         FROM despesas d
         LEFT JOIN familiares f ON f.id = d.quem_comprou
         LEFT JOIN categorias c ON c.id = d.categoria_id
         WHERE d.usuario_id = :usuario_id
-        ORDER BY d.data_compra DESC
-        LIMIT 5";
+        ORDER BY d.data_compra DESC, d.id DESC
+        LIMIT 10";
 
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':usuario_id', $usuario_id, PDO::PARAM_INT);

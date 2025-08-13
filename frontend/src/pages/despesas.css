@@ -57,6 +57,10 @@ textarea.form-control {
   font-size: 14px;
 }
 
+/* Margens utilitárias para o checkbox */
+.mt-2 { margin-top: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+
 /* Botões */
 .buttons-container-right {
   display: flex;
@@ -87,7 +91,7 @@ textarea.form-control {
   outline: none;
 }
 
-/* Botão cancelar */
+/* Botão cancelar/limpar */
 .buttons-container-right .btn-secondary {
   background-color: #e74c3c;
   color: white;
@@ -99,7 +103,7 @@ textarea.form-control {
   outline: none;
 }
 
-/* Últimas despesas */
+/* Card da lista */
 .ultimas-despesas {
   background-color: #fff;
   border-radius: 12px;
@@ -118,14 +122,64 @@ textarea.form-control {
   padding-bottom: 8px;
 }
 
-/* Removido estilo de ul/li pois tabela está sendo usada */
+/* Filtros */
+.filtros-receitas {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
-/* Container para tabela com rolagem horizontal */
+.filtros-receitas .filtro-controles {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px; /* Limita a largura máxima dos filtros */
+}
+
+.filtros-receitas .campos-data {
+  display: flex;
+  gap: 15px; /* Espaço entre os campos de data */
+}
+
+.filtros-receitas .campos-data label {
+  flex: 1; /* Faz cada campo de data ocupar metade do espaço */
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #333;
+}
+
+.filtros-receitas input[type="date"] {
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f8fafc;
+  width: 100%; /* Ocupa toda a largura do label */
+}
+
+.filtros-receitas .btn-primary {
+  padding: 10px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.filtros-receitas .btn-primary:hover {
+  background-color: #2980b9;
+}
+
+/* Container da tabela para rolagem */
 .tabela-despesas-container {
   overflow-x: auto;
 }
 
-/* Tabela das despesas */
+/* Tabela */
 .tabela-despesas {
   width: 100%;
   border-collapse: collapse;
@@ -159,35 +213,31 @@ textarea.form-control {
   background-color: #f9fafb;
 }
 
-/* Coluna de ações (botões editar/excluir) */
-.tabela-despesas td.acoes {
+/* Botões de ação na tabela */
+.table-buttons {
   display: flex;
   gap: 10px;
-  align-items: center;
 }
 
-/* Botões ícones */
-.icon-button {
+.btn-icon {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 4px;
-  transition: transform 0.2s ease, color 0.2s ease;
-  color: #666;
+  padding: 5px;
+  font-size: 1rem;
+  color: #555;
+  transition: transform 0.2s, color 0.2s;
 }
 
-.icon-button:hover,
-.icon-button:focus {
-  transform: scale(1.2);
-  outline: none;
+.btn-icon:hover {
+  transform: scale(1.1);
 }
 
-.icon-button.editar {
+.btn-edit {
   color: #3498db;
 }
 
-.icon-button.excluir {
+.btn-trash {
   color: #e74c3c;
 }
 
@@ -205,5 +255,10 @@ textarea.form-control {
   .buttons-container-right .btn {
     width: 100%;
     max-width: 250px;
+  }
+
+  /* Em telas menores, os filtros já estão em coluna, então não precisamos de muitas mudanças */
+  .filtros-receitas .filtro-controles {
+    max-width: none; /* Remove a largura máxima para ocupar o espaço disponível */
   }
 }

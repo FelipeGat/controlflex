@@ -103,7 +103,7 @@ textarea.form-control {
   outline: none;
 }
 
-/* Card da lista (reutilizando classe de despesas para consistência) */
+/* Card da lista */
 .ultimas-despesas {
   background-color: #fff;
   border-radius: 12px;
@@ -120,6 +120,58 @@ textarea.form-control {
   text-align: center;
   border-bottom: 1px solid #eee;
   padding-bottom: 8px;
+}
+
+/* Filtros */
+.filtros-receitas {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.filtros-receitas .filtro-controles {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px; /* Limita a largura máxima dos filtros */
+}
+
+.filtros-receitas .campos-data {
+  display: flex;
+  gap: 15px; /* Espaço entre os campos de data */
+}
+
+.filtros-receitas .campos-data label {
+  flex: 1; /* Faz cada campo de data ocupar metade do espaço */
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #333;
+}
+
+.filtros-receitas input[type="date"] {
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f8fafc;
+  width: 100%; /* Ocupa toda a largura do label */
+}
+
+.filtros-receitas .btn-primary {
+  padding: 10px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.filtros-receitas .btn-primary:hover {
+  background-color: #2980b9;
 }
 
 /* Container da tabela para rolagem */
@@ -203,5 +255,10 @@ textarea.form-control {
   .buttons-container-right .btn {
     width: 100%;
     max-width: 250px;
+  }
+
+  /* Em telas menores, os filtros já estão em coluna, então não precisamos de muitas mudanças */
+  .filtros-receitas .filtro-controles {
+    max-width: none; /* Remove a largura máxima para ocupar o espaço disponível */
   }
 }

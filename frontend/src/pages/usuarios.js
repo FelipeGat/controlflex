@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Removi a importação do useNavigate, pois não estava sendo usada.
 import './usuarios.css';
-// 1. Importa as variáveis de configuração
-import { API_BASE_URL, UPLOADS_BASE_URL } from '../apiConfig';
+import { API_BASE_URL } from '../apiConfig'; // UPLOADS_BASE_URL será derivado daqui
 
-function Usuarios( ) {
+// É uma prática melhor derivar a URL de uploads da URL da API
+// para evitar configurar dois caminhos diferentes.
+const UPLOADS_BASE_URL = `${API_BASE_URL.replace('/api', '')}/uploads`;
+
+function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [editando, setEditando] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
@@ -18,14 +21,23 @@ function Usuarios( ) {
     status: 'Ativo'
   });
 
-  const navigate = useNavigate();
+  // Removi a variável navigate, pois não estava em uso.
 
   useEffect(() => {
-    // 2. Corrige o fetch inicial
-    fetch(`${API_BASE_URL}/usuarios.php`)
-      .then(res => res.json())
-      .then(setUsuarios);
+    carregarUsuarios();
   }, []);
+
+  const carregarUsuarios = () => {
+    fetch(`${API_BASE_URL}/usuarios.php`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Falha na resposta da rede');
+        }
+        return res.json();
+      })
+      .then(setUsuarios)
+      .catch(err => console.error('Erro ao carregar usuários:', err));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,10 +52,19 @@ function Usuarios( ) {
     }
   };
 
+  const resetarFormulario = () => {
+    setEditando(null);
+    setForm({ nome: '', email: '', senha: '', confirmarSenha: '', nivel: 'Padrão', status: 'Ativo' });
+    setFoto(null);
+    setFotoPreview(null);
+    // Limpa o campo de input de arquivo
+    document.querySelector('input[type="file"]').value = '';
+  };
+
   const salvarUsuario = async (e) => {
     e.preventDefault();
 
-    if (form.senha !== form.confirmarSenha) {
+    if (form.senha && form.senha !== form.confirmarSenha) {
       alert('As senhas não coincidem.');
       return;
     }
@@ -51,14 +72,23 @@ function Usuarios( ) {
     const data = new FormData();
     data.append('nome', form.nome);
     data.append('email', form.email);
-    data.append('senha', form.senha);
-    data.append('perfil', form.nivel);
+    data.append('nivel', form.nivel);
     data.append('status', form.status);
-    if (foto) data.append('foto', foto);
-    if (editando) data.append('id', editando);
+    
+    // Só envie a senha se ela foi preenchida
+    if (form.senha) {
+      data.append('senha', form.senha);
+    }
+    
+    if (foto) {
+      data.append('foto', foto);
+    }
+    
+    if (editando) {
+      data.append('id', editando);
+    }
 
     try {
-      // 3. Corrige o fetch de salvar/atualizar
       const res = await fetch(`${API_BASE_URL}/usuarios.php`, {
         method: 'POST',
         body: data
@@ -68,9 +98,10 @@ function Usuarios( ) {
 
       if (json.sucesso) {
         alert(editando ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
-        window.location.reload();
+        carregarUsuarios();
+        resetarFormulario();
       } else {
-        alert('Erro ao salvar usuário.');
+        alert('Erro ao salvar usuário: ' + (json.erro || 'Erro desconhecido.'));
       }
     } catch (error) {
       alert('Erro na comunicação com o servidor.');
@@ -83,26 +114,37 @@ function Usuarios( ) {
     setForm({
       nome: usuario.nome,
       email: usuario.email,
-      senha: '',
-      confirmarSenha: '',
+      senha: '', // Limpa o campo senha
+      confirmarSenha: '', // Limpa o campo confirmar senha
       nivel: usuario.perfil,
       status: usuario.status
     });
-    // 4. Corrige a URL da imagem de preview
-    if (usuario.foto) setFotoPreview(`${UPLOADS_BASE_URL}/${usuario.foto}`);
-    else setFotoPreview(null);
+
+    if (usuario.foto) {
+      // Adiciona um timestamp para evitar problemas de cache do navegador
+      setFotoPreview(`${UPLOADS_BASE_URL}/${usuario.foto}?t=${new Date().getTime()}`);
+    } else {
+      setFotoPreview(null);
+    }
+    
     setFoto(null);
+    document.querySelector('input[type="file"]').value = '';
+    window.scrollTo(0, 0); // Rola a página para o topo para ver o formulário
   };
 
   const excluir = async (id) => {
     if (!window.confirm('Deseja excluir este usuário?')) return;
 
     try {
-      // 5. Corrige o fetch de exclusão
-      await fetch(`${API_BASE_URL}/usuarios.php?id=${id}`, {
+      const res = await fetch(`${API_BASE_URL}/usuarios.php?id=${id}`, {
         method: 'DELETE'
       });
-      window.location.reload();
+      const json = await res.json();
+      if (json.sucesso) {
+        carregarUsuarios();
+      } else {
+        alert('Erro ao excluir usuário: ' + (json.erro || 'Erro desconhecido.'));
+      }
     } catch (error) {
       alert('Erro ao excluir usuário.');
       console.error(error);
@@ -118,13 +160,14 @@ function Usuarios( ) {
           <input name="nome" value={form.nome} onChange={handleChange} className="form-control" required />
 
           <label>Email *</label>
-          <input name="email" value={form.email} onChange={handleChange} className="form-control" required />
+          <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" required />
 
-          <label>Senha *</label>
-          <input type="password" name="senha" value={form.senha} onChange={handleChange} className="form-control" required />
+          {/* A senha só é obrigatória se for um novo cadastro */}
+          <label>Senha {editando ? '(Deixe em branco para não alterar)' : '*'}</label>
+          <input type="password" name="senha" value={form.senha} onChange={handleChange} className="form-control" required={!editando} />
 
-          <label>Confirmar Senha *</label>
-          <input type="password" name="confirmarSenha" value={form.confirmarSenha} onChange={handleChange} className="form-control" required />
+          <label>Confirmar Senha {editando ? '' : '*'}</label>
+          <input type="password" name="confirmarSenha" value={form.confirmarSenha} onChange={handleChange} className="form-control" required={!editando && form.senha} />
 
           <label>Nível de Acesso</label>
           <select name="nivel" value={form.nivel} onChange={handleChange} className="form-control">
@@ -145,16 +188,7 @@ function Usuarios( ) {
 
           <div className="buttons-container">
             <button type="submit" className="btn-success">{editando ? 'Atualizar' : 'Salvar'}</button>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                setEditando(null);
-                setForm({ nome: '', email: '', senha: '', confirmarSenha: '', nivel: 'Padrão', status: 'Ativo' });
-                setFoto(null);
-                setFotoPreview(null);
-              }}
-            >
+            <button type="button" className="btn-secondary" onClick={resetarFormulario}>
               Cancelar
             </button>
           </div>
@@ -179,9 +213,9 @@ function Usuarios( ) {
               {usuarios.map(u => (
                 <tr key={u.id}>
                   <td>
-                    {/* 6. Corrige a URL da imagem na tabela */}
                     {u.foto
-                      ? <img src={`${UPLOADS_BASE_URL}/${u.foto}`} alt="avatar" className="foto-thumb" />
+                      // Adiciona o timestamp aqui também para garantir a atualização
+                      ? <img src={`${UPLOADS_BASE_URL}/${u.foto}?t=${new Date().getTime()}`} alt="avatar" className="foto-thumb" />
                       : '-'}
                   </td>
                   <td>{u.nome}</td>

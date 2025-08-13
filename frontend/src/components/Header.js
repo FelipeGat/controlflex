@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
 import './header.css';
-// 1. Importa a variável de configuração para a pasta de uploads
+// Importa a variável de configuração para a pasta de uploads
 import { UPLOADS_BASE_URL } from '../apiConfig';
 
 function Header() {
@@ -11,16 +11,19 @@ function Header() {
   const [showCadastroMenu, setShowCadastroMenu] = useState(false);
   const [showRelatoriosMenu, setShowRelatoriosMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [cadastroTimeout, setCadastroTimeout] = useState(null);
-  const [relatoriosTimeout, setRelatoriosTimeout] = useState(null);
+
+  // Usando useRef para armazenar os timeouts
+  const cadastroTimeout = useRef(null);
+  const relatoriosTimeout = useRef(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('usuarioLogado');
     if (stored) setUser(JSON.parse(stored));
 
+    // Cleanup dos timeouts ao desmontar
     return () => {
-      if (cadastroTimeout) clearTimeout(cadastroTimeout);
-      if (relatoriosTimeout) clearTimeout(relatoriosTimeout);
+      if (cadastroTimeout.current) clearTimeout(cadastroTimeout.current);
+      if (relatoriosTimeout.current) clearTimeout(relatoriosTimeout.current);
     };
   }, []);
 
@@ -31,12 +34,11 @@ function Header() {
   };
 
   const toggleUserMenu = () => {
-    setShowUserMenu((prev) => !prev);
+    setShowUserMenu(prev => !prev);
     setShowCadastroMenu(false);
     setShowRelatoriosMenu(false);
   };
 
-  // --- O seu JSX (return) permanece o mesmo, com uma correção na URL da imagem ---
   return (
     <nav className="navbar">
       <div className="navbar-left" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
@@ -51,12 +53,11 @@ function Header() {
         <div
           className="dropdown"
           onMouseEnter={() => {
-            if (cadastroTimeout) clearTimeout(cadastroTimeout);
+            if (cadastroTimeout.current) clearTimeout(cadastroTimeout.current);
             setShowCadastroMenu(true);
           }}
           onMouseLeave={() => {
-            const timeout = setTimeout(() => setShowCadastroMenu(false), 200);
-            setCadastroTimeout(timeout);
+            cadastroTimeout.current = setTimeout(() => setShowCadastroMenu(false), 200);
           }}
         >
           <button className="nav-item">
@@ -70,6 +71,7 @@ function Header() {
               <button onClick={() => navigate('/usuarios')}>Usuários</button>
               <button onClick={() => navigate('/despesas')}>Despesas</button>
               <button onClick={() => navigate('/receitas')}>Receitas</button>
+              <button onClick={() => navigate('/categorias')}>Categorias</button>
             </div>
           )}
         </div>
@@ -77,12 +79,11 @@ function Header() {
         <div
           className="dropdown"
           onMouseEnter={() => {
-            if (relatoriosTimeout) clearTimeout(relatoriosTimeout);
+            if (relatoriosTimeout.current) clearTimeout(relatoriosTimeout.current);
             setShowRelatoriosMenu(true);
           }}
           onMouseLeave={() => {
-            const timeout = setTimeout(() => setShowRelatoriosMenu(false), 200);
-            setRelatoriosTimeout(timeout);
+            relatoriosTimeout.current = setTimeout(() => setShowRelatoriosMenu(false), 200);
           }}
         >
           <button className="nav-item">
@@ -103,7 +104,6 @@ function Header() {
           <>
             {user.foto ? (
               <img
-                // 2. Corrige a URL da imagem do avatar
                 src={`${UPLOADS_BASE_URL}/${user.foto}`}
                 alt="Foto do usuário"
                 className="user-avatar"
@@ -113,7 +113,11 @@ function Header() {
             ) : (
               <FaUserCircle className="user-icon" onClick={toggleUserMenu} />
             )}
-            <span className="user-name" onClick={toggleUserMenu} style={{ cursor: 'pointer', marginLeft: '8px' }}>
+            <span
+              className="user-name"
+              onClick={toggleUserMenu}
+              style={{ cursor: 'pointer', marginLeft: '8px' }}
+            >
               Olá, {user.nome}
             </span>
           </>
@@ -131,3 +135,4 @@ function Header() {
 }
 
 export default Header;
+

@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import './receitas.css'; // Usará o novo receitas.css
+import './receitas.css';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../apiConfig';
+import ModalConfirmacao from './ModalConfirmacao'; // Importa o novo componente
+import './ModalConfirmacao.css'; // Importa o CSS do modal
 
 function Receitas() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
 
-  // Estados para os selects
   const [familiares, setFamiliares] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [bancos, setBancos] = useState([]);
-  
-  // Estado para a lista da tabela
   const [ultimasReceitas, setUltimasReceitas] = useState([]);
-
-  // Estado para controlar edição
   const [receitaEditandoId, setReceitaEditandoId] = useState(null);
 
-  // Estado do formulário
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
+
+  // ========= INÍCIO DAS MUDANÇAS PARA O MODAL =========
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmText: 'Confirmar',
+    cancelText: 'Cancelar',
+  });
+  // ========= FIM DAS MUDANÇAS PARA O MODAL =========
+
   const [form, setForm] = useState({
     quemRecebeu: '',
     categoriaId: '',
@@ -26,10 +36,10 @@ function Receitas() {
     valor: '',
     dataRecebimento: new Date().toISOString().split('T')[0],
     recorrente: false,
+    parcelas: 1,
     observacoes: ''
   });
 
-  // Carrega o usuário do localStorage
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('usuarioLogado'));
     if (!user) {
@@ -39,7 +49,6 @@ function Receitas() {
     }
   }, [navigate]);
 
-  // Carrega dados dos selects e a lista de receitas
   useEffect(() => {
     if (!usuario) return;
 
@@ -47,7 +56,7 @@ function Receitas() {
       try {
         const [resFamiliares, resCategorias, resBancos] = await Promise.all([
           fetch(`${API_BASE_URL}/familiares/familiares.php?usuario_id=${usuario.id}`),
-          fetch(`${API_BASE_URL}/categorias.php?tipo=receita`), // Assumindo que você filtra categorias de receita
+          fetch(`${API_BASE_URL}/categorias/categorias.php?tipo=receita`),
           fetch(`${API_BASE_URL}/bancos.php?usuario_id=${usuario.id}`)
         ]);
 
@@ -71,10 +80,17 @@ function Receitas() {
 
   const carregarUltimasReceitas = async () => {
     if (!usuario) return;
+
     try {
-      const res = await fetch(`${API_BASE_URL}/receitas/listar_receitas.php?usuario_id=${usuario.id}`);
+      let url = `${API_BASE_URL}/receitas/listar_receitas.php?usuario_id=${usuario.id}`;
+
+      if (filtroDataInicio && filtroDataFim) {
+        url += `&inicio=${filtroDataInicio}&fim=${filtroDataFim}`;
+      }
+
+      const res = await fetch(url);
       const data = await res.json();
-      setUltimasReceitas(Array.isArray(data) ? data.slice(0, 5) : []);
+      setUltimasReceitas(Array.isArray(data) ? data.slice(0, 50) : []);
     } catch (err) {
       console.error('Erro ao carregar últimas receitas:', err);
     }
@@ -93,6 +109,12 @@ function Receitas() {
       return;
     }
 
+    if (name === 'parcelas') {
+      const parsed = parseInt(value, 10);
+      setForm(prev => ({ ...prev, parcelas: isNaN(parsed) || parsed < 0 ? 0 : parsed }));
+      return;
+    }
+
     setForm(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -107,6 +129,7 @@ function Receitas() {
       valor: '',
       dataRecebimento: new Date().toISOString().split('T')[0],
       recorrente: false,
+      parcelas: 1,
       observacoes: ''
     });
     setReceitaEditandoId(null);
@@ -130,21 +153,22 @@ function Receitas() {
       valor: valorNumerico,
       data_recebimento: form.dataRecebimento,
       recorrente: form.recorrente ? 1 : 0,
+      parcelas: form.parcelas,
       observacoes: form.observacoes
     };
 
     try {
       const res = await fetch(`${API_BASE_URL}/receitas/salvar_receitas.php`, {
-        method: 'POST',
+        method: receitaEditandoId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
 
       if (data.sucesso) {
-        alert(receitaEditandoId ? 'Receita atualizada com sucesso!' : 'Receita cadastrada com sucesso!');
+        alert(data.mensagem);
         resetForm();
-        carregarUltimasReceitas(); // Recarrega a lista
+        carregarUltimasReceitas();
       } else {
         alert(data.erro || 'Erro ao salvar a receita.');
       }
@@ -161,27 +185,62 @@ function Receitas() {
       formaRecebimento: receita.forma_recebimento_id,
       valor: String(receita.valor).replace('.', ','),
       dataRecebimento: receita.data_recebimento,
-      recorrente: receita.recorrente === 1,
+      recorrente: receita.recorrente == 1,
+      parcelas: receita.parcelas,
       observacoes: receita.observacoes || ''
     });
     setReceitaEditandoId(receita.id);
-    window.scrollTo(0, 0); // Rola a página para o topo para ver o formulário
+    window.scrollTo(0, 0);
   };
 
-  const excluirReceita = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta receita?')) return;
+  // ========= FUNÇÃO DE EXCLUSÃO TOTALMENTE REFEITA =========
+  const handleExcluirReceita = (receita) => {
+    const { recorrente, grupo_recorrencia_id } = receita;
 
+    // Se for uma receita recorrente, abre o modal com as opções
+    if (recorrente === 1 && grupo_recorrencia_id) {
+      setModalState({
+        isOpen: true,
+        title: 'Excluir Receita Recorrente',
+        message: 'Como você deseja excluir esta parcela?',
+        // Ação do primeiro botão
+        onConfirm: () => {
+          prosseguirComExclusao(receita, 'esta_e_futuras');
+          setModalState({ isOpen: false }); // Fecha o modal
+        },
+        confirmText: 'Esta e as Futuras',
+        // Ação do segundo botão (que aqui é o "cancelar" do componente)
+        onClose: () => {
+          prosseguirComExclusao(receita, 'apenas_esta');
+          setModalState({ isOpen: false }); // Fecha o modal
+        },
+        cancelText: 'Apenas Esta',
+      });
+    } else {
+      // Para receitas simples, usa o confirm padrão
+      if (window.confirm('Tem certeza que deseja excluir esta receita?')) {
+        prosseguirComExclusao(receita, 'apenas_esta');
+      }
+    }
+  };
+
+  const prosseguirComExclusao = async (receita, escopo) => {
     try {
       const res = await fetch(`${API_BASE_URL}/receitas/excluir_receitas.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({
+          id: receita.id,
+          escopo_exclusao: escopo,
+          data_recebimento: receita.data_recebimento
+        })
       });
+      
       const data = await res.json();
 
       if (data.sucesso) {
-        alert('Receita excluída com sucesso!');
-        setUltimasReceitas(prev => prev.filter(r => r.id !== id));
+        alert(data.mensagem || 'Receita(s) excluída(s) com sucesso!');
+        carregarUltimasReceitas(); 
       } else {
         alert(data.erro || 'Erro ao excluir a receita.');
       }
@@ -190,14 +249,26 @@ function Receitas() {
       alert('Erro de conexão ao excluir.');
     }
   };
+  // ========= FIM DA REESTRUTURAÇÃO DA EXCLUSÃO =========
 
   return (
     <div className="page-container">
+      {/* Renderiza o Modal aqui */}
+      <ModalConfirmacao
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false })} // Ação de fechar (clicar fora ou no botão de cancelar)
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      >
+        {modalState.message}
+      </ModalConfirmacao>
+
       <div className="form-card">
         <h2 className="form-title">{receitaEditandoId ? 'Editar Receita' : 'Cadastrar Receita'}</h2>
         <form onSubmit={salvarReceita}>
           <div className="form-grid">
-            {/* Coluna da Esquerda */}
             <div>
               <label>Quem Recebeu *</label>
               <select name="quemRecebeu" value={form.quemRecebeu} onChange={handleChange} className="form-control" required>
@@ -218,7 +289,6 @@ function Receitas() {
               </select>
             </div>
 
-            {/* Coluna da Direita */}
             <div>
               <label>Valor (R$) *</label>
               <input type="text" name="valor" value={form.valor} onChange={handleChange} className="form-control" placeholder="0,00" required />
@@ -233,8 +303,24 @@ function Receitas() {
                 </label>
               </div>
 
+              {form.recorrente && (
+                <div>
+                  <label>Repetir por (meses) *</label>
+                  <small style={{ display: 'block', marginBottom: '5px' }}>Use 0 para recorrência infinita.</small>
+                  <input
+                    type="number"
+                    name="parcelas"
+                    value={form.parcelas}
+                    min="0"
+                    onChange={handleChange}
+                    className="form-control"
+                    required
+                  />
+                </div>
+              )}
+
               <label>Observações</label>
-              <textarea name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="4" placeholder="Ex: adiantamento de salário..." />
+              <textarea name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="4" />
             </div>
           </div>
 
@@ -247,8 +333,35 @@ function Receitas() {
         </form>
       </div>
 
-      <div className="ultimas-despesas"> {/* Reutilizando a classe para manter o estilo */}
+      <div className="ultimas-despesas">
         <h3>Últimas Receitas</h3>
+
+        <div className="filtros-receitas">
+          <div className="filtro-controles">
+            <div className="campos-data">
+              <label>
+                Data Início:
+                <input
+                  type="date"
+                  value={filtroDataInicio}
+                  onChange={(e) => setFiltroDataInicio(e.target.value)}
+                />
+              </label>
+              <label>
+                Data Fim:
+                <input
+                  type="date"
+                  value={filtroDataFim}
+                  onChange={(e) => setFiltroDataFim(e.target.value)}
+                />
+              </label>
+            </div>
+            <button className="btn btn-primary" onClick={carregarUltimasReceitas}>
+              Filtrar
+            </button>
+          </div>
+        </div>
+
         {ultimasReceitas.length === 0 ? (
           <p>Nenhuma receita cadastrada.</p>
         ) : (
@@ -272,10 +385,11 @@ function Receitas() {
                     <td>{new Date(r.data_recebimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                     <td>
                       <div className="table-buttons">
-                        <button type="button" onClick={() => editarReceita(r)} title="Editar" className="btn-icon btn-edit">
+                        <button type="button" onClick={() => editarReceita(r)} className="btn-icon btn-edit" title="Editar">
                           <i className="fas fa-pen"></i>
                         </button>
-                        <button type="button" onClick={() => excluirReceita(r.id)} title="Excluir" className="btn-icon btn-trash">
+                        {/* A chamada agora é para a nova função handleExcluirReceita */}
+                        <button type="button" onClick={() => handleExcluirReceita(r)} className="btn-icon btn-trash" title="Excluir">
                           <i className="fas fa-trash"></i>
                         </button>
                       </div>

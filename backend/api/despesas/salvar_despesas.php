@@ -1,108 +1,138 @@
 <?php
-
+// CORS: pré-flight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Methods: POST, PUT, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
-    http_response_code(200);
+    http_response_code(200 );
     exit;
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
-header("Access-Control-Allow-Headers: Content-Type");
+header('Access-Control-Allow-Methods: POST, PUT, OPTIONS');
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 require_once __DIR__ . '/../../config/db.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
-
-$id = isset($data['id']) ? (int)$data['id'] : null;
-$quem_comprou = $data['quem_comprou'];
-$onde_comprou = $data['onde_comprou'];
-$categoria_id = (int)$data['categoria_id'];
-$forma_pagamento = $data['forma_pagamento'];
-$data_compra = $data['data_compra'];
-$valor = (float)$data['valor'];
-$recorrente = isset($data['recorrente']) ? (int)$data['recorrente'] : 0;
-$recorrente_infinita = isset($data['recorrente_infinita']) ? (int)$data['recorrente_infinita'] : 0;
-$parcelas = isset($data['parcelas']) ? (int)$data['parcelas'] : 0;
-$observacoes = $data['observacoes'] ?? '';
-
-function adicionarMes($data, $quantidade) {
-    $date = new DateTime($data);
-    $date->modify("+{$quantidade} month");
-    return $date->format('Y-m-d');
-}
+$input = json_decode(file_get_contents('php://input'), true);
 
 try {
-    if ($id) {
-        // Atualizar despesa existente
-        $stmt = $pdo->prepare("UPDATE despesas SET
-            quem_comprou = :quem_comprou,
-            onde_comprou = :onde_comprou,
-            categoria_id = :categoria_id,
-            forma_pagamento = :forma_pagamento,
-            data_compra = :data_compra,
-            valor = :valor,
-            recorrente = :recorrente,
-            observacoes = :observacoes
-            WHERE id = :id
-        ");
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT') {
+        http_response_code(405 );
+        echo json_encode(['sucesso' => false, 'erro' => 'Método não permitido']);
+        exit;
+    }
 
+    $camposObrigatorios = ['usuario_id', 'quem_comprou', 'onde_comprou', 'categoria_id', 'forma_pagamento', 'valor', 'data_compra'];
+    foreach ($camposObrigatorios as $campo) {
+        if (!isset($input[$campo]) || ($input[$campo] === '' && $input[$campo] !== 0)) {
+            http_response_code(400 );
+            echo json_encode(['sucesso' => false, 'erro' => "O campo '{$campo}' é obrigatório."]);
+            exit;
+        }
+    }
+
+    $id = $input['id'] ?? null;
+    $usuario_id = intval($input['usuario_id']);
+    $quem_comprou = intval($input['quem_comprou']);
+    $onde_comprou = intval($input['onde_comprou']);
+    $categoria_id = intval($input['categoria_id']);
+    $forma_pagamento = $input['forma_pagamento'];
+    $valor = floatval($input['valor']);
+    $data_compra = $input['data_compra'];
+    $observacoes = $input['observacoes'] ?? '';
+    $recorrente = isset($input['recorrente']) ? intval($input['recorrente']) : 0;
+    $parcelas_input = isset($input['parcelas']) ? intval($input['parcelas']) : 1;
+
+    $pdo->beginTransaction();
+
+    if ($id) {
+        // LÓGICA DE ATUALIZAÇÃO (UPDATE)
+        $stmt = $pdo->prepare("
+            UPDATE despesas SET
+                quem_comprou = :quem_comprou, onde_comprou = :onde_comprou, categoria_id = :categoria_id,
+                forma_pagamento = :forma_pagamento, valor = :valor, data_compra = :data_compra,
+                recorrente = :recorrente, parcelas = :parcelas, observacoes = :observacoes
+            WHERE id = :id AND usuario_id = :usuario_id
+        ");
         $stmt->execute([
             ':quem_comprou' => $quem_comprou,
             ':onde_comprou' => $onde_comprou,
             ':categoria_id' => $categoria_id,
             ':forma_pagamento' => $forma_pagamento,
-            ':data_compra' => $data_compra,
             ':valor' => $valor,
+            ':data_compra' => $data_compra,
             ':recorrente' => $recorrente,
+            ':parcelas' => $parcelas_input,
             ':observacoes' => $observacoes,
-            ':id' => $id
+            ':id' => $id,
+            ':usuario_id' => $usuario_id
         ]);
+        $mensagem = 'Despesa atualizada com sucesso!';
 
-        echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa atualizada com sucesso']);
     } else {
-        if ($recorrente && !$recorrente_infinita && $parcelas > 1) {
-            // Inserir parcelas
-            $stmt = $pdo->prepare("INSERT INTO despesas 
-                (quem_comprou, onde_comprou, categoria_id, forma_pagamento, data_compra, valor, recorrente, observacoes)
-                VALUES (:quem_comprou, :onde_comprou, :categoria_id, :forma_pagamento, :data_compra, :valor, 1, :observacoes)");
+        // LÓGICA DE CRIAÇÃO (INSERT)
+        $stmt = $pdo->prepare("
+            INSERT INTO despesas
+            (usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, data_compra, recorrente, parcelas, observacoes, grupo_recorrencia_id)
+            VALUES (:usuario_id, :quem_comprou, :onde_comprou, :categoria_id, :forma_pagamento, :valor, :data_compra, :recorrente, :parcelas, :observacoes, :grupo_id)
+        ");
 
-            for ($i = 0; $i < $parcelas; $i++) {
-                $nova_data = adicionarMes($data_compra, $i);
-                $stmt->execute([
-                    ':quem_comprou' => $quem_comprou,
-                    ':onde_comprou' => $onde_comprou,
-                    ':categoria_id' => $categoria_id,
-                    ':forma_pagamento' => $forma_pagamento,
-                    ':data_compra' => $nova_data,
-                    ':valor' => $valor,
-                    ':observacoes' => $observacoes
-                ]);
+        $numero_de_lancamentos = 1;
+        $grupo_id = null;
+
+        if ($recorrente === 1 && $parcelas_input != 1) {
+            $grupo_id = uniqid('desp_rec_', true);
+            if ($parcelas_input === 0) {
+                $numero_de_lancamentos = 60;
+            } else {
+                $numero_de_lancamentos = $parcelas_input;
             }
-        } else {
-            // Lançamento único ou recorrente infinito
-            $stmt = $pdo->prepare("INSERT INTO despesas 
-                (quem_comprou, onde_comprou, categoria_id, forma_pagamento, data_compra, valor, recorrente, observacoes)
-                VALUES (:quem_comprou, :onde_comprou, :categoria_id, :forma_pagamento, :data_compra, :valor, :recorrente, :observacoes)");
+        }
+
+        $data_base = new DateTime($data_compra);
+
+        for ($i = 0; $i < $numero_de_lancamentos; $i++) {
+            // A CADA ITERAÇÃO, CRIA UM NOVO OBJETO DE DATA A PARTIR DO ORIGINAL
+            // E SÓ ENTÃO MODIFICA. ESTA É A CORREÇÃO.
+            $data_parcela_atual = new DateTime($data_compra);
+            $data_parcela_atual->modify("+$i month");
+
+            $obs_parcela = $observacoes;
+            if ($numero_de_lancamentos > 1) {
+                $obs_parcela = trim($observacoes . " (Parcela " . ($i + 1) . " de $numero_de_lancamentos)");
+            }
 
             $stmt->execute([
+                ':usuario_id' => $usuario_id,
                 ':quem_comprou' => $quem_comprou,
                 ':onde_comprou' => $onde_comprou,
                 ':categoria_id' => $categoria_id,
                 ':forma_pagamento' => $forma_pagamento,
-                ':data_compra' => $data_compra,
                 ':valor' => $valor,
-                ':recorrente' => $recorrente_infinita,
-                ':observacoes' => $observacoes
+                ':data_compra' => $data_parcela_atual->format('Y-m-d'),
+                ':recorrente' => $recorrente,
+                ':parcelas' => $numero_de_lancamentos,
+                ':observacoes' => $obs_parcela,
+                ':grupo_id' => $grupo_id
             ]);
         }
-
-        echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa cadastrada com sucesso']);
+        $mensagem = 'Despesa(s) cadastrada(s) com sucesso!';
     }
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['erro' => 'Erro ao salvar despesa: ' . $e->getMessage()]);
+
+    $pdo->commit();
+    echo json_encode(['sucesso' => true, 'mensagem' => $mensagem]);
+
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    http_response_code(500 );
+    echo json_encode([
+        'sucesso' => false,
+        'erro' => 'Erro no servidor: ' . $e->getMessage(),
+        'linha' => $e->getLine()
+    ]);
 }
+?>

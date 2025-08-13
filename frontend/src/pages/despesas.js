@@ -1,44 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import './despesas.css';
+import './despesas.css'; // Mantém a importação do CSS de despesas
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../apiConfig';
+import ModalConfirmacao from './ModalConfirmacao';
+import './ModalConfirmacao.css';
 
 function Despesas() {
   const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(null);
 
+  // Estados para os selects
   const [familiares, setFamiliares] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [ultimasDespesas, setUltimasDespesas] = useState([]);
 
-  // Estado para controlar se estamos editando uma despesa
   const [despesaEditandoId, setDespesaEditandoId] = useState(null);
 
+  // Estados para filtro de datas (padronizado com receitas.js)
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
+
+  // Estado para controlar o Modal de Confirmação
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    onCancel: () => {},
+    confirmText: 'Confirmar',
+    cancelText: 'Cancelar',
+  });
+
+  // Estado do formulário
   const [form, setForm] = useState({
     quemComprou: '',
     fornecedor: '',
-    categoria: '',
+    categoriaId: '',
     formaPagamento: '',
-    valor: '',  // valor como string sem prefixo para facilitar parseFloat
+    valor: '',
     dataCompra: new Date().toISOString().split('T')[0],
     recorrente: false,
+    parcelas: 1,
     observacoes: ''
   });
 
+  // Carrega usuário logado
   useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
-
-    if (!usuario) {
+    const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+    if (!user) {
       navigate('/');
-      return;
+    } else {
+      setUsuario(user);
     }
+  }, [navigate]);
 
-    const carregarDados = async () => {
+  // Carrega dados iniciais (selects e últimas despesas)
+  useEffect(() => {
+    if (!usuario) return;
+
+    const carregarDadosIniciais = async () => {
       try {
         const [respFamiliares, respFornecedores, respCategorias] = await Promise.all([
           fetch(`${API_BASE_URL}/familiares/familiares.php?usuario_id=${usuario.id}`),
           fetch(`${API_BASE_URL}/fornecedores.php?usuario_id=${usuario.id}`),
-          fetch(`${API_BASE_URL}/categorias.php`)
+          fetch(`${API_BASE_URL}/categorias/categorias.php?tipo=DESPESA`)
         ]);
 
         const [dadosFamiliares, dadosFornecedores, dadosCategorias] = await Promise.all([
@@ -51,40 +77,51 @@ function Despesas() {
         setFornecedores(dadosFornecedores);
         setCategorias(dadosCategorias);
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('Erro ao carregar dados dos selects:', error);
       }
     };
 
-    const carregarUltimasDespesas = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/despesas/ultimas.php?usuario_id=${usuario.id}`);
-        const data = await res.json();
-        setUltimasDespesas(data);
-      } catch (err) {
-        console.error('Erro ao carregar últimas despesas:', err);
-      }
-    };
-
-    carregarDados();
     carregarUltimasDespesas();
-  }, [navigate]);
+    carregarDadosIniciais();
+  }, [usuario]);
 
-  // Atualiza valor no estado sem formatação (apenas números e vírgula)
+  // Função para carregar a lista de despesas, agora com filtro de datas
+  const carregarUltimasDespesas = async () => {
+    if (!usuario) return;
+
+    let url = `${API_BASE_URL}/despesas/listar_despesas.php?usuario_id=${usuario.id}`;
+
+    // Usa os estados padronizados
+    if (filtroDataInicio && filtroDataFim) {
+      url += `&inicio=${filtroDataInicio}&fim=${filtroDataFim}`;
+    }
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      setUltimasDespesas(Array.isArray(data) ? data.slice(0, 50) : []);
+    } catch (err) {
+      console.error('Erro ao carregar últimas despesas:', err);
+    }
+  };
+
+  // Handler para mudanças nos inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (name === 'valor') {
-      // Permite números, vírgula e ponto (troque vírgula por ponto para parseFloat)
-      // Remove tudo que não é número ou vírgula
       let cleaned = value.replace(/[^0-9,]/g, '');
-
-      // Permite só uma vírgula
       const parts = cleaned.split(',');
-      if(parts.length > 2) {
-        cleaned = parts[0] + ',' + parts[1];
+      if (parts.length > 2) {
+        cleaned = parts[0] + ',' + parts.slice(1).join('');
       }
-
       setForm(prev => ({ ...prev, valor: cleaned }));
+      return;
+    }
+
+    if (name === 'parcelas') {
+      const parsed = parseInt(value, 10);
+      setForm(prev => ({ ...prev, parcelas: isNaN(parsed) || parsed < 0 ? 0 : parsed }));
       return;
     }
 
@@ -94,39 +131,49 @@ function Despesas() {
     }));
   };
 
+  // Reseta o formulário
+  const resetForm = () => {
+    setForm({
+      quemComprou: '',
+      fornecedor: '',
+      categoriaId: '',
+      formaPagamento: '',
+      valor: '',
+      dataCompra: new Date().toISOString().split('T')[0],
+      recorrente: false,
+      parcelas: 1,
+      observacoes: ''
+    });
+    setDespesaEditandoId(null);
+  };
+
+  // Salva ou atualiza uma despesa
   const salvarDespesa = async (e) => {
     e.preventDefault();
 
-    const usuario = JSON.parse(localStorage.getItem('usuarioLogado'));
-    if (!usuario) {
-      alert('Usuário não autenticado.');
-      return;
-    }
-
     const valorNumerico = parseFloat(form.valor.replace(',', '.'));
-    if (isNaN(valorNumerico)) {
-      alert('Valor inválido');
+    if (isNaN(valorNumerico) || valorNumerico <= 0) {
+      alert('O valor da despesa é inválido.');
       return;
     }
 
     const payload = {
-      id: despesaEditandoId, // envia id para edição ou null para novo
+      id: despesaEditandoId,
       usuario_id: usuario.id,
       quem_comprou: form.quemComprou,
       onde_comprou: form.fornecedor,
-      categoria_id: parseInt(form.categoria),
+      categoria_id: parseInt(form.categoriaId),
       forma_pagamento: form.formaPagamento,
       valor: valorNumerico,
       data_compra: form.dataCompra,
       recorrente: form.recorrente ? 1 : 0,
-      recorrente_infinita: 0,
-      parcelas: 1,
+      parcelas: form.recorrente ? form.parcelas : 1,
       observacoes: form.observacoes
     };
 
     try {
       const res = await fetch(`${API_BASE_URL}/despesas/salvar_despesas.php`, {
-        method: 'POST',
+        method: despesaEditandoId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -134,92 +181,103 @@ function Despesas() {
       const data = await res.json();
 
       if (data.sucesso) {
-        alert(despesaEditandoId ? 'Despesa atualizada com sucesso!' : 'Despesa cadastrada com sucesso!');
-
-        setForm({
-          quemComprou: '',
-          fornecedor: '',
-          categoria: '',
-          formaPagamento: '',
-          valor: '',
-          dataCompra: new Date().toISOString().split('T')[0],
-          recorrente: false,
-          observacoes: ''
-        });
-        setDespesaEditandoId(null);
-
-        // Atualiza últimas despesas após salvar
-        const resUltimas = await fetch(`${API_BASE_URL}/despesas/ultimas.php?usuario_id=${usuario.id}`);
-        const ultimas = await resUltimas.json();
-        setUltimasDespesas(ultimas);
-
+        alert(data.mensagem || 'Operação realizada com sucesso!');
+        resetForm();
+        carregarUltimasDespesas();
       } else {
-        alert('Erro ao salvar despesa!');
-        console.error('Resposta da API:', data);
+        alert(data.erro || 'Erro ao salvar a despesa.');
       }
     } catch (err) {
       console.error('Erro ao salvar despesa:', err);
-      alert('Erro de conexão ao salvar despesa.');
+      alert('Erro de conexão ao salvar a despesa.');
     }
   };
 
-  // Função para carregar despesa no formulário para edição
-  const editarDespesa = async (id) => {
-    try {
-      // Use o endpoint despesa.php para carregar uma despesa única
-      const res = await fetch(`${API_BASE_URL}/despesas/despesa.php?id=${id}`);
-      const data = await res.json();
-
-      if (data && data.id) {
-        const despesa = data;
-
-        setForm({
-          quemComprou: despesa.quem_comprou,
-          fornecedor: despesa.onde_comprou,
-          categoria: despesa.categoria_id,
-          formaPagamento: despesa.forma_pagamento,
-          valor: despesa.valor.toString().replace('.', ','), // mantém vírgula decimal
-          dataCompra: despesa.data_compra,
-          recorrente: despesa.recorrente === 1,
-          observacoes: despesa.observacoes || ''
-        });
-
-        setDespesaEditandoId(id);
-      } else {
-        alert('Despesa não encontrada');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar despesa:', error);
-      alert('Erro ao carregar despesa para edição');
-    }
+  // Preenche o formulário para edição
+  const editarDespesa = (despesa) => {
+    setForm({
+      quemComprou: despesa.quem_comprou_id,
+      fornecedor: despesa.onde_comprou_id,
+      categoriaId: despesa.categoria_id,
+      formaPagamento: despesa.forma_pagamento,
+      valor: String(despesa.valor).replace('.', ','),
+      dataCompra: despesa.data_compra,
+      recorrente: despesa.recorrente == 1,
+      parcelas: despesa.parcelas || 1,
+      observacoes: despesa.observacoes || ''
+    });
+    setDespesaEditandoId(despesa.id);
+    window.scrollTo(0, 0);
   };
 
-  const excluirDespesa = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta despesa?')) return;
+  // Função para confirmação e exclusão
+  const handleExcluirDespesa = (despesa) => {
+    const { recorrente, grupo_recorrencia_id } = despesa;
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/despesas/excluir.php`, {
-        method: 'POST', // Backend aceita só POST para excluir
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }), // envia o id no corpo JSON
+    if (recorrente === 1 && grupo_recorrencia_id) {
+      setModalState({
+        isOpen: true,
+        title: 'Excluir Despesa Recorrente',
+        message: 'Como você deseja excluir esta despesa?',
+        onConfirm: () => {
+          prosseguirComExclusao(despesa, 'esta_e_futuras');
+          setModalState({ isOpen: false });
+        },
+        confirmText: 'Esta e as Futuras',
+        onCancel: () => {
+          prosseguirComExclusao(despesa, 'apenas_esta');
+          setModalState({ isOpen: false });
+        },
+        cancelText: 'Apenas Esta',
       });
+    } else {
+      if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
+        prosseguirComExclusao(despesa, 'apenas_esta');
+      }
+    }
+  };
 
+  // Executa exclusão e atualiza lista
+  const prosseguirComExclusao = async (despesa, escopo) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/despesas/excluir_despesas.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: despesa.id,
+          escopo_exclusao: escopo,
+          data_compra: despesa.data_compra
+        })
+      });
+      
       const data = await res.json();
 
       if (data.sucesso) {
-        alert('Despesa excluída com sucesso!');
-        setUltimasDespesas((prev) => prev.filter((d) => d.id !== id));
+        alert(data.mensagem || 'Despesa(s) excluída(s) com sucesso!');
+        carregarUltimasDespesas(); 
       } else {
-        alert(data.erro || 'Erro ao excluir despesa.');
+        alert(data.erro || 'Erro ao excluir a despesa.');
       }
     } catch (error) {
       console.error('Erro ao excluir despesa:', error);
-      alert('Erro de conexão.');
+      alert('Erro de conexão ao excluir.');
     }
   };
 
   return (
     <div className="page-container">
+      <ModalConfirmacao
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false })}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+        title={modalState.title}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+      >
+        {modalState.message}
+      </ModalConfirmacao>
+
       <div className="form-card">
         <h2 className="form-title">{despesaEditandoId ? 'Editar Despesa' : 'Cadastrar Despesa'}</h2>
         <form onSubmit={salvarDespesa}>
@@ -228,25 +286,19 @@ function Despesas() {
               <label>Quem Comprou *</label>
               <select name="quemComprou" value={form.quemComprou} onChange={handleChange} className="form-control" required>
                 <option value="">Selecione...</option>
-                {familiares.map(f => (
-                  <option key={f.id} value={f.id}>{f.nome}</option>
-                ))}
+                {familiares.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
               </select>
 
               <label>Fornecedor *</label>
               <select name="fornecedor" value={form.fornecedor} onChange={handleChange} className="form-control" required>
                 <option value="">Selecione...</option>
-                {fornecedores.map(f => (
-                  <option key={f.id} value={f.id}>{f.nome}</option>
-                ))}
+                {fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
               </select>
 
               <label>Categoria *</label>
-              <select name="categoria" value={form.categoria} onChange={handleChange} className="form-control" required>
+              <select name="categoriaId" value={form.categoriaId} onChange={handleChange} className="form-control" required>
                 <option value="">Selecione...</option>
-                {categorias.map(c => (
-                  <option key={c.id} value={c.id}>{c.nome}</option>
-                ))}
+                {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
 
               <label>Forma de Pagamento *</label>
@@ -262,77 +314,77 @@ function Despesas() {
 
             <div>
               <label>Valor (R$) *</label>
-              <input
-                type="text"
-                name="valor"
-                value={form.valor}
-                onChange={handleChange}
-                className="form-control"
-                placeholder="0,00"
-                required
-              />
+              <input type="text" name="valor" value={form.valor} onChange={handleChange} className="form-control" placeholder="0,00" required />
 
               <label>Data da Compra *</label>
-              <input
-                type="date"
-                name="dataCompra"
-                value={form.dataCompra}
-                onChange={handleChange}
-                className="form-control"
-                required
-              />
+              <input type="date" name="dataCompra" value={form.dataCompra} onChange={handleChange} className="form-control" required />
 
               <div className="checkbox-container mt-2 mb-2">
                 <label>
-                  <input
-                    type="checkbox"
-                    name="recorrente"
-                    checked={form.recorrente}
-                    onChange={handleChange}
-                  />{' '}
-                  Conta Recorrente?
+                  <input type="checkbox" name="recorrente" checked={form.recorrente} onChange={handleChange} />
+                  {' '}Conta Recorrente?
                 </label>
               </div>
 
+              {form.recorrente && (
+                <div>
+                  <label>Repetir por (meses) *</label>
+                  <small style={{ display: 'block', marginBottom: '5px' }}>Use 0 para recorrência infinita.</small>
+                  <input
+                    type="number"
+                    name="parcelas"
+                    value={form.parcelas}
+                    min="0"
+                    onChange={handleChange}
+                    className="form-control"
+                    required
+                  />
+                </div>
+              )}
+
               <label>Observações</label>
-              <textarea
-                name="observacoes"
-                value={form.observacoes}
-                onChange={handleChange}
-                className="form-control"
-                rows="4"
-                placeholder="Ex: pagamento em 2x no cartão..."
-              />
+              <textarea name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="4" />
             </div>
           </div>
 
           <div className="buttons-container-right">
             <button type="submit" className="btn btn-success">{despesaEditandoId ? 'Atualizar' : 'Salvar'}</button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => {
-                setForm({
-                  quemComprou: '',
-                  fornecedor: '',
-                  categoria: '',
-                  formaPagamento: '',
-                  valor: '',
-                  dataCompra: new Date().toISOString().split('T')[0],
-                  recorrente: false,
-                  observacoes: ''
-                });
-                setDespesaEditandoId(null);
-              }}
-            >
-              Limpar
+            <button type="button" className="btn btn-secondary" onClick={resetForm}>
+              {despesaEditandoId ? 'Cancelar' : 'Limpar'}
             </button>
           </div>
         </form>
       </div>
 
+      {/* SEÇÃO DA TABELA E FILTROS - CÓDIGO ATUALIZADO */}
       <div className="ultimas-despesas">
         <h3>Últimas Despesas</h3>
+
+        <div className="filtros-receitas"> {/* Classe reutilizada de receitas.css */}
+          <div className="filtro-controles">
+            <div className="campos-data">
+              <label>
+                Data Início:
+                <input
+                  type="date"
+                  value={filtroDataInicio}
+                  onChange={(e) => setFiltroDataInicio(e.target.value)}
+                />
+              </label>
+              <label>
+                Data Fim:
+                <input
+                  type="date"
+                  value={filtroDataFim}
+                  onChange={(e) => setFiltroDataFim(e.target.value)}
+                />
+              </label>
+            </div>
+            <button className="btn btn-primary" onClick={carregarUltimasDespesas}>
+              Filtrar
+            </button>
+          </div>
+        </div>
 
         {ultimasDespesas.length === 0 ? (
           <p>Nenhuma despesa cadastrada.</p>
@@ -351,26 +403,16 @@ function Despesas() {
               <tbody>
                 {ultimasDespesas.map((d) => (
                   <tr key={d.id}>
-                    <td>{d.quem_comprou_nome || d.quem_comprou}</td> {/* ideal ter nome no backend */}
-                    <td>{d.categoria}</td>
+                    <td>{d.quem_comprou_nome}</td>
+                    <td>{d.categoria_nome}</td>
                     <td>R$ {parseFloat(d.valor).toFixed(2).replace('.', ',')}</td>
-                    <td>{new Date(d.data_compra).toLocaleDateString()}</td>
+                    <td>{new Date(d.data_compra).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                     <td>
                       <div className="table-buttons">
-                        <button
-                          type="button"
-                          onClick={() => editarDespesa(d.id)}
-                          title="Editar"
-                          className="btn-icon btn-edit"
-                        >
+                        <button type="button" onClick={() => editarDespesa(d)} className="btn-icon btn-edit" title="Editar">
                           <i className="fas fa-pen"></i>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => excluirDespesa(d.id)}
-                          title="Excluir"
-                          className="btn-icon btn-trash"
-                        >
+                        <button type="button" onClick={() => handleExcluirDespesa(d)} className="btn-icon btn-trash" title="Excluir">
                           <i className="fas fa-trash"></i>
                         </button>
                       </div>
