@@ -6,7 +6,7 @@ import Dashboard from './pages/dashboard';
 import CadastroCategoria from './pages/categorias/CadastroCategoria';
 import Despesas from './pages/despesas';
 import Receitas from './pages/receitas';
-import Familiares from './pages/familiares';
+import Familiares from './pages/familiares/familiares.js';
 import Bancos from './pages/bancos';
 import Fornecedores from './pages/fornecedores';
 import Usuarios from './pages/usuarios';

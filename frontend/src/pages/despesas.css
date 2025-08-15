@@ -1,264 +1,242 @@
-/* Cartão do formulário */
-.form-card {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+/* ===== Estilos Padronizados para a Página de Despesas ===== */
+/* Usando o mesmo padrão das outras telas para consistência */
+
+:root {
+  --primary-color: #0a3b66;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --light-gray-color: #f3f7fa;
+  --border-color: #e9ecef;
+  --text-color: #333;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  --border-radius: 12px;
+}
+
+/* ===== Layout da Página com Múltiplos Cards ===== */
+.page-container {
+  padding: 2rem;
+  background-color: var(--light-gray-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.content-card {
   width: 100%;
-  max-width: 700px;
-  margin: 30px auto;
+  max-width: 900px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2.5rem;
 }
 
-/* Título */
-.form-title {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
+/* ===== Formulário ===== */
+.form-title, .table-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 2rem;
   text-align: center;
-  font-weight: 600;
 }
 
-/* Campos de entrada */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 1.75rem; /* Espaçamento vertical e horizontal */
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
 .form-control {
   width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 16px;
-  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
   background-color: #f8fafc;
-  font-size: 14px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #3498db;
-  background-color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(10, 59, 102, 0.2);
 }
 
-/* Textarea personalizado */
 textarea.form-control {
   resize: vertical;
-  min-height: 100px;
 }
 
-/* Grid de inputs */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-/* Checkbox container */
-.checkbox-container {
+.form-buttons {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-/* Margens utilitárias para o checkbox */
-.mt-2 { margin-top: 0.5rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-
-/* Botões */
-.buttons-container-right {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
-}
-
-.buttons-container-right .btn {
-  padding: 10px 24px;
+.btn {
+  padding: 0.75rem 1.75rem;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  user-select: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-/* Botão salvar */
-.buttons-container-right .btn-success {
-  background-color: #2ecc71;
+.form-buttons .btn-save {
+  background-color: var(--primary-color);
   color: white;
 }
-
-.buttons-container-right .btn-success:hover,
-.buttons-container-right .btn-success:focus {
-  background-color: #27ae60;
-  outline: none;
+.form-buttons .btn-save:hover {
+  background-color: #082f50;
+  transform: translateY(-2px);
 }
 
-/* Botão cancelar/limpar */
-.buttons-container-right .btn-secondary {
-  background-color: #e74c3c;
+.form-buttons .btn-cancel {
+  background-color: var(--danger-color);
   color: white;
 }
-
-.buttons-container-right .btn-secondary:hover,
-.buttons-container-right .btn-secondary:focus {
-  background-color: #c0392b;
-  outline: none;
+.form-buttons .btn-cancel:hover {
+  background-color: #c82333;
 }
 
-/* Card da lista */
-.ultimas-despesas {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  margin: 40px auto;
-  padding: 20px;
-  max-width: 700px;
-  width: 100%;
-}
-
-.ultimas-despesas h3 {
-  font-size: 1.3rem;
-  margin-bottom: 16px;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-}
-
-/* Filtros */
-.filtros-receitas {
+/* ========= INÍCIO DA CORREÇÃO DO CSS DOS FILTROS ========= */
+.table-filters {
   display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+  justify-content: space-between; /* Distribui o espaço entre os grupos */
+  align-items: flex-end; /* Alinha os itens na parte de baixo */
+  gap: 1.5rem;
+  margin-bottom: 2rem; /* Aumenta o espaço antes da tabela */
+  flex-wrap: wrap; /* Permite que os filtros quebrem a linha em telas menores */
 }
 
-.filtros-receitas .filtro-controles {
+.filter-group {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 100%;
-  max-width: 350px; /* Limita a largura máxima dos filtros */
+  gap: 0.5rem;
 }
 
-.filtros-receitas .campos-data {
+/* Novo container para os campos de data */
+.filter-date-inputs {
   display: flex;
-  gap: 15px; /* Espaço entre os campos de data */
+  gap: 1.5rem;
+  flex-grow: 1; /* Permite que os campos de data ocupem o espaço disponível */
 }
 
-.filtros-receitas .campos-data label {
-  flex: 1; /* Faz cada campo de data ocupar metade do espaço */
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  color: #333;
+.filter-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.filtros-receitas input[type="date"] {
-  font-size: 14px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #f8fafc;
-  width: 100%; /* Ocupa toda a largura do label */
-}
-
-.filtros-receitas .btn-primary {
-  padding: 10px 24px;
-  font-size: 1rem;
+.filter-group .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.5rem; /* Ajusta o padding do botão */
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  border: none;
-  background-color: #3498db;
-  color: white;
-  transition: background-color 0.2s ease;
+  font-weight: 600;
+  white-space: nowrap; /* Impede que o texto do botão quebre */
 }
-
-.filtros-receitas .btn-primary:hover {
-  background-color: #2980b9;
+.filter-group .btn-primary:hover {
+  background-color: #082f50;
 }
+/* ========= FIM DA CORREÇÃO DO CSS DOS FILTROS ========= */
 
-/* Container da tabela para rolagem */
-.tabela-despesas-container {
+.table-wrapper {
   overflow-x: auto;
 }
 
-/* Tabela */
-.tabela-despesas {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.tabela-despesas th,
-.tabela-despesas td {
-  padding: 12px 15px;
   text-align: left;
 }
 
-.tabela-despesas thead {
-  background-color: #f1f5f9;
-  border-bottom: 2px solid #e2e8f0;
+.data-table th, .data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
 }
 
-.tabela-despesas tbody tr {
-  border-bottom: 1px solid #e2e8f0;
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
-.tabela-despesas tbody tr:last-child {
-  border-bottom: none;
+.data-table tbody tr:hover {
+  background-color: #f1f3f5;
 }
 
-.tabela-despesas tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-/* Botões de ação na tabela */
 .table-buttons {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .btn-icon {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px;
-  font-size: 1rem;
-  color: #555;
-  transition: transform 0.2s, color 0.2s;
+  font-size: 1.1rem;
+  color: #6c757d;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .btn-icon:hover {
-  transform: scale(1.1);
+  transform: scale(1.2);
+  color: var(--primary-color);
 }
 
-.btn-edit {
-  color: #3498db;
+.btn-icon.btn-delete:hover {
+  color: var(--danger-color);
 }
 
-.btn-trash {
-  color: #e74c3c;
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
 }
 
-/* Responsividade */
+/* ===== Notificações ===== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.notification.success { background-color: var(--success-color); }
+.notification.error { background-color: var(--danger-color); }
+
+/* ===== Responsividade ===== */
 @media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .buttons-container-right {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .buttons-container-right .btn {
-    width: 100%;
-    max-width: 250px;
-  }
-
-  /* Em telas menores, os filtros já estão em coluna, então não precisamos de muitas mudanças */
-  .filtros-receitas .filtro-controles {
-    max-width: none; /* Remove a largura máxima para ocupar o espaço disponível */
-  }
+  .page-container { padding: 1rem; gap: 1rem; }
+  .content-card { padding: 1.5rem; }
+  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .form-buttons { flex-direction: column-reverse; }
+  .btn { width: 100%; }
+  .table-filters { flex-direction: column; align-items: stretch; }
 }

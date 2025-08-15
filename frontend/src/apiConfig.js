@@ -10,6 +10,11 @@ export const UPLOADS_BASE_URL = isProduction
   ? 'https://investsolucoesdigitais.com.br/controleflex/backend/uploads'
   : 'http://localhost/ControleFlex/backend/uploads';
 
+  // EXPORTA a variável para os ícones dos bancos
+export const BANK_ICONS_BASE_URL = isProduction
+  ? 'https://investsolucoesdigitais.com.br/controleflex/assets/img'
+  : 'http://localhost/ControleFlex/assets/img';
+
 // EXPORTA a variável para a URL pública do site
 export const PUBLIC_URL = isProduction
   ? 'https://investsolucoesdigitais.com.br/controleflex'
@@ -19,6 +24,7 @@ export const PUBLIC_URL = isProduction
 const apiConfig = {
     API_BASE_URL,
     UPLOADS_BASE_URL,
+    BANK_ICONS_BASE_URL,
     PUBLIC_URL
 };
 

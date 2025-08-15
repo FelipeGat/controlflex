@@ -1,96 +1,176 @@
+/* ===== Estilos Padronizados para a Página de Bancos ===== */
+/* Usando as mesmas variáveis e layout da tela de Categorias para consistência */
+
+:root {
+  --primary-color: #0a3b66;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --light-gray-color: #f3f7fa;
+  --border-color: #e9ecef;
+  --text-color: #333;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  --border-radius: 12px;
+}
+
+/* ===== Layout da Página com Múltiplos Cards ===== */
 .page-container {
-  padding: 12px;
+  padding: 2rem;
+  background-color: var(--light-gray-color);
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f3f7fa;
-  min-height: 90vh;
+  gap: 2rem;
 }
 
-.form-card {
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+.content-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 900px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2.5rem;
+}
+
+/* ===== Formulário ===== */
+.form-title, .table-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.form-group-full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .form-control {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 16px;
-  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
   background-color: #f8fafc;
   font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.buttons-container {
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(10, 59, 102, 0.2);
+}
+
+.form-buttons {
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.buttons-container .btn-success,
-.btn-success {
-  background-color: #28a745;
-  color: white;
-  padding: 10px 20px;
+.btn {
+  padding: 0.75rem 1.75rem;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.buttons-container .btn-success:hover,
-.btn-success:hover {
-  background-color: #218838;
+.form-buttons .btn-save {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+.form-buttons .btn-save:hover {
+  background-color: #082f50 !important;
+  transform: translateY(-2px);
 }
 
-.buttons-container .btn-secondary {
-  background-color: #3498db;
-  color: white;
-  padding: 10px 20px;
+.form-buttons .btn-cancel {
+  background-color: var(--danger-color) !important;
+  color: white !important;
+}
+.form-buttons .btn-cancel:hover {
+  background-color: #c82333 !important;
+}
+
+/* ===== Tabela e Filtros ===== */
+.table-filters {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.filter-group .form-control {
+  max-width: 300px;
+}
+
+.sort-button {
+  background: none;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
-}
-
-.buttons-container .btn-secondary:hover {
-  background-color: #2980b9;
-}
-
-.table-container {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: inherit;
+  padding: 0;
+  text-align: left;
   width: 100%;
-  max-width: 1000px;
-  margin-top: 30px;
-  background-color: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.sort-button:hover {
+  color: var(--primary-color);
+}
+
+.table-wrapper {
   overflow-x: auto;
 }
 
-.bancos-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: center;
-  font-size: 0.95rem;
+  text-align: left;
 }
 
-.bancos-table th,
-.bancos-table td {
-  padding: 12px 10px;
-  border-bottom: 1px solid #ddd;
+.data-table th, .data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
 }
 
-.bancos-table th {
-  background-color: #f3f7fa;
-  color: #333;
-  font-weight: 600;
+.data-table th {
+  background-color: #f8f9fa;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f3f5;
 }
 
 .icone-thumb {
@@ -102,112 +182,55 @@
   padding: 4px;
 }
 
-.form-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #0a3b66;
-  text-align: center;
+.table-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 
-@media (max-width: 768px) {
-  .form-card,
-  .table-container {
-    padding: 20px;
-  }
-
-  .bancos-table th,
-  .bancos-table td {
-    font-size: 0.85rem;
-    padding: 8px;
-  }
-}
-
-/* ===== Botões ícones na tabela ===== */
 .btn-icon {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 1.1rem;
+  color: #6c757d;
+  transition: color 0.2s, transform 0.2s;
 }
 
-/* Container dos botões de ação na tabela */
-.table-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px; /* Espaçamento entre ícones */
+.btn-icon:hover {
+  transform: scale(1.2);
+  color: var(--primary-color);
 }
 
-/* Lápis azul */
-.btn-edit i {
-  color: #3498db;
+.btn-icon.btn-delete:hover {
+  color: var(--danger-color);
 }
 
-/* Lixeira vermelha */
-.btn-trash {
-  background: none !important;
-  border: none;
-  padding: 6px;
-  cursor: pointer;
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
 }
 
-.btn-trash i {
-  color: #dc3545;
-  font-size: 16px;
+/* ===== Notificações (igual ao de Categorias) ===== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
+.notification.success { background-color: var(--success-color); }
+.notification.error { background-color: var(--danger-color); }
 
-.btn-icon:hover i {
-  opacity: 0.8;
-}
-
-/* ===== Botões do formulário ===== */
-.form-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  margin-top: 0;
-}
-
-.form-buttons button {
-  padding: 8px 20px;
-  background-color: var(--azul-botao);
-  color: var(--branco);
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.form-buttons button:hover {
-  background-color: var(--azul-botao-hover);
-}
-
-.form-buttons button[type="submit"] {
-  background-color: var(--verde);
-}
-
-.form-buttons button[type="submit"]:hover {
-  background-color: var(--verde-hover);
-}
-
-.form-buttons button:nth-child(2) {
-  background-color: #dc3545;
-}
-
-.form-buttons button:nth-child(2):hover {
-  background-color: #b02a37;
-}
-
-.form-buttons i {
-  font-size: 16px;
+/* ===== Responsividade ===== */
+@media (max-width: 768px) {
+  .page-container { padding: 1rem; gap: 1rem; }
+  .content-card { padding: 1.5rem; }
+  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .form-buttons { flex-direction: column-reverse; }
+  .btn { width: 100%; }
 }

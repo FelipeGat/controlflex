@@ -1,202 +1,243 @@
-import React, { useState, useEffect } from 'react';
-import './fornecedores.css';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL }from '../apiConfig';
+import './fornecedores.css';
+import { API_BASE_URL } from '../apiConfig';
+import Spinner from '../components/Spinner'; // Ajuste o caminho se necessário
 
-function Fornecedores() {
-  const [usuario, setUsuario] = useState(null);
-  const [fornecedores, setFornecedores] = useState([]);
-  const [editando, setEditando] = useState(null);
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const [form, setForm] = useState({ nome: '', contato: '', cnpj: '', telefone: '', observacoes: '' });
+// --- COMPONENTE DO FORMULÁRIO (sem alterações) ---
+const FornecedorForm = ({ onSave, onCancel, editingFornecedor, initialFormState }) => {
+    const [form, setForm] = useState(initialFormState);
 
-  const navigate = useNavigate();
-  const itensPorPagina = 5;
+    useEffect(() => {
+        const initialState = editingFornecedor 
+            ? { ...initialFormState, ...editingFornecedor } 
+            : initialFormState;
+        setForm(initialState);
+    }, [editingFornecedor, initialFormState]);
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-    console.log('Usuário carregado do localStorage:', user);
-
-    if (!user || !user.id) {
-      navigate('/');
-    } else {
-      setUsuario(user);
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!usuario?.id) return;
-
-    const carregarFornecedores = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/fornecedores.php?usuario_id=${usuario.id}`);
-        const data = await res.json();
-
-        if (data.erro) {
-          console.error('Erro retornado pela API:', data.erro);
-          return;
-        }
-
-        setFornecedores(data);
-      } catch (err) {
-        console.error('Erro ao carregar fornecedores:', err);
-      }
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
     };
 
-    carregarFornecedores();
-  }, [usuario]);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(form);
+    };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
+    return (
+        <form onSubmit={handleSubmit}>
+            <h2 className="form-title">{editingFornecedor ? 'Editar Fornecedor' : 'Cadastrar Novo Fornecedor'}</h2>
+            <div className="form-grid">
+                <div className="form-group form-group-full-width">
+                    <label htmlFor="nome">Nome do Fornecedor *</label>
+                    <input id="nome" name="nome" type="text" value={form.nome} onChange={handleChange} className="form-control" required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="contato">Contato</label>
+                    <input id="contato" name="contato" type="text" value={form.contato} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="cnpj">CNPJ</label>
+                    <input id="cnpj" name="cnpj" type="text" value={form.cnpj} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="form-group form-group-full-width">
+                    <label htmlFor="telefone">Telefone</label>
+                    <input id="telefone" name="telefone" type="text" value={form.telefone} onChange={handleChange} className="form-control" />
+                </div>
+                <div className="form-group form-group-full-width">
+                    <label htmlFor="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" />
+                </div>
+            </div>
+            <div className="form-buttons">
+                <button type="button" className="btn btn-cancel" onClick={onCancel}>Cancelar</button>
+                <button type="submit" className="btn btn-save">{editingFornecedor ? 'Salvar Alterações' : 'Adicionar Fornecedor'}</button>
+            </div>
+        </form>
+    );
+};
 
-  const salvarFornecedor = async (e) => {
-    e.preventDefault();
+// --- COMPONENTE PRINCIPAL DA PÁGINA ---
+export default function Fornecedores() {
+    const [usuario, setUsuario] = useState(null); // Estado para guardar o objeto do usuário
+    const [fornecedores, setFornecedores] = useState([]);
+    const [editingFornecedor, setEditingFornecedor] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [notification, setNotification] = useState({ message: '', type: '' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: 'nome', direction: 'asc' });
+    const navigate = useNavigate();
 
-    const metodo = editando ? 'PUT' : 'POST';
-    const payload = { ...form, usuario_id: usuario.id };
-    if (editando) payload.id = editando;
+    const initialFormState = useMemo(() => ({
+        nome: '', contato: '', cnpj: '', telefone: '', observacoes: ''
+    }), []);
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/fornecedores.php`, {
-        method: metodo,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    const FORNECEDORES_API_URL = `${API_BASE_URL}/fornecedores.php`;
 
-      const data = await res.json();
-
-      if (data.sucesso) {
-        if (editando) {
-          setFornecedores(fornecedores.map(f => (f.id === editando ? { ...form, id: editando } : f)));
-          setEditando(null);
+    // Efeito para carregar o usuário do localStorage APENAS UMA VEZ
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+        if (!user || !user.id) {
+            navigate('/');
         } else {
-          setFornecedores([...fornecedores, { id: data.id, ...form }]);
+            setUsuario(user);
+        }
+    }, [navigate]);
+
+    // Efeito para buscar os fornecedores, dependendo do usuário
+    const fetchFornecedores = useCallback(async () => {
+        // Só executa se o usuário já foi carregado no estado
+        if (!usuario) return; 
+
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`${FORNECEDORES_API_URL}?usuario_id=${usuario.id}`);
+            setFornecedores(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            showNotification('Erro ao carregar fornecedores.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [usuario, FORNECEDORES_API_URL]); // Depende do objeto 'usuario'
+
+    // Este useEffect agora reage à mudança no estado 'usuario'
+    useEffect(() => {
+        fetchFornecedores();
+    }, [fetchFornecedores]);
+
+    const showNotification = (message, type) => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification({ message: '', type: '' }), 3000);
+    };
+
+    const handleSave = async (form) => {
+        const payload = { ...form, usuario_id: usuario.id };
+        const url = FORNECEDORES_API_URL;
+        
+        if (editingFornecedor) {
+            payload.id = editingFornecedor.id;
         }
 
-        setForm({ nome: '', contato: '', cnpj: '', telefone: '', observacoes: '' });
-      } else {
-        alert(data.erro || 'Erro ao salvar fornecedor.');
-      }
-    } catch (error) {
-      console.error('Erro no fetch:', error);
-      alert('Erro ao se comunicar com o servidor.');
-    }
-  };
+        try {
+            await axios.post(url, payload);
+            showNotification(`Fornecedor "${form.nome}" salvo com sucesso!`, 'success');
+            setEditingFornecedor(null);
+            fetchFornecedores(); // Re-busca os dados após salvar
+        } catch (error) {
+            const errorMsg = error.response?.data?.erro || 'Erro ao salvar o fornecedor.';
+            showNotification(errorMsg, 'error');
+        }
+    };
 
-  const editarFornecedor = (fornecedor) => {
-    setEditando(fornecedor.id);
-    setForm({ ...fornecedor });
-  };
+    const handleDelete = async (id) => {
+        if (window.confirm('Tem certeza que deseja excluir este fornecedor?')) {
+            try {
+                // Passando o usuario_id também no delete para verificação de segurança no backend
+                await axios.delete(`${FORNECEDORES_API_URL}?id=${id}&usuario_id=${usuario.id}`);
+                showNotification('Fornecedor excluído com sucesso!', 'success');
+                fetchFornecedores(); // Re-busca os dados após excluir
+            } catch (error) {
+                const errorMsg = error.response?.data?.erro || 'Erro ao excluir o fornecedor.';
+                showNotification(errorMsg, 'error');
+            }
+        }
+    };
 
-  const excluirFornecedor = async (id) => {
-    if (!window.confirm('Deseja realmente excluir este fornecedor?')) return;
+    // O resto do componente permanece igual...
+    const handleEdit = (fornecedor) => {
+        setEditingFornecedor(fornecedor);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/fornecedores.php?id=${id}`, {
-        method: 'DELETE'
-      });
+    const handleCancel = () => {
+        setEditingFornecedor(null);
+    };
 
-      const data = await res.json();
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
-      if (data.sucesso) {
-        setFornecedores(fornecedores.filter(f => f.id !== id));
-      } else {
-        alert(data.erro || 'Erro ao excluir fornecedor.');
-      }
-    } catch (err) {
-      console.error('Erro ao excluir fornecedor:', err);
-    }
-  };
+    const sortedAndFilteredFornecedores = useMemo(() => {
+        let sortableItems = [...fornecedores];
+        sortableItems = sortableItems.filter(f => f.nome.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const fornecedoresPaginados = fornecedores.slice(
-    (paginaAtual - 1) * itensPorPagina,
-    paginaAtual * itensPorPagina
-  );
+        sortableItems.sort((a, b) => {
+            if (a[sortConfig.key] < b[sortConfig.key]) {
+                return sortConfig.direction === 'asc' ? -1 : 1;
+            }
+            if (a[sortConfig.key] > b[sortConfig.key]) {
+                return sortConfig.direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+        return sortableItems;
+    }, [fornecedores, searchTerm, sortConfig]);
 
-  const totalPaginas = Math.ceil(fornecedores.length / itensPorPagina);
+    const getSortIndicator = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+        }
+        return '';
+    };
 
-  return (
-    <div className="page-container">
-      <div className="form-card">
-        <h2 className="form-title">{editando ? 'Editar Fornecedor' : 'Cadastro de Fornecedores'}</h2>
-        <form onSubmit={salvarFornecedor}>
-          <label>Nome do Fornecedor *</label>
-          <input type="text" name="nome" value={form.nome} onChange={handleChange} className="form-control" required />
+    return (
+        <div className="page-container">
+            {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
 
-          <label>Contato</label>
-          <input type="text" name="contato" value={form.contato} onChange={handleChange} className="form-control" />
-
-          <label>CNPJ</label>
-          <input type="text" name="cnpj" value={form.cnpj} onChange={handleChange} className="form-control" />
-
-          <label>Telefone</label>
-          <input type="text" name="telefone" value={form.telefone} onChange={handleChange} className="form-control" />
-
-          <label>Observações</label>
-          <textarea name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" />
-
-          <div className="buttons-container">
-            <button type="submit" className="btn-success">{editando ? 'Atualizar' : 'Salvar'}</button>
-            <button type="button" className="btn-secondary" onClick={() => {
-              setEditando(null);
-              setForm({ nome: '', contato: '', cnpj: '', telefone: '', observacoes: '' });
-            }}>Cancelar</button>
-          </div>
-        </form>
-      </div>
-
-      {fornecedores.length > 0 && (
-        <div className="table-container">
-          <h3>Fornecedores Cadastrados</h3>
-          <table className="fornecedores-table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Contato</th>
-                <th>CNPJ</th>
-                <th>Telefone</th>
-                <th>Observações</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fornecedoresPaginados.map(f => (
-                <tr key={f.id}>
-                  <td>{f.nome}</td>
-                  <td>{f.contato || '-'}</td>
-                  <td>{f.cnpj || '-'}</td>
-                  <td>{f.telefone || '-'}</td>
-                  <td>{f.observacoes || '-'}</td>
-                  <td>
-                    <div className="table-buttons">
-                      <button type="button" onClick={() => editarFornecedor(f)} title="Editar" className="btn-icon btn-edit">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                      <button type="button" onClick={() => excluirFornecedor(f.id)} title="Excluir" className="btn-icon btn-trash">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {totalPaginas > 1 && (
-            <div className="pagination">
-              {Array.from({ length: totalPaginas }, (_, i) => (
-                <button key={i + 1} className={paginaAtual === i + 1 ? 'active' : ''} onClick={() => setPaginaAtual(i + 1)}>
-                  {i + 1}
-                </button>
-              ))}
+            <div className="content-card">
+                <FornecedorForm onSave={handleSave} onCancel={handleCancel} editingFornecedor={editingFornecedor} initialFormState={initialFormState} />
             </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
-export default Fornecedores;
+            <div className="content-card">
+                <h3 className="table-title">Fornecedores Cadastrados</h3>
+                <div className="table-filters">
+                    <div className="filter-group">
+                        <label htmlFor="search-fornecedor">Buscar por Nome</label>
+                        <input id="search-fornecedor" type="text" className="form-control" placeholder="Digite o nome do fornecedor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                </div>
+                <div className="table-wrapper">
+                    {isLoading ? <Spinner /> : (
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th><button className="sort-button" onClick={() => requestSort('nome')}>Nome{getSortIndicator('nome')}</button></th>
+                                    <th><button className="sort-button" onClick={() => requestSort('contato')}>Contato{getSortIndicator('contato')}</button></th>
+                                    <th>CNPJ</th>
+                                    <th>Telefone</th>
+                                    <th>Observações</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedAndFilteredFornecedores.length > 0 ? sortedAndFilteredFornecedores.map(f => (
+                                    <tr key={f.id}>
+                                        <td>{f.nome}</td>
+                                        <td>{f.contato || '-'}</td>
+                                        <td>{f.cnpj || '-'}</td>
+                                        <td>{f.telefone || '-'}</td>
+                                        <td>{f.observacoes || '-'}</td>
+                                        <td>
+                                            <div className="table-buttons">
+                                                <button onClick={() => handleEdit(f)} className="btn-icon" title="Editar"><i className="fas fa-pen"></i></button>
+                                                <button onClick={() => handleDelete(f.id)} className="btn-icon btn-delete" title="Excluir"><i className="fas fa-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr><td colSpan="6" className="empty-state">Nenhum fornecedor encontrado.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

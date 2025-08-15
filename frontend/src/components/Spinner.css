@@ -1,0 +1,27 @@
+/* Container para centralizar o spinner */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem; /* Espaçamento para dar um respiro */
+}
+
+/* O spinner em si: uma borda que gira */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3; /* Cinza claro para o fundo do círculo */
+  border-top: 5px solid #0a3b66; /* Azul (cor primária) para a parte que gira */
+  border-radius: 50%;
+  animation: spin 1s linear infinite; /* A animação de rotação */
+}
+
+/* Animação que faz o spinner girar */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
