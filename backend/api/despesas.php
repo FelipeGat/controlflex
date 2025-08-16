@@ -1,15 +1,16 @@
 <?php
-// /api/despesas.php (Lógica de Parcelas Corrigida)
+// /api/despesas.php (Endpoint com Ordenação e Limite)
 
+// ... (Cabeçalhos CORS e Conexão com DB permanecem os mesmos) ...
 // 1. CABEÇALHOS DE SEGURANÇA E CORS
 // ===================================================
 $frontend_url = "http://localhost:3000"; 
-header("Access-Control-Allow-Origin: " . $frontend_url  );
+header("Access-Control-Allow-Origin: " . $frontend_url );
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200  );
+    http_response_code(200 );
     exit();
 }
 
@@ -25,17 +26,32 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch ($method) {
+        // ========= INÍCIO DA ALTERAÇÃO NO GET =========
         case 'GET':
-            // A lógica de GET (listar) permanece a mesma.
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
-                http_response_code(400  );
+                http_response_code(400 );
                 echo json_encode(['erro' => 'ID do usuário é obrigatório.']);
                 exit;
             }
 
+            // Novos parâmetros de filtro, ordenação e limite
             $inicio = filter_input(INPUT_GET, 'inicio', FILTER_SANITIZE_STRING);
             $fim = filter_input(INPUT_GET, 'fim', FILTER_SANITIZE_STRING);
+            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10; // Padrão de 10 linhas
+            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_compra'; // Padrão é ordenar por data
+            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC'; // Padrão é descendente
+
+            // Lista de colunas permitidas para ordenação para evitar SQL Injection
+            $allowedSortColumns = ['quem_comprou_nome', 'onde_comprou_nome', 'categoria_nome', 'valor', 'data_compra'];
+            if (!in_array($sortBy, $allowedSortColumns)) {
+                $sortBy = 'data_compra'; // Volta para o padrão se a coluna for inválida
+            }
+            
+            // Garante que a ordem seja apenas ASC ou DESC
+            if (strtoupper($sortOrder) !== 'ASC' && strtoupper($sortOrder) !== 'DESC') {
+                $sortOrder = 'DESC';
+            }
 
             $sql = "SELECT 
                         d.id, d.valor, d.data_compra, d.observacoes, d.recorrente, d.parcelas, d.grupo_recorrencia_id,
@@ -48,7 +64,7 @@ try {
                     LEFT JOIN categorias cat ON d.categoria_id = cat.id
                     WHERE d.usuario_id = :uid";
             
-            $params = ['uid' => $usuario_id];
+            $params = [':uid' => $usuario_id];
 
             if ($inicio && $fim) {
                 $sql .= " AND d.data_compra BETWEEN :inicio AND :fim";
@@ -56,21 +72,34 @@ try {
                 $params[':fim'] = $fim;
             }
 
-            $sql .= " ORDER BY d.data_compra DESC, d.id DESC";
+            // Adiciona a ordenação e o limite na query
+            $sql .= " ORDER BY $sortBy $sortOrder, d.id DESC";
+            $sql .= " LIMIT :limit";
+            $params[':limit'] = $limit;
             
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
+            // Precisamos vincular o limite como inteiro
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            foreach ($params as $key => &$val) {
+                if ($key !== ':limit') {
+                    $stmt->bindValue($key, $val);
+                }
+            }
+            
+            $stmt->execute();
             $despesas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode($despesas);
             break;
+        // ========= FIM DA ALTERAÇÃO NO GET =========
 
+        // ... (cases POST e DELETE permanecem os mesmos) ...
         case 'POST':
             $data = json_decode(file_get_contents("php://input"), true);
             $id = $data['id'] ?? null;
 
             if (empty($data['usuario_id']) || empty($data['quem_comprou']) || empty($data['onde_comprou']) || empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_compra'])) {
-                http_response_code(400  );
+                http_response_code(400 );
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
@@ -85,32 +114,47 @@ try {
                 ]);
                 echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa atualizada.']);
 
-            } else { // CRIAÇÃO (com lógica de recorrência corrigida)
-                
+            } else { // CRIAÇÃO
                 $pdo->beginTransaction();
-
                 try {
-                    // --- INÍCIO DA CORREÇÃO ---
                     $isRecorrente = !empty($data['recorrente']);
-                    // Se for recorrente, usa o número de parcelas enviado, senão, o total é 1.
-                    $totalParcelas = $isRecorrente && isset($data['parcelas']) && (int)$data['parcelas'] > 0 ? (int)$data['parcelas'] : 1;
-                    // --- FIM DA CORREÇÃO ---
+                    $parcelasRecebidas = isset($data['parcelas']) ? (int)$data['parcelas'] : 1;
                     
-                    // Gera um ID de grupo apenas se houver mais de uma parcela.
+                    $frequencia = $data['frequencia'] ?? 'mensal';
+                    $intervalo = '';
+
+                    switch ($frequencia) {
+                        case 'diaria':    $intervalo = 'day'; break;
+                        case 'semanal':   $intervalo = 'week'; break;
+                        case 'quinzenal': $intervalo = '2 week'; break;
+                        case 'mensal':    $intervalo = 'month'; break;
+                        case 'trimestral':$intervalo = '3 month'; break;
+                        case 'semestral': $intervalo = '6 month'; break;
+                        case 'anual':     $intervalo = 'year'; break;
+                        default:          $intervalo = 'month'; break;
+                    }
+
+                    $totalParcelas = 1;
+                    if ($isRecorrente) {
+                        if ($parcelasRecebidas === 0) {
+                            $totalParcelas = 60;
+                        } else {
+                            $totalParcelas = $parcelasRecebidas;
+                        }
+                    }
+                    
                     $grupoRecorrenciaId = ($totalParcelas > 1) ? uniqid('rec_') : null;
 
-                    $sql = "INSERT INTO despesas (usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, data_compra, recorrente, parcelas, observacoes, grupo_recorrencia_id) 
-                            VALUES (:uid, :qc, :oc, :cid, :fp, :v, :dc, :rec, :parc, :obs, :grid)";
+                    $sql = "INSERT INTO despesas (usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, data_compra, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id) 
+                            VALUES (:uid, :qc, :oc, :cid, :fp, :v, :dc, :rec, :parc, :freq, :obs, :grid)";
                     
                     $stmt = $pdo->prepare($sql);
-
                     $dataCompraInicial = new DateTime($data['data_compra']);
 
                     for ($i = 0; $i < $totalParcelas; $i++) {
                         $dataParcela = clone $dataCompraInicial;
                         if ($i > 0) {
-                            // Adiciona um mês para cada parcela subsequente
-                            $dataParcela->modify("+$i months");
+                            $dataParcela->modify("+$i $intervalo");
                         }
 
                         $stmt->execute([
@@ -122,29 +166,27 @@ try {
                             ':v' => $data['valor'],
                             ':dc' => $dataParcela->format('Y-m-d'),
                             ':rec' => $isRecorrente ? 1 : 0,
-                            // Armazena o número total de parcelas em cada registro
-                            ':parc' => $totalParcelas, 
+                            ':parc' => $totalParcelas,
+                            ':freq' => $frequencia,
                             ':obs' => $data['observacoes'],
                             ':grid' => $grupoRecorrenciaId
                         ]);
                     }
 
                     $pdo->commit();
-
-                    http_response_code(201  );
+                    http_response_code(201 );
                     echo json_encode(['sucesso' => true, 'mensagem' => "$totalParcelas despesa(s) salva(s) com sucesso!"]);
 
                 } catch (Exception $e) {
                     $pdo->rollBack();
-                    throw $e; // Lança a exceção para o bloco catch principal
+                    throw $e;
                 }
             }
             break;
 
         case 'DELETE':
-            // --- INÍCIO DA LÓGICA DE EXCLUSÃO AVANÇADA ---
             $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-            $escopo = filter_input(INPUT_GET, 'escopo', FILTER_SANITIZE_STRING) ?? 'apenas_esta'; // Padrão é 'apenas_esta'
+            $escopo = filter_input(INPUT_GET, 'escopo', FILTER_SANITIZE_STRING) ?? 'apenas_esta';
 
             if (!$id) {
                 http_response_code(400 );
@@ -154,65 +196,46 @@ try {
 
             $pdo->beginTransaction();
             try {
-                if ($escopo === 'apenas_esta') {
-                    // Exclui apenas a despesa com o ID específico
-                    $stmt = $pdo->prepare("DELETE FROM despesas WHERE id = :id");
-                    $stmt->execute([':id' => $id]);
-                    $rowCount = $stmt->rowCount();
+                $stmtInfo = $pdo->prepare("SELECT grupo_recorrencia_id, data_compra FROM despesas WHERE id = :id");
+                $stmtInfo->execute([':id' => $id]);
+                $despesa = $stmtInfo->fetch(PDO::FETCH_ASSOC);
 
-                } elseif ($escopo === 'esta_e_futuras') {
-                    // Primeiro, busca os detalhes da despesa para encontrar o grupo e a data
-                    $stmt = $pdo->prepare("SELECT grupo_recorrencia_id, data_compra FROM despesas WHERE id = :id");
-                    $stmt->execute([':id' => $id]);
-                    $despesa = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$despesa) {
+                    throw new Exception('Despesa não encontrada.', 404);
+                }
 
-                    if (!$despesa || !$despesa['grupo_recorrencia_id']) {
-                        // Se não for recorrente, age como 'apenas_esta'
-                        $stmtDelete = $pdo->prepare("DELETE FROM despesas WHERE id = :id");
-                        $stmtDelete->execute([':id' => $id]);
-                        $rowCount = $stmtDelete->rowCount();
-                    } else {
-                        // Exclui esta e todas as futuras do mesmo grupo
-                        $stmtDelete = $pdo->prepare("DELETE FROM despesas WHERE grupo_recorrencia_id = :grid AND data_compra >= :dc");
-                        $stmtDelete->execute([
-                            ':grid' => $despesa['grupo_recorrencia_id'],
-                            ':dc' => $despesa['data_compra']
-                        ]);
-                        $rowCount = $stmtDelete->rowCount();
-                    }
+                $rowCount = 0;
+                if ($escopo === 'esta_e_futuras' && $despesa['grupo_recorrencia_id']) {
+                    $stmtDelete = $pdo->prepare("DELETE FROM despesas WHERE grupo_recorrencia_id = :grid AND data_compra >= :dc");
+                    $stmtDelete->execute([
+                        ':grid' => $despesa['grupo_recorrencia_id'],
+                        ':dc' => $despesa['data_compra']
+                    ]);
+                    $rowCount = $stmtDelete->rowCount();
                 } else {
-                    // Escopo inválido
-                     $pdo->rollBack();
-                    http_response_code(400 );
-                    echo json_encode(['erro' => 'Escopo de exclusão inválido.']);
-                    exit;
+                    $stmtDelete = $pdo->prepare("DELETE FROM despesas WHERE id = :id");
+                    $stmtDelete->execute([':id' => $id]);
+                    $rowCount = $stmtDelete->rowCount();
                 }
 
                 $pdo->commit();
-
-                if ($rowCount > 0) {
-                    echo json_encode(['sucesso' => true, 'mensagem' => "$rowCount despesa(s) excluída(s)."]);
-                } else {
-                    http_response_code(404 );
-                    echo json_encode(['erro' => 'Nenhuma despesa encontrada para exclusão.']);
-                }
+                echo json_encode(['sucesso' => true, 'mensagem' => "$rowCount despesa(s) excluída(s) com sucesso!"]);
 
             } catch (Exception $e) {
                 $pdo->rollBack();
-                throw $e; // Lança para o catch principal
+                throw $e;
             }
-            // --- FIM DA LÓGICA DE EXCLUSÃO ---
             break;
 
         default:
-            http_response_code(405  );
+            http_response_code(405 );
             echo json_encode(['erro' => 'Método não permitido.']);
             break;
     }
 } catch (\Throwable $e) {
-    // Garante que erros não exponham detalhes sensíveis
     error_log("Erro na API de despesas: " . $e->getMessage());
-    http_response_code(500  );
+    $httpCode = is_int($e->getCode( )) && $e->getCode() >= 400 ? $e->getCode() : 500;
+    http_response_code($httpCode );
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>

@@ -1,0 +1,66 @@
+/* --- Estilos para o Componente Toggle Switch --- */
+
+/* O container principal que alinha o switch e o texto (label) */
+.toggle-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Espaço entre o switch e o texto */
+  cursor: pointer;
+  user-select: none; /* Impede que o texto seja selecionado ao clicar */
+}
+
+/* O switch em si (a "pista" onde o círculo desliza) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;  /* Largura do switch */
+  height: 28px; /* Altura do switch */
+}
+
+/* Esconde o checkbox HTML original, mas o mantém funcional */
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* A "pista" do switch */
+.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc; /* Cor do switch desligado */
+  border-radius: 28px; /* Deixa as bordas totalmente redondas */
+  transition: background-color 0.3s; /* Animação suave da cor */
+}
+
+/* O círculo branco que desliza */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; /* Tamanho do círculo */
+  width: 20px;  /* Tamanho do círculo */
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%; /* Deixa o círculo perfeito */
+  transition: transform 0.3s; /* Animação suave do deslizamento */
+}
+
+/* Estilos para quando o switch está LIGADO (checked) */
+input:checked + .slider {
+  background-color: #0a3b66; /* Cor do switch ligado (azul primário) */
+}
+
+/* Move o círculo para a direita quando está ligado */
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* O texto (label) ao lado do switch */
+.toggle-label {
+  font-weight: 600;
+  color: #333;
+}

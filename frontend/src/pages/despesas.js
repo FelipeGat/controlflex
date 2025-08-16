@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
 import ModalConfirmacao from './ModalConfirmacao'; 
 import './ModalConfirmacao.css';
+import ToggleSwitch from '../components/ToggleSwitch';
 
 // --- COMPONENTE DO FORMULÁRIO ---
 const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selectsData }) => {
@@ -21,6 +22,10 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
         setForm(prev => ({ ...prev, [name]: val }));
     };
 
+    const handleToggleChange = (e) => {
+        setForm(prev => ({ ...prev, recorrente: e.target.checked }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(form);
@@ -30,7 +35,6 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
         <form onSubmit={handleSubmit}>
             <h2 className="form-title">{editingDespesa ? 'Editar Despesa' : 'Cadastrar Despesa'}</h2>
             <div className="form-grid">
-                {/* Coluna da Esquerda */}
                 <div className="form-group">
                     <label htmlFor="quem_comprou">Quem Comprou *</label>
                     <select id="quem_comprou" name="quem_comprou" value={form.quem_comprou} onChange={handleChange} className="form-control" required>
@@ -63,8 +67,6 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                         <option value="BOLETO">Boleto</option>
                     </select>
                 </div>
-
-                {/* Coluna da Direita */}
                 <div className="form-group">
                     <label htmlFor="valor">Valor (R$) *</label>
                     <input id="valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} className="form-control" placeholder="0.00" required />
@@ -77,17 +79,40 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                     <label htmlFor="observacoes">Observações</label>
                     <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
                 </div>
-                
-                {/* Opções de Recorrência */}
-                <div className="form-group form-group-full-width" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
-                    <input id="recorrente" type="checkbox" name="recorrente" checked={form.recorrente} onChange={handleChange} style={{ width: 'auto', height: 'auto' }} />
-                    <label htmlFor="recorrente" style={{ marginBottom: 0 }}>É uma conta recorrente?</label>
+                <div className="form-group form-group-full-width">
+                    <ToggleSwitch 
+                        label="É uma conta recorrente?"
+                        checked={form.recorrente}
+                        onChange={handleToggleChange}
+                    />
                 </div>
-
                 {form.recorrente && (
-                    <div className="form-group form-group-full-width">
-                        <label htmlFor="parcelas">Repetir por quantos meses?</label>
-                        <input id="parcelas" name="parcelas" type="number" min="1" value={form.parcelas} onChange={handleChange} className="form-control" />
+                    <div className="form-grid form-group-full-width">
+                        <div className="form-group">
+                            <label htmlFor="frequencia">Frequência</label>
+                            <select id="frequencia" name="frequencia" value={form.frequencia} onChange={handleChange} className="form-control">
+                                <option value="diaria">Diária</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="quinzenal">Quinzenal</option>
+                                <option value="mensal">Mensal</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="anual">Anual</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="parcelas">Repetir por (vezes)</label>
+                            <input 
+                                id="parcelas" 
+                                name="parcelas" 
+                                type="number" 
+                                min="0"
+                                value={form.parcelas} 
+                                onChange={handleChange} 
+                                className="form-control"
+                                title="Use 0 para recorrência 'infinita'"
+                            />
+                        </div>
                     </div>
                 )}
             </div>
@@ -96,6 +121,23 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                 <button type="submit" className="btn btn-save">{editingDespesa ? 'Salvar Alterações' : 'Adicionar Despesa'}</button>
             </div>
         </form>
+    );
+};
+
+// --- COMPONENTE DE CABEÇALHO DE TABELA ORDENÁVEL ---
+const SortableHeader = ({ children, name, sortConfig, onSort }) => {
+    const isSorted = sortConfig.key === name;
+    const direction = isSorted ? sortConfig.direction : 'none';
+
+    const handleClick = () => {
+        onSort(name);
+    };
+
+    return (
+        <th onClick={handleClick} className="sortable-header">
+            {children}
+            {isSorted && (direction === 'asc' ? ' ▲' : ' ▼')}
+        </th>
     );
 };
 
@@ -110,7 +152,10 @@ export default function Despesas() {
     const [notification, setNotification] = useState({ message: '', type: '' });
     
     const [selectsData, setSelectsData] = useState({ familiares: [], fornecedores: [], categorias: [] });
+    
     const [filtroData, setFiltroData] = useState({ inicio: '', fim: '' });
+    const [limit, setLimit] = useState(10);
+    const [sortConfig, setSortConfig] = useState({ key: 'data_compra', direction: 'desc' });
 
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {} });
 
@@ -119,7 +164,7 @@ export default function Despesas() {
     const initialFormState = useMemo(() => ({
         quem_comprou: '', onde_comprou: '', categoria_id: '', forma_pagamento: '',
         valor: '', data_compra: new Date().toISOString().split('T')[0],
-        recorrente: false, parcelas: 1, observacoes: ''
+        recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
     }), []);
 
     useEffect(() => {
@@ -132,7 +177,13 @@ export default function Despesas() {
         if (!usuario) return;
         setIsLoading(true);
         try {
-            const params = { usuario_id: usuario.id, ...filtroData };
+            const params = { 
+                usuario_id: usuario.id, 
+                ...filtroData,
+                limit: limit,
+                sortBy: sortConfig.key,
+                sortOrder: sortConfig.direction
+            };
             const response = await axios.get(DESPESAS_API_URL, { params });
             setDespesas(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
@@ -140,7 +191,7 @@ export default function Despesas() {
         } finally {
             setIsLoading(false);
         }
-    }, [usuario, filtroData, DESPESAS_API_URL]);
+    }, [usuario, filtroData, limit, sortConfig, DESPESAS_API_URL]);
 
     const fetchSelectsData = useCallback(async () => {
         if (!usuario) return;
@@ -163,9 +214,14 @@ export default function Despesas() {
     useEffect(() => {
         if (usuario) {
             fetchDespesas();
+        }
+    }, [usuario, fetchDespesas]);
+
+    useEffect(() => {
+        if (usuario) {
             fetchSelectsData();
         }
-    }, [usuario, fetchDespesas, fetchSelectsData]);
+    }, [usuario]);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -176,18 +232,12 @@ export default function Despesas() {
         const payload = {
             usuario_id: usuario.id,
             id: editingDespesa ? editingDespesa.id : undefined,
-            quem_comprou: form.quem_comprou,
-            onde_comprou: form.onde_comprou,
-            categoria_id: form.categoria_id,
-            forma_pagamento: form.forma_pagamento,
-            valor: form.valor,
-            data_compra: form.data_compra,
-            recorrente: form.recorrente,
-            observacoes: form.observacoes
+            ...form
         };
-
-        if (form.recorrente) {
-            payload.parcelas = form.parcelas;
+        
+        if (!form.recorrente) {
+            delete payload.parcelas;
+            delete payload.frequencia;
         }
 
         try {
@@ -249,6 +299,23 @@ export default function Despesas() {
     const handleCancel = () => setEditingDespesa(null);
     const handleFiltroChange = (e) => setFiltroData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => {
+            if (prevConfig.key === key && prevConfig.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return { key, direction: 'asc' };
+        });
+    };
+
+    const handleLimitChange = (e) => {
+        setLimit(Number(e.target.value));
+    };
+
+    const handleFilterClick = () => {
+        fetchDespesas();
+    };
+
     return (
         <div className="page-container">
             {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
@@ -279,22 +346,26 @@ export default function Despesas() {
                 <h3 className="table-title">Últimas Despesas</h3>
                 
                 <div className="table-filters">
-                    {/* Agrupa os campos de data */}
-                    <div className="filter-date-inputs">
-                        <div className="filter-group">
-                            <label htmlFor="inicio">Data Início</label>
-                            <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
-                        </div>
-                        <div className="filter-group">
-                            <label htmlFor="fim">Data Fim</label>
-                            <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
-                        </div>
+                    <div className="filter-group">
+                        <label htmlFor="inicio">Data Início</label>
+                        <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
                     </div>
-                    
-                    {/* Mantém o botão em seu próprio grupo para alinhamento */}
+                    <div className="filter-group">
+                        <label htmlFor="fim">Data Fim</label>
+                        <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="limit">Mostrar</label>
+                        <select id="limit" name="limit" className="form-control" value={limit} onChange={handleLimitChange}>
+                            <option value={5}>5 linhas</option>
+                            <option value={10}>10 linhas</option>
+                            <option value={50}>50 linhas</option>
+                            <option value={100}>100 linhas</option>
+                        </select>
+                    </div>
                     <div className="filter-group">
                         <label>&nbsp;</label>
-                        <button className="btn btn-primary" onClick={fetchDespesas}>Filtrar</button>
+                        <button className="btn btn-primary" onClick={handleFilterClick}>Filtrar</button>
                     </div>
                 </div>
 
@@ -303,11 +374,11 @@ export default function Despesas() {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Quem Comprou</th>
-                                    <th>Fornecedor</th>
-                                    <th>Categoria</th>
-                                    <th>Valor</th>
-                                    <th>Data</th>
+                                    <SortableHeader name="quem_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>Quem Comprou</SortableHeader>
+                                    <SortableHeader name="onde_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>Fornecedor</SortableHeader>
+                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
+                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
+                                    <SortableHeader name="data_compra" sortConfig={sortConfig} onSort={handleSort}>Data</SortableHeader>
                                     <th>Ações</th>
                                 </tr>
                             </thead>

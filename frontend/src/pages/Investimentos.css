@@ -1,0 +1,242 @@
+/* ===== Estilos Padronizados para a Página de Despesas ===== */
+/* Usando o mesmo padrão das outras telas para consistência */
+
+:root {
+  --primary-color: #0a3b66;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --light-gray-color: #f3f7fa;
+  --border-color: #e9ecef;
+  --text-color: #333;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  --border-radius: 12px;
+}
+
+/* ===== Layout da Página com Múltiplos Cards ===== */
+.page-container {
+  padding: 2rem;
+  background-color: var(--light-gray-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.content-card {
+  width: 100%;
+  max-width: 900px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2.5rem;
+}
+
+/* ===== Formulário ===== */
+.form-title, .table-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 1.75rem; /* Espaçamento vertical e horizontal */
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #f8fafc;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(10, 59, 102, 0.2);
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.form-buttons .btn-save {
+  background-color: var(--primary-color);
+  color: white;
+}
+.form-buttons .btn-save:hover {
+  background-color: #082f50;
+  transform: translateY(-2px);
+}
+
+.form-buttons .btn-cancel {
+  background-color: var(--danger-color);
+  color: white;
+}
+.form-buttons .btn-cancel:hover {
+  background-color: #c82333;
+}
+
+/* ========= INÍCIO DA CORREÇÃO DO CSS DOS FILTROS ========= */
+.table-filters {
+  display: flex;
+  justify-content: space-between; /* Distribui o espaço entre os grupos */
+  align-items: flex-end; /* Alinha os itens na parte de baixo */
+  gap: 1.5rem;
+  margin-bottom: 2rem; /* Aumenta o espaço antes da tabela */
+  flex-wrap: wrap; /* Permite que os filtros quebrem a linha em telas menores */
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Novo container para os campos de data */
+.filter-date-inputs {
+  display: flex;
+  gap: 1.5rem;
+  flex-grow: 1; /* Permite que os campos de data ocupem o espaço disponível */
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.filter-group .btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.5rem; /* Ajusta o padding do botão */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap; /* Impede que o texto do botão quebre */
+}
+.filter-group .btn-primary:hover {
+  background-color: #082f50;
+}
+/* ========= FIM DA CORREÇÃO DO CSS DOS FILTROS ========= */
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th, .data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.table-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #6c757d;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.2);
+  color: var(--primary-color);
+}
+
+.btn-icon.btn-delete:hover {
+  color: var(--danger-color);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+}
+
+/* ===== Notificações ===== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.notification.success { background-color: var(--success-color); }
+.notification.error { background-color: var(--danger-color); }
+
+/* ===== Responsividade ===== */
+@media (max-width: 768px) {
+  .page-container { padding: 1rem; gap: 1rem; }
+  .content-card { padding: 1.5rem; }
+  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .form-buttons { flex-direction: column-reverse; }
+  .btn { width: 100%; }
+  .table-filters { flex-direction: column; align-items: stretch; }
+}

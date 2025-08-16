@@ -11,6 +11,7 @@ import Bancos from './pages/bancos';
 import Fornecedores from './pages/fornecedores';
 import Usuarios from './pages/usuarios';
 import MainLayout from './layouts/MainLayout';
+import Investimentos from './pages/Investimentos';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/bancos" element={<MainLayout><Bancos /></MainLayout>} />
         <Route path="/fornecedores" element={<MainLayout><Fornecedores /></MainLayout>} />
         <Route path="/usuarios" element={<MainLayout><Usuarios /></MainLayout>} />
+        <Route path="/investimentos" element={<MainLayout><Investimentos /></MainLayout>} />
       </Routes>
     </Router>
   );

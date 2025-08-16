@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './receitas.css'; // Usa o novo CSS unificado
+import './receitas.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
 import ModalConfirmacao from './ModalConfirmacao';
 import './ModalConfirmacao.css';
+import ToggleSwitch from '../components/ToggleSwitch';
 
-// --- COMPONENTE DO FORMULÁRIO DE RECEITA ---
+// --- COMPONENTE DO FORMULÁRIO DE RECEITA (sem alterações) ---
 const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selectsData }) => {
     const [form, setForm] = useState(initialFormState);
 
@@ -21,6 +22,10 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
         setForm(prev => ({ ...prev, [name]: val }));
     };
 
+    const handleToggleChange = (e) => {
+        setForm(prev => ({ ...prev, recorrente: e.target.checked }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(form);
@@ -30,7 +35,6 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
         <form onSubmit={handleSubmit}>
             <h2 className="form-title">{editingReceita ? 'Editar Receita' : 'Cadastrar Receita'}</h2>
             <div className="form-grid">
-                {/* Coluna da Esquerda */}
                 <div className="form-group">
                     <label htmlFor="quem_recebeu">Quem Recebeu *</label>
                     <select id="quem_recebeu" name="quem_recebeu" value={form.quem_recebeu} onChange={handleChange} className="form-control" required>
@@ -52,8 +56,6 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                         {selectsData.bancos.map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
                     </select>
                 </div>
-
-                {/* Coluna da Direita */}
                 <div className="form-group">
                     <label htmlFor="valor">Valor (R$) *</label>
                     <input id="valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} className="form-control" placeholder="0.00" required />
@@ -66,17 +68,40 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                     <label htmlFor="observacoes">Observações</label>
                     <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
                 </div>
-                
-                {/* Opções de Recorrência */}
-                <div className="form-group form-group-full-width" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
-                    <input id="recorrente" type="checkbox" name="recorrente" checked={form.recorrente} onChange={handleChange} style={{ width: 'auto', height: 'auto' }} />
-                    <label htmlFor="recorrente" style={{ marginBottom: 0 }}>É uma receita recorrente?</label>
+                <div className="form-group form-group-full-width">
+                    <ToggleSwitch 
+                        label="É uma receita recorrente?"
+                        checked={form.recorrente}
+                        onChange={handleToggleChange}
+                    />
                 </div>
-
                 {form.recorrente && (
-                    <div className="form-group form-group-full-width">
-                        <label htmlFor="parcelas">Repetir por quantos meses?</label>
-                        <input id="parcelas" name="parcelas" type="number" min="1" value={form.parcelas} onChange={handleChange} className="form-control" />
+                    <div className="form-grid form-group-full-width">
+                        <div className="form-group">
+                            <label htmlFor="frequencia">Frequência</label>
+                            <select id="frequencia" name="frequencia" value={form.frequencia} onChange={handleChange} className="form-control">
+                                <option value="diaria">Diária</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="quinzenal">Quinzenal</option>
+                                <option value="mensal">Mensal</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="anual">Anual</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="parcelas">Repetir por (vezes)</label>
+                            <input 
+                                id="parcelas" 
+                                name="parcelas" 
+                                type="number" 
+                                min="0"
+                                value={form.parcelas} 
+                                onChange={handleChange} 
+                                className="form-control"
+                                title="Use 0 para recorrência 'infinita'"
+                            />
+                        </div>
                     </div>
                 )}
             </div>
@@ -85,6 +110,23 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                 <button type="submit" className="btn btn-save">{editingReceita ? 'Salvar Alterações' : 'Adicionar Receita'}</button>
             </div>
         </form>
+    );
+};
+
+// --- COMPONENTE DE CABEÇALHO DE TABELA ORDENÁVEL ---
+const SortableHeader = ({ children, name, sortConfig, onSort }) => {
+    const isSorted = sortConfig.key === name;
+    const direction = isSorted ? sortConfig.direction : 'none';
+
+    const handleClick = () => {
+        onSort(name);
+    };
+
+    return (
+        <th onClick={handleClick} className="sortable-header">
+            {children}
+            {isSorted && (direction === 'asc' ? ' ▲' : ' ▼')}
+        </th>
     );
 };
 
@@ -98,7 +140,12 @@ export default function Receitas() {
     const [notification, setNotification] = useState({ message: '', type: '' });
     
     const [selectsData, setSelectsData] = useState({ familiares: [], categorias: [], bancos: [] });
+    
+    // ========= INÍCIO DAS ALTERAÇÕES DE ESTADO =========
     const [filtroData, setFiltroData] = useState({ inicio: '', fim: '' });
+    const [limit, setLimit] = useState(10); // Estado para o limite de linhas, padrão 10
+    const [sortConfig, setSortConfig] = useState({ key: 'data_recebimento', direction: 'desc' }); // Estado para a ordenação
+    // ========= FIM DAS ALTERAÇÕES DE ESTADO =========
 
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {} });
 
@@ -107,7 +154,7 @@ export default function Receitas() {
     const initialFormState = useMemo(() => ({
         quem_recebeu: '', categoria_id: '', forma_recebimento: '',
         valor: '', data_recebimento: new Date().toISOString().split('T')[0],
-        recorrente: false, parcelas: 1, observacoes: ''
+        recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
     }), []);
 
     useEffect(() => {
@@ -116,11 +163,18 @@ export default function Receitas() {
         else setUsuario(user);
     }, [navigate]);
 
+    // ========= INÍCIO DA ALTERAÇÃO NA FUNÇÃO DE BUSCA =========
     const fetchReceitas = useCallback(async () => {
         if (!usuario) return;
         setIsLoading(true);
         try {
-            const params = { usuario_id: usuario.id, ...filtroData };
+            const params = { 
+                usuario_id: usuario.id, 
+                ...filtroData,
+                limit: limit,
+                sortBy: sortConfig.key,
+                sortOrder: sortConfig.direction
+            };
             const response = await axios.get(RECEITAS_API_URL, { params });
             setReceitas(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
@@ -128,7 +182,8 @@ export default function Receitas() {
         } finally {
             setIsLoading(false);
         }
-    }, [usuario, filtroData, RECEITAS_API_URL]);
+    }, [usuario, filtroData, limit, sortConfig, RECEITAS_API_URL]);
+    // ========= FIM DA ALTERAÇÃO NA FUNÇÃO DE BUSCA =========
 
     const fetchSelectsData = useCallback(async () => {
         if (!usuario) return;
@@ -151,9 +206,14 @@ export default function Receitas() {
     useEffect(() => {
         if (usuario) {
             fetchReceitas();
+        }
+    }, [usuario, fetchReceitas]);
+
+    useEffect(() => {
+        if (usuario) {
             fetchSelectsData();
         }
-    }, [usuario, fetchReceitas, fetchSelectsData]);
+    }, [usuario]);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -166,11 +226,10 @@ export default function Receitas() {
             id: editingReceita ? editingReceita.id : undefined,
             ...form
         };
-        // Garante que o número de parcelas seja enviado corretamente
-        if (form.recorrente) {
-            payload.parcelas = form.parcelas;
-        } else {
-            delete payload.parcelas; // Remove para não confundir a API
+        
+        if (!form.recorrente) {
+            delete payload.parcelas;
+            delete payload.frequencia;
         }
 
         try {
@@ -223,7 +282,6 @@ export default function Receitas() {
     const handleEdit = (receita) => {
         setEditingReceita({
             ...receita,
-            // Garante que os IDs corretos sejam usados para preencher os selects
             quem_recebeu: receita.quem_recebeu_id,
             forma_recebimento: receita.forma_recebimento_id,
         });
@@ -232,6 +290,25 @@ export default function Receitas() {
 
     const handleCancel = () => setEditingReceita(null);
     const handleFiltroChange = (e) => setFiltroData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+    // ========= INÍCIO DAS NOVAS FUNÇÕES DE CONTROLE =========
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => {
+            if (prevConfig.key === key && prevConfig.direction === 'asc') {
+                return { key, direction: 'desc' };
+            }
+            return { key, direction: 'asc' };
+        });
+    };
+
+    const handleLimitChange = (e) => {
+        setLimit(Number(e.target.value));
+    };
+
+    const handleFilterClick = () => {
+        fetchReceitas();
+    };
+    // ========= FIM DAS NOVAS FUNÇÕES DE CONTROLE =========
 
     return (
         <div className="page-container">
@@ -262,34 +339,44 @@ export default function Receitas() {
             <div className="content-card">
                 <h3 className="table-title">Últimas Receitas</h3>
                 
+                {/* ========= INÍCIO DA SEÇÃO DE FILTROS ATUALIZADA ========= */}
                 <div className="table-filters">
-                    <div className="filter-date-inputs">
-                        <div className="filter-group">
-                            <label htmlFor="inicio">Data Início</label>
-                            <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
-                        </div>
-                        <div className="filter-group">
-                            <label htmlFor="fim">Data Fim</label>
-                            <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
-                        </div>
+                    <div className="filter-group">
+                        <label htmlFor="inicio">Data Início</label>
+                        <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
                     </div>
-                    
+                    <div className="filter-group">
+                        <label htmlFor="fim">Data Fim</label>
+                        <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="limit">Mostrar</label>
+                        <select id="limit" name="limit" className="form-control" value={limit} onChange={handleLimitChange}>
+                            <option value={5}>5 linhas</option>
+                            <option value={10}>10 linhas</option>
+                            <option value={50}>50 linhas</option>
+                            <option value={100}>100 linhas</option>
+                        </select>
+                    </div>
                     <div className="filter-group">
                         <label>&nbsp;</label>
-                        <button className="btn btn-primary" onClick={fetchReceitas}>Filtrar</button>
+                        <button className="btn btn-primary" onClick={handleFilterClick}>Filtrar</button>
                     </div>
                 </div>
+                {/* ========= FIM DA SEÇÃO DE FILTROS ATUALIZADA ========= */}
 
                 <div className="table-wrapper">
                     {isLoading ? <Spinner /> : (
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Quem Recebeu</th>
-                                    <th>Categoria</th>
-                                    <th>Valor</th>
-                                    <th>Data</th>
+                                    {/* ========= INÍCIO DOS CABEÇALHOS ORDENÁVEIS ========= */}
+                                    <SortableHeader name="quem_recebeu_nome" sortConfig={sortConfig} onSort={handleSort}>Quem Recebeu</SortableHeader>
+                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
+                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
+                                    <SortableHeader name="data_recebimento" sortConfig={sortConfig} onSort={handleSort}>Data</SortableHeader>
                                     <th>Ações</th>
+                                    {/* ========= FIM DOS CABEÇALHOS ORDENÁVEIS ========= */}
                                 </tr>
                             </thead>
                             <tbody>

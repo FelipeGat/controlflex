@@ -1,15 +1,17 @@
 <?php
+// /api/receitas.php (Endpoint com Ordenação e Limite)
+
+// 1. CABEÇALHOS DE SEGURANÇA E CORS
+// ===================================================
 $frontend_url = "http://localhost:3000"; 
 header("Access-Control-Allow-Origin: " . $frontend_url );
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200 );
     exit();
 }
-
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -17,13 +19,13 @@ header("Content-Type: application/json; charset=UTF-8");
 // ===================================================
 require_once __DIR__ . '/../config/db.php'; 
 
-// 3. LÓGICA PRINCIPAL DA API (ROTEAMENTO POR MÉTODO)
+// 3. LÓGICA PRINCIPAL DA API
 // ===================================================
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch ($method) {
-        // --- CASO GET: Listar Receitas ---
+        // ========= INÍCIO DA ALTERAÇÃO NO GET =========
         case 'GET':
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
@@ -32,8 +34,22 @@ try {
                 exit;
             }
 
+            // Novos parâmetros de filtro, ordenação e limite
             $inicio = filter_input(INPUT_GET, 'inicio', FILTER_SANITIZE_STRING);
             $fim = filter_input(INPUT_GET, 'fim', FILTER_SANITIZE_STRING);
+            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10; // Padrão de 10 linhas
+            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_recebimento'; // Padrão é ordenar por data
+            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC'; // Padrão é descendente
+
+            // Lista de colunas permitidas para ordenação para evitar SQL Injection
+            $allowedSortColumns = ['quem_recebeu_nome', 'categoria_nome', 'valor', 'data_recebimento'];
+            if (!in_array($sortBy, $allowedSortColumns)) {
+                $sortBy = 'data_recebimento'; // Volta para o padrão se a coluna for inválida
+            }
+            
+            if (strtoupper($sortOrder) !== 'ASC' && strtoupper($sortOrder) !== 'DESC') {
+                $sortOrder = 'DESC';
+            }
 
             $sql = "SELECT 
                         r.id, r.valor, r.data_recebimento, r.observacoes, r.recorrente, r.parcelas, r.grupo_recorrencia_id,
@@ -54,28 +70,38 @@ try {
                 $params[':fim'] = $fim;
             }
 
-            $sql .= " ORDER BY r.data_recebimento DESC, r.id DESC";
+            // Adiciona a ordenação e o limite na query
+            $sql .= " ORDER BY $sortBy $sortOrder, r.id DESC";
+            $sql .= " LIMIT :limit";
             
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
+            // Precisamos vincular o limite como inteiro
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            foreach ($params as $key => &$val) {
+                if ($key !== ':limit') {
+                    $stmt->bindValue($key, $val);
+                }
+            }
+            
+            $stmt->execute();
             $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode($receitas);
             break;
+        // ========= FIM DA ALTERAÇÃO NO GET =========
 
-        // --- CASO POST: Criar ou Atualizar Receita ---
+        // ... (cases POST e DELETE permanecem os mesmos) ...
         case 'POST':
             $data = json_decode(file_get_contents("php://input"), true);
             $id = $data['id'] ?? null;
 
-            // Validação básica
             if (empty($data['usuario_id']) || empty($data['quem_recebeu']) || empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_recebimento'])) {
                 http_response_code(400 );
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
 
-            if ($id) { // ATUALIZAÇÃO
+            if ($id) {
                 $sql = "UPDATE receitas SET quem_recebeu = :qr, categoria_id = :cid, forma_recebimento = :fr, valor = :v, data_recebimento = :dr, observacoes = :obs WHERE id = :id AND usuario_id = :uid";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
@@ -85,16 +111,39 @@ try {
                 ]);
                 echo json_encode(['sucesso' => true, 'mensagem' => 'Receita atualizada com sucesso!']);
 
-            } else { // CRIAÇÃO
+            } else {
                 $pdo->beginTransaction();
                 try {
                     $isRecorrente = !empty($data['recorrente']);
-                    $totalParcelas = $isRecorrente && isset($data['parcelas']) && (int)$data['parcelas'] > 0 ? (int)$data['parcelas'] : 1;
+                    $parcelasRecebidas = isset($data['parcelas']) ? (int)$data['parcelas'] : 1;
+                    
+                    $frequencia = $data['frequencia'] ?? 'mensal';
+                    $intervalo = '';
+
+                    switch ($frequencia) {
+                        case 'diaria':    $intervalo = 'day'; break;
+                        case 'semanal':   $intervalo = 'week'; break;
+                        case 'quinzenal': $intervalo = '2 week'; break;
+                        case 'mensal':    $intervalo = 'month'; break;
+                        case 'trimestral':$intervalo = '3 month'; break;
+                        case 'semestral': $intervalo = '6 month'; break;
+                        case 'anual':     $intervalo = 'year'; break;
+                        default:          $intervalo = 'month'; break;
+                    }
+
+                    $totalParcelas = 1;
+                    if ($isRecorrente) {
+                        if ($parcelasRecebidas === 0) {
+                            $totalParcelas = 60;
+                        } else {
+                            $totalParcelas = $parcelasRecebidas;
+                        }
+                    }
                     
                     $grupoRecorrenciaId = ($totalParcelas > 1) ? uniqid('rec_') : null;
 
-                    $sql = "INSERT INTO receitas (usuario_id, quem_recebeu, categoria_id, forma_recebimento, valor, data_recebimento, recorrente, parcelas, observacoes, grupo_recorrencia_id) 
-                            VALUES (:uid, :qr, :cid, :fr, :v, :dr, :rec, :parc, :obs, :grid)";
+                    $sql = "INSERT INTO receitas (usuario_id, quem_recebeu, categoria_id, forma_recebimento, valor, data_recebimento, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id) 
+                            VALUES (:uid, :qr, :cid, :fr, :v, :dr, :rec, :parc, :freq, :obs, :grid)";
                     
                     $stmt = $pdo->prepare($sql);
                     $dataRecebimentoInicial = new DateTime($data['data_recebimento']);
@@ -102,7 +151,7 @@ try {
                     for ($i = 0; $i < $totalParcelas; $i++) {
                         $dataParcela = clone $dataRecebimentoInicial;
                         if ($i > 0) {
-                            $dataParcela->modify("+$i months");
+                            $dataParcela->modify("+$i $intervalo");
                         }
 
                         $stmt->execute([
@@ -114,6 +163,7 @@ try {
                             ':dr' => $dataParcela->format('Y-m-d'),
                             ':rec' => $isRecorrente ? 1 : 0,
                             ':parc' => $totalParcelas,
+                            ':freq' => $frequencia,
                             ':obs' => $data['observacoes'],
                             ':grid' => $grupoRecorrenciaId
                         ]);
@@ -130,7 +180,6 @@ try {
             }
             break;
 
-        // --- CASO DELETE: Excluir Receita(s) ---
         case 'DELETE':
             $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
             $escopo = filter_input(INPUT_GET, 'escopo', FILTER_SANITIZE_STRING) ?? 'apenas_esta';
@@ -180,7 +229,6 @@ try {
             break;
     }
 } catch (\Throwable $e) {
-    // Bloco de captura de erro genérico para evitar vazamento de informações
     error_log("Erro na API de receitas: " . $e->getMessage());
     $httpCode = is_int($e->getCode( )) && $e->getCode() >= 400 ? $e->getCode() : 500;
     http_response_code($httpCode );
