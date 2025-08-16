@@ -1,0 +1,283 @@
+/* --- Cores e Variáveis (sem alterações) --- */
+:root {
+    --primary-color: #1a73e8;
+    --success-color: #34a853;
+    --danger-color: #ea4335;
+    --warning-color: #fbbc05;
+    --background-color: #f1f3f4;
+    --card-background: #fff;
+    --text-color: #202124;
+    --secondary-text-color: #5f6368;
+    --border-radius: 8px;
+    --card-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+}
+
+body {
+    background-color: var(--background-color);
+    font-family: 'Roboto', sans-serif;
+}
+
+/* --- LAYOUT PRINCIPAL DO DASHBOARD (sem alterações) --- */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--text-color);
+}
+
+.period-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========= INÍCIO DA CORREÇÃO (PASSO 2) ========= */
+.period-filter select {
+    padding: 0.5rem 2.5rem 0.5rem 1rem; /* Aumenta o padding à direita para a seta */
+    border: 1px solid #dadce0;
+    border-radius: var(--border-radius);
+    background-color: var(--card-background);
+    color: var(--text-color);
+    font-size: 1rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235f6368%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E' );
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.6em;
+    /* A linha 'transform: rotate(180deg);' foi REMOVIDA */
+}
+/* ========= FIM DA CORREÇÃO (PASSO 2) ========= */
+
+
+/* --- GRID DOS CARDS DE KPI (sem alterações) --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 1.5rem;
+}
+
+.kpi-card {
+    color: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+}
+
+.kpi-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.kpi-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+}
+
+.kpi-variation {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* --- NOVO GRID DE CONTEÚDO PRINCIPAL (sem alterações) --- */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background-color: var(--card-background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.chart-card .chart-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.chart-large {
+    min-height: 400px;
+}
+
+.chart-card-doughnut {
+    display: flex;
+    flex-direction: column;
+    height: 350px;
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-chart {
+    color: var(--secondary-text-color);
+    text-align: center;
+    margin: auto;
+}
+
+/* --- CARD DE TRANSAÇÕES (sem alterações) --- */
+.transactions-card {
+    background-color: var(--card-background);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.table-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th, .data-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e8e8e8;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.data-table th {
+    color: var(--secondary-text-color);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transaction-icon {
+    font-size: 1rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transaction-icon.receita { background-color: rgba(52, 168, 83, 0.1); }
+.transaction-icon.despesa { background-color: rgba(234, 67, 53, 0.1); }
+
+.text-success { color: var(--success-color); font-weight: 600; }
+.text-danger { color: var(--danger-color); font-weight: 600; }
+
+.table-footer {
+    padding-top: 1rem;
+    text-align: center;
+}
+
+.table-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.table-footer a:hover {
+    text-decoration: underline;
+}
+
+/* --- RESPONSIVIDADE (sem alterações) --- */
+@media (max-width: 1200px) {
+    .main-content-grid {
+        grid-template-columns: 1.5fr 1fr;
+    }
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
