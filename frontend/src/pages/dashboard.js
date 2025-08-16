@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2'; 
+
 import './dashboard.css';
+// ========= INÍCIO DA CORREÇÃO =========
+// Corrigidos os caminhos para subir apenas um nível de diretório.
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
+// ========= FIM DA CORREÇÃO =========
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
-
-// ... (Componentes KpiCard, Variation, CategoryChartCard, LatestTransactionsCard - Sem alterações) ...
+// ... (O restante do código permanece o mesmo) ...
 const KpiCard = ({ title, value, backgroundColor, icon, variation }) => (
     <div className="kpi-card" style={{ backgroundColor: backgroundColor }}>
         <div className="kpi-content">
@@ -24,16 +25,6 @@ const KpiCard = ({ title, value, backgroundColor, icon, variation }) => (
         <div className="kpi-icon">{icon}</div>
     </div>
 );
-const Variation = ({ value }) => {
-    const isPositive = value >= 0;
-    const arrow = isPositive ? '▲' : '▼';
-    const color = 'rgba(255, 255, 255, 0.85)'; 
-    return (
-        <span className="kpi-variation" style={{ color }}>
-            {arrow} {value.toFixed(2)}%
-        </span>
-    );
-};
 const CategoryChartCard = ({ categoryChart }) => {
     const categoryChartData = {
         labels: categoryChart.map(c => c.categoria_nome),
@@ -128,30 +119,74 @@ const LatestTransactionsCard = ({ latestTransactions }) => (
 
 // Componente Principal do Dashboard
 export default function Dashboard() {
-    // ... (useState, useCallback, useEffects - Sem alterações) ...
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [period, setPeriod] = useState('this_month');
+    const [period, setPeriod] = useState('today');
     const fetchDashboardData = useCallback(async (selectedPeriod) => {
         if (!usuario) return;
         setIsLoading(true);
         const today = new Date();
+        today.setHours(0, 0, 0, 0); 
         let inicio, fim;
         switch (selectedPeriod) {
+            case 'today':
+                inicio = fim = today.toISOString().split('T')[0];
+                break;
+            case 'yesterday':
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                inicio = fim = yesterday.toISOString().split('T')[0];
+                break;
+            case 'tomorrow':
+                const tomorrow = new Date(today);
+                tomorrow.setDate(today.getDate() + 1);
+                inicio = fim = tomorrow.toISOString().split('T')[0];
+                break;
+            case 'this_week':
+                const firstDayOfWeek = new Date(today);
+                const dayOfWeek = today.getDay(); 
+                firstDayOfWeek.setDate(today.getDate() - dayOfWeek);
+                const lastDayOfWeek = new Date(firstDayOfWeek);
+                lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+                inicio = firstDayOfWeek.toISOString().split('T')[0];
+                fim = lastDayOfWeek.toISOString().split('T')[0];
+                break;
+            case 'last_week':
+                const lastWeekStart = new Date(today);
+                lastWeekStart.setDate(today.getDate() - today.getDay() - 7);
+                const lastWeekEnd = new Date(lastWeekStart);
+                lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+                inicio = lastWeekStart.toISOString().split('T')[0];
+                fim = lastWeekEnd.toISOString().split('T')[0];
+                break;
+            case 'this_month':
+                inicio = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                fim = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+                break;
             case 'last_month':
                 inicio = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
                 fim = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+                break;
+            case 'next_month':
+                inicio = new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split('T')[0];
+                fim = new Date(today.getFullYear(), today.getMonth() + 2, 0).toISOString().split('T')[0];
                 break;
             case 'this_year':
                 inicio = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
                 fim = new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0];
                 break;
-            case 'this_month':
+            case 'last_year':
+                inicio = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+                fim = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+                break;
+            case 'next_year':
+                inicio = new Date(today.getFullYear() + 1, 0, 1).toISOString().split('T')[0];
+                fim = new Date(today.getFullYear() + 1, 11, 31).toISOString().split('T')[0];
+                break;
             default:
-                inicio = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-                fim = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+                inicio = fim = today.toISOString().split('T')[0];
                 break;
         }
         try {
@@ -257,16 +292,21 @@ export default function Dashboard() {
     return (
         <div className="page-container dashboard-container">
             <div className="dashboard-header">
-                {/* ========= INÍCIO DA CORREÇÃO (PASSO 1) ========= */}
-                {/* Acessa o nome do usuário do estado 'usuario' */}
-                <h1>{`Olá, ${usuario?.nome || ''}! Seja bem-vindo(a)!`}</h1>
-                {/* ========= FIM DA CORREÇÃO (PASSO 1) ========= */}
+                {/* <h1>{`Olá, ${usuario?.nome || ''}! Seja bem-vindo(a)!`}</h1> */}
                 <div className="period-filter">
                     <label htmlFor="period">Mostrar período:</label>
                     <select id="period" value={period} onChange={handlePeriodChange} className="form-control">
+                        <option value="today">Hoje</option>
+                        <option value="yesterday">Ontem</option>
+                        <option value="tomorrow">Amanhã</option>
+                        <option value="this_week">Esta Semana</option>
+                        <option value="last_week">Última Semana</option>
                         <option value="this_month">Este Mês</option>
-                        <option value="last_month">Mês Passado</option>
+                        <option value="last_month">Último Mês</option>
+                        <option value="next_month">Próximo Mês</option>
                         <option value="this_year">Este Ano</option>
+                        <option value="last_year">Último Ano</option>
+                        <option value="next_year">Próximo Ano</option>
                     </select>
                 </div>
             </div>

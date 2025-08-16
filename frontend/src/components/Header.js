@@ -73,6 +73,7 @@ function Header() {
               <button onClick={() => navigate('/receitas')}>Receitas</button>
               <button onClick={() => navigate('/categorias')}>Categorias</button>
               <button onClick={() => navigate('/Investimentos')}>Investimentos</button>
+              <button onClick={() => navigate('/Lancamentos')}>Lancamentos</button>
             </div>
           )}
         </div>
