@@ -1,7 +1,6 @@
 <?php
-// /api/despesas.php (Endpoint com Ordenação e Limite)
+// /api/despesas.php (Endpoint corrigido para novos nomes de colunas)
 
-// ... (Cabeçalhos CORS e Conexão com DB permanecem os mesmos) ...
 // 1. CABEÇALHOS DE SEGURANÇA E CORS
 // ===================================================
 $frontend_url = "http://localhost:3000"; 
@@ -26,7 +25,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch ($method) {
-        // ========= INÍCIO DA ALTERAÇÃO NO GET =========
         case 'GET':
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
@@ -35,26 +33,27 @@ try {
                 exit;
             }
 
-            // Novos parâmetros de filtro, ordenação e limite
+            // Parâmetros de filtro, ordenação e limite
             $inicio = filter_input(INPUT_GET, 'inicio', FILTER_SANITIZE_STRING);
             $fim = filter_input(INPUT_GET, 'fim', FILTER_SANITIZE_STRING);
-            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10; // Padrão de 10 linhas
-            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_compra'; // Padrão é ordenar por data
-            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC'; // Padrão é descendente
+            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10;
+            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_compra';
+            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC';
 
-            // Lista de colunas permitidas para ordenação para evitar SQL Injection
-            $allowedSortColumns = ['quem_comprou_nome', 'onde_comprou_nome', 'categoria_nome', 'valor', 'data_compra'];
+            // Lista de colunas permitidas para ordenação
+            $allowedSortColumns = ['quem_comprou_nome', 'onde_comprou_nome', 'categoria_nome', 'valor', 'data_compra', 'data_pagamento'];
             if (!in_array($sortBy, $allowedSortColumns)) {
-                $sortBy = 'data_compra'; // Volta para o padrão se a coluna for inválida
+                $sortBy = 'data_compra';
             }
             
-            // Garante que a ordem seja apenas ASC ou DESC
             if (strtoupper($sortOrder) !== 'ASC' && strtoupper($sortOrder) !== 'DESC') {
                 $sortOrder = 'DESC';
             }
 
+            // Query corrigida com os nomes das colunas
             $sql = "SELECT 
-                        d.id, d.valor, d.data_compra, d.observacoes, d.recorrente, d.parcelas, d.grupo_recorrencia_id,
+                        d.id, d.valor, d.data_compra, d.data_pagamento, d.observacoes, 
+                        d.recorrente, d.parcelas, d.grupo_recorrencia_id, d.forma_pagamento,
                         d.quem_comprou as quem_comprou_id, f.nome as quem_comprou_nome,
                         d.onde_comprou as onde_comprou_id, forn.nome as onde_comprou_nome,
                         d.categoria_id, cat.nome as categoria_nome
@@ -66,6 +65,7 @@ try {
             
             $params = [':uid' => $usuario_id];
 
+            // Filtro por data (usando data_compra)
             if ($inicio && $fim) {
                 $sql .= " AND d.data_compra BETWEEN :inicio AND :fim";
                 $params[':inicio'] = $inicio;
@@ -75,10 +75,8 @@ try {
             // Adiciona a ordenação e o limite na query
             $sql .= " ORDER BY $sortBy $sortOrder, d.id DESC";
             $sql .= " LIMIT :limit";
-            $params[':limit'] = $limit;
             
             $stmt = $pdo->prepare($sql);
-            // Precisamos vincular o limite como inteiro
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             foreach ($params as $key => &$val) {
                 if ($key !== ':limit') {
@@ -91,30 +89,49 @@ try {
 
             echo json_encode($despesas);
             break;
-        // ========= FIM DA ALTERAÇÃO NO GET =========
 
-        // ... (cases POST e DELETE permanecem os mesmos) ...
         case 'POST':
             $data = json_decode(file_get_contents("php://input"), true);
             $id = $data['id'] ?? null;
 
-            if (empty($data['usuario_id']) || empty($data['quem_comprou']) || empty($data['onde_comprou']) || empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_compra'])) {
+            // Validação dos campos obrigatórios
+            if (empty($data['usuario_id']) || empty($data['quem_comprou']) || empty($data['onde_comprou']) || 
+                empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_compra'])) {
                 http_response_code(400 );
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
 
-            if ($id) { // ATUALIZAÇÃO (mantida simples)
-                $sql = "UPDATE despesas SET quem_comprou = :qc, onde_comprou = :oc, categoria_id = :cid, forma_pagamento = :fp, valor = :v, data_compra = :dc, observacoes = :obs WHERE id = :id AND usuario_id = :uid";
+            if ($id) {
+                // UPDATE - corrigido para incluir data_pagamento
+                $sql = "UPDATE despesas SET 
+                            quem_comprou = :qc, 
+                            onde_comprou = :oc, 
+                            categoria_id = :cid, 
+                            forma_pagamento = :fp, 
+                            valor = :v, 
+                            data_compra = :dc,
+                            data_pagamento = :dp,
+                            observacoes = :obs 
+                        WHERE id = :id AND usuario_id = :uid";
+                
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
-                    ':qc' => $data['quem_comprou'], ':oc' => $data['onde_comprou'], ':cid' => $data['categoria_id'],
-                    ':fp' => $data['forma_pagamento'], ':v' => $data['valor'], ':dc' => $data['data_compra'],
-                    ':obs' => $data['observacoes'], ':id' => $id, ':uid' => $data['usuario_id']
+                    ':qc' => $data['quem_comprou'], 
+                    ':oc' => $data['onde_comprou'], 
+                    ':cid' => $data['categoria_id'],
+                    ':fp' => $data['forma_pagamento'], 
+                    ':v' => $data['valor'], 
+                    ':dc' => $data['data_compra'],
+                    ':dp' => !empty($data['data_pagamento']) ? $data['data_pagamento'] : null,
+                    ':obs' => $data['observacoes'], 
+                    ':id' => $id, 
+                    ':uid' => $data['usuario_id']
                 ]);
-                echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa atualizada.']);
+                echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa atualizada com sucesso!']);
 
-            } else { // CRIAÇÃO
+            } else {
+                // INSERT - corrigido para incluir data_pagamento
                 $pdo->beginTransaction();
                 try {
                     $isRecorrente = !empty($data['recorrente']);
@@ -145,8 +162,13 @@ try {
                     
                     $grupoRecorrenciaId = ($totalParcelas > 1) ? uniqid('rec_') : null;
 
-                    $sql = "INSERT INTO despesas (usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, data_compra, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id) 
-                            VALUES (:uid, :qc, :oc, :cid, :fp, :v, :dc, :rec, :parc, :freq, :obs, :grid)";
+                    // SQL corrigido com data_pagamento
+                    $sql = "INSERT INTO despesas (
+                                usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, 
+                                data_compra, data_pagamento, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id
+                            ) VALUES (
+                                :uid, :qc, :oc, :cid, :fp, :v, :dc, :dp, :rec, :parc, :freq, :obs, :grid
+                            )";
                     
                     $stmt = $pdo->prepare($sql);
                     $dataCompraInicial = new DateTime($data['data_compra']);
@@ -165,6 +187,7 @@ try {
                             ':fp' => $data['forma_pagamento'],
                             ':v' => $data['valor'],
                             ':dc' => $dataParcela->format('Y-m-d'),
+                            ':dp' => !empty($data['data_pagamento']) ? $data['data_pagamento'] : null,
                             ':rec' => $isRecorrente ? 1 : 0,
                             ':parc' => $totalParcelas,
                             ':freq' => $frequencia,
@@ -196,6 +219,7 @@ try {
 
             $pdo->beginTransaction();
             try {
+                // Query usando data_compra
                 $stmtInfo = $pdo->prepare("SELECT grupo_recorrencia_id, data_compra FROM despesas WHERE id = :id");
                 $stmtInfo->execute([':id' => $id]);
                 $despesa = $stmtInfo->fetch(PDO::FETCH_ASSOC);
@@ -206,6 +230,7 @@ try {
 
                 $rowCount = 0;
                 if ($escopo === 'esta_e_futuras' && $despesa['grupo_recorrencia_id']) {
+                    // Query corrigida para usar data_compra
                     $stmtDelete = $pdo->prepare("DELETE FROM despesas WHERE grupo_recorrencia_id = :grid AND data_compra >= :dc");
                     $stmtDelete->execute([
                         ':grid' => $despesa['grupo_recorrencia_id'],
@@ -239,3 +264,4 @@ try {
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>
+

@@ -1,7 +1,6 @@
 <?php
-// /api/dashboard.php (Versão com Gráfico de Investimentos)
+// /api/dashboard.php (Versão corrigida - receitas baseadas em data_prevista_recebimento)
 
-// ... (Cabeçalhos e Lógica de Conexão - Sem alterações) ...
 header("Access-Control-Allow-Origin: http://localhost:3000" );
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -24,11 +23,11 @@ try {
     $fim = $_GET['fim'] ?? date('Y-m-t');
     $ano_selecionado = date('Y', strtotime($inicio));
 
-    // ... (Seções 1, 2, 3, 4 - KPI, Gráfico Anual, Categorias, Card de Investimentos - Sem alterações) ...
     // --- 1. DADOS PARA OS CARDS PRINCIPAIS (COM CÁLCULO DE VARIAÇÃO) ---
+    // CORRIGIDO: Receitas agora usam data_prevista_recebimento (receitas lançadas)
     $stmtCards = $pdo->prepare("
         SELECT 
-            (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_recebimento BETWEEN :inicio1 AND :fim1) as total_receitas,
+            (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_prevista_recebimento BETWEEN :inicio1 AND :fim1) as total_receitas,
             (SELECT COALESCE(SUM(valor), 0) FROM despesas WHERE usuario_id = :uid2 AND data_compra BETWEEN :inicio2 AND :fim2) as total_despesas
     ");
     $stmtCards->execute([
@@ -36,11 +35,15 @@ try {
         ':uid2' => $usuario_id, ':inicio2' => $inicio, ':fim2' => $fim
     ]);
     $kpi_data = $stmtCards->fetch(PDO::FETCH_ASSOC);
+    
+    // Cálculo da variação do período anterior
     $inicio_anterior = date('Y-m-d', strtotime($inicio . ' -1 month'));
     $fim_anterior = date('Y-m-d', strtotime($fim . ' -1 month'));
+    
+    // CORRIGIDO: Receitas do período anterior também usam data_prevista_recebimento
     $stmtCardsAnterior = $pdo->prepare("
         SELECT
-            (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_recebimento BETWEEN :inicio1 AND :fim1) as total_receitas,
+            (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_prevista_recebimento BETWEEN :inicio1 AND :fim1) as total_receitas,
             (SELECT COALESCE(SUM(valor), 0) FROM despesas WHERE usuario_id = :uid2 AND data_compra BETWEEN :inicio2 AND :fim2) as total_despesas
     ");
     $stmtCardsAnterior->execute([
@@ -48,10 +51,12 @@ try {
         ':uid2' => $usuario_id, ':inicio2' => $inicio_anterior, ':fim2' => $fim_anterior
     ]);
     $kpi_data_anterior = $stmtCardsAnterior->fetch(PDO::FETCH_ASSOC);
+    
     $calculate_variation = function($current, $previous) {
         if ($previous == 0) return $current > 0 ? 100.0 : 0.0;
         return (($current - $previous) / abs($previous)) * 100;
     };
+    
     $kpi_data['saldo'] = $kpi_data['total_receitas'] - $kpi_data['total_despesas'];
     $kpi_data_anterior['saldo'] = $kpi_data_anterior['total_receitas'] - $kpi_data_anterior['total_despesas'];
     $kpi_data['variacao_receitas'] = round($calculate_variation($kpi_data['total_receitas'], $kpi_data_anterior['total_receitas']), 2);
@@ -59,13 +64,14 @@ try {
     $kpi_data['variacao_saldo'] = round($calculate_variation($kpi_data['saldo'], $kpi_data_anterior['saldo']), 2);
 
     // --- 2. DADOS PARA O GRÁFICO ANUAL (FLUXO DE CAIXA) ---
+    // CORRIGIDO: Receitas no gráfico anual também usam data_prevista_recebimento
     $stmtAnnual = $pdo->prepare("
         SELECT m.mes AS mes_num, COALESCE(r.total, 0) AS receitas, COALESCE(d.total, 0) AS despesas
         FROM (SELECT 1 AS mes UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
               UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) AS m
         LEFT JOIN (
-            SELECT MONTH(data_recebimento) AS mes, SUM(valor) AS total
-            FROM receitas WHERE usuario_id = :uid1 AND YEAR(data_recebimento) = :ano1 GROUP BY mes
+            SELECT MONTH(data_prevista_recebimento) AS mes, SUM(valor) AS total
+            FROM receitas WHERE usuario_id = :uid1 AND YEAR(data_prevista_recebimento) = :ano1 GROUP BY mes
         ) r ON m.mes = r.mes
         LEFT JOIN (
             SELECT MONTH(data_compra) AS mes, SUM(valor) AS total
@@ -100,8 +106,9 @@ try {
     $investimentos_data = $stmtInvestimentos->fetch(PDO::FETCH_ASSOC);
 
     // --- 5. ÚLTIMOS LANÇAMENTOS ---
+    // CORRIGIDO: Receitas nos últimos lançamentos usam data_prevista_recebimento
     $stmtLancamentos = $pdo->prepare("
-        (SELECT r.id, 'receita' as tipo, r.valor, r.data_recebimento as data, r.quem_recebeu as pessoa_id, f.nome as pessoa_nome, r.categoria_id, c.nome as categoria_nome
+        (SELECT r.id, 'receita' as tipo, r.valor, r.data_prevista_recebimento as data, r.quem_recebeu as pessoa_id, f.nome as pessoa_nome, r.categoria_id, c.nome as categoria_nome
          FROM receitas r
          LEFT JOIN familiares f ON r.quem_recebeu = f.id
          LEFT JOIN categorias c ON r.categoria_id = c.id
@@ -118,7 +125,6 @@ try {
     $stmtLancamentos->execute([':uid1' => $usuario_id, ':uid2' => $usuario_id]);
     $ultimos_lancamentos = $stmtLancamentos->fetchAll(PDO::FETCH_ASSOC);
 
-    // ========= INÍCIO DA NOVA SEÇÃO (PASSO 1) =========
     // --- 6. DADOS PARA O GRÁFICO DE EVOLUÇÃO PATRIMONIAL ---
     $stmtInvestChart = $pdo->prepare("
         SELECT 
@@ -161,8 +167,6 @@ try {
         'patrimonio' => $patrimonio_acumulado,
         'rendimentos' => $rendimento_acumulado
     ];
-    // ========= FIM DA NOVA SEÇÃO (PASSO 1) =========
-
 
     // --- MONTA A RESPOSTA FINAL ---
     echo json_encode([
@@ -171,7 +175,7 @@ try {
         'categoryChart' => $category_data,
         'investments' => $investimentos_data,
         'latestTransactions' => $ultimos_lancamentos,
-        'investmentChart' => $investment_chart_data // Adiciona os novos dados na resposta
+        'investmentChart' => $investment_chart_data
     ]);
 
 } catch (\Throwable $e) {
@@ -180,3 +184,4 @@ try {
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>
+

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Login from './pages/login';
+import Home from './components/Home_clima_automatico'; // TELA HOME COM CLIMA
 import Dashboard from './pages/dashboard';
 import CadastroCategoria from './pages/categorias/CadastroCategoria';
 import Despesas from './pages/despesas';
@@ -18,7 +19,13 @@ function App() {
   return (
     <Router basename="/controleflex">
       <Routes>
+        {/* Rota de Login */}
         <Route path="/" element={<Login />} />
+        
+        {/* HOME como página inicial após login */}
+        <Route path="/home" element={<MainLayout><Home /></MainLayout>} />
+        
+        {/* Outras rotas do sistema */}
         <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
         <Route path="/categorias" element={<MainLayout><CadastroCategoria /></MainLayout>} />
         <Route path="/despesas" element={<MainLayout><Despesas /></MainLayout>} />
@@ -35,3 +42,4 @@ function App() {
 }
 
 export default App;
+

@@ -8,7 +8,7 @@ import ModalConfirmacao from './ModalConfirmacao';
 import './ModalConfirmacao.css';
 import ToggleSwitch from '../components/ToggleSwitch';
 
-// --- COMPONENTE DO FORMULÁRIO DE RECEITA (sem alterações) ---
+// --- COMPONENTE DO FORMULÁRIO DE RECEITA ---
 const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selectsData }) => {
     const [form, setForm] = useState(initialFormState);
 
@@ -61,8 +61,13 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                     <input id="valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} className="form-control" placeholder="0.00" required />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="data_recebimento">Data do Recebimento *</label>
-                    <input id="data_recebimento" name="data_recebimento" type="date" value={form.data_recebimento} onChange={handleChange} className="form-control" required />
+                    <label htmlFor="data_prevista_recebimento">Data Prevista do Recebimento *</label>
+                    <input id="data_prevista_recebimento" name="data_prevista_recebimento" type="date" value={form.data_prevista_recebimento} onChange={handleChange} className="form-control" required />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="data_recebimento">Data Real do Recebimento</label>
+                    <input id="data_recebimento" name="data_recebimento" type="date" value={form.data_recebimento || ''} onChange={handleChange} className="form-control" />
+                    <small className="form-text">Deixe em branco se ainda não foi recebido</small>
                 </div>
                 <div className="form-group form-group-full-width">
                     <label htmlFor="observacoes">Observações</label>
@@ -141,11 +146,9 @@ export default function Receitas() {
     
     const [selectsData, setSelectsData] = useState({ familiares: [], categorias: [], bancos: [] });
     
-    // ========= INÍCIO DAS ALTERAÇÕES DE ESTADO =========
     const [filtroData, setFiltroData] = useState({ inicio: '', fim: '' });
-    const [limit, setLimit] = useState(10); // Estado para o limite de linhas, padrão 10
-    const [sortConfig, setSortConfig] = useState({ key: 'data_recebimento', direction: 'desc' }); // Estado para a ordenação
-    // ========= FIM DAS ALTERAÇÕES DE ESTADO =========
+    const [limit, setLimit] = useState(10);
+    const [sortConfig, setSortConfig] = useState({ key: 'data_prevista_recebimento', direction: 'desc' });
 
     const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {} });
 
@@ -153,8 +156,8 @@ export default function Receitas() {
 
     const initialFormState = useMemo(() => ({
         quem_recebeu: '', categoria_id: '', forma_recebimento: '',
-        valor: '', data_recebimento: new Date().toISOString().split('T')[0],
-        recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
+        valor: '', data_prevista_recebimento: new Date().toISOString().split('T')[0],
+        data_recebimento: '', recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
     }), []);
 
     useEffect(() => {
@@ -163,7 +166,6 @@ export default function Receitas() {
         else setUsuario(user);
     }, [navigate]);
 
-    // ========= INÍCIO DA ALTERAÇÃO NA FUNÇÃO DE BUSCA =========
     const fetchReceitas = useCallback(async () => {
         if (!usuario) return;
         setIsLoading(true);
@@ -183,7 +185,6 @@ export default function Receitas() {
             setIsLoading(false);
         }
     }, [usuario, filtroData, limit, sortConfig, RECEITAS_API_URL]);
-    // ========= FIM DA ALTERAÇÃO NA FUNÇÃO DE BUSCA =========
 
     const fetchSelectsData = useCallback(async () => {
         if (!usuario) return;
@@ -291,7 +292,6 @@ export default function Receitas() {
     const handleCancel = () => setEditingReceita(null);
     const handleFiltroChange = (e) => setFiltroData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-    // ========= INÍCIO DAS NOVAS FUNÇÕES DE CONTROLE =========
     const handleSort = (key) => {
         setSortConfig(prevConfig => {
             if (prevConfig.key === key && prevConfig.direction === 'asc') {
@@ -308,7 +308,22 @@ export default function Receitas() {
     const handleFilterClick = () => {
         fetchReceitas();
     };
-    // ========= FIM DAS NOVAS FUNÇÕES DE CONTROLE =========
+
+    // Função para determinar o status da receita
+    const getStatusReceita = (dataPrevista, dataReal) => {
+        if (dataReal) return 'recebido';
+        
+        const hoje = new Date().toISOString().split('T')[0];
+        if (dataPrevista < hoje) return 'atrasado';
+        if (dataPrevista === hoje) return 'hoje';
+        return 'pendente';
+    };
+
+    // Função para formatar data
+    const formatarData = (data) => {
+        if (!data) return '-';
+        return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+    };
 
     return (
         <div className="page-container">
@@ -339,7 +354,6 @@ export default function Receitas() {
             <div className="content-card">
                 <h3 className="table-title">Últimas Receitas</h3>
                 
-                {/* ========= INÍCIO DA SEÇÃO DE FILTROS ATUALIZADA ========= */}
                 <div className="table-filters">
                     <div className="filter-group">
                         <label htmlFor="inicio">Data Início</label>
@@ -363,38 +377,49 @@ export default function Receitas() {
                         <button className="btn btn-primary" onClick={handleFilterClick}>Filtrar</button>
                     </div>
                 </div>
-                {/* ========= FIM DA SEÇÃO DE FILTROS ATUALIZADA ========= */}
 
                 <div className="table-wrapper">
                     {isLoading ? <Spinner /> : (
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    {/* ========= INÍCIO DOS CABEÇALHOS ORDENÁVEIS ========= */}
                                     <SortableHeader name="quem_recebeu_nome" sortConfig={sortConfig} onSort={handleSort}>Quem Recebeu</SortableHeader>
                                     <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
                                     <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
-                                    <SortableHeader name="data_recebimento" sortConfig={sortConfig} onSort={handleSort}>Data</SortableHeader>
+                                    <SortableHeader name="data_prevista_recebimento" sortConfig={sortConfig} onSort={handleSort}>Data Prevista</SortableHeader>
+                                    <th>Data Recebimento</th>
+                                    <th>Status</th>
                                     <th>Ações</th>
-                                    {/* ========= FIM DOS CABEÇALHOS ORDENÁVEIS ========= */}
                                 </tr>
                             </thead>
                             <tbody>
-                                {receitas.length > 0 ? receitas.map(r => (
-                                    <tr key={r.id}>
-                                        <td>{r.quem_recebeu_nome}</td>
-                                        <td>{r.categoria_nome}</td>
-                                        <td>{`R$ ${parseFloat(r.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</td>
-                                        <td>{new Date(r.data_recebimento).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                                        <td>
-                                            <div className="table-buttons">
-                                                <button onClick={() => handleEdit(r)} className="btn-icon" title="Editar"><i className="fas fa-pen"></i></button>
-                                                <button onClick={() => handleDelete(r)} className="btn-icon btn-delete" title="Excluir"><i className="fas fa-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan="5" className="empty-state">Nenhuma receita encontrada.</td></tr>
+                                {receitas.length === 0 ? (
+                                    <tr><td colSpan="7" className="empty-state">Nenhuma receita encontrada.</td></tr>
+                                ) : (
+                                    receitas.map(receita => {
+                                        const status = getStatusReceita(receita.data_prevista_recebimento, receita.data_recebimento);
+                                        return (
+                                            <tr key={receita.id} className={`linha-${status}`}>
+                                                <td>{receita.quem_recebeu_nome}</td>
+                                                <td>{receita.categoria_nome}</td>
+                                                <td>R$ {parseFloat(receita.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                                <td>{formatarData(receita.data_prevista_recebimento)}</td>
+                                                <td>{formatarData(receita.data_recebimento)}</td>
+                                                <td>
+                                                    <span className={`status-badge ${status}`}>
+                                                        {status === 'recebido' ? 'RECEBIDO' : 
+                                                         status === 'atrasado' ? 'ATRASADO' :
+                                                         status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
+                                                    </span>
+                                                </td>
+                                                <td className="table-buttons">
+                                                    <button className="btn-icon" onClick={() => handleEdit(receita)} title="Editar">✏️</button>
+                                                    <button className="btn-icon btn-delete" onClick={() => handleDelete(receita)} title="Excluir">🗑️</button>
+                                                    {receita.grupo_recorrencia_id && <span title="Receita Recorrente">🔄</span>}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>
@@ -404,3 +429,4 @@ export default function Receitas() {
         </div>
     );
 }
+

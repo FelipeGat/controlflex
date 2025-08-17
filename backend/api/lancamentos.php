@@ -1,7 +1,7 @@
 <?php
 /**
  * API de Lançamentos - Sistema ControleFlex
- * Versão refatorada com melhorias de segurança, performance e funcionalidades
+ * Versão corrigida com funcionalidades completas
  */
 
 // Headers CORS mais seguros
@@ -19,7 +19,6 @@ header("Access-Control-Allow-Origin: http://localhost:3000" );
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
-
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -82,7 +81,7 @@ class LancamentosAPI {
             SELECT 
                 d.id,
                 'despesa' AS tipo,
-                d.onde_comprou AS descricao,
+                COALESCE(fo.nome, 'Fornecedor não informado') AS descricao,
                 d.valor,
                 d.data_compra AS data_prevista,
                 d.data_pagamento AS data_real,
@@ -93,6 +92,7 @@ class LancamentosAPI {
             FROM despesas d
             LEFT JOIN familiares f1 ON d.quem_comprou = f1.id
             LEFT JOIN categorias c1 ON d.categoria_id = c1.id
+            LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
             WHERE d.usuario_id = :usuario_id1 $where_despesas
 
             UNION ALL
@@ -100,7 +100,7 @@ class LancamentosAPI {
             SELECT 
                 r.id,
                 'receita' AS tipo,
-                r.origem_receita AS descricao,
+                COALESCE(r.origem_receita, 'Origem não informada') AS descricao,
                 r.valor,
                 r.data_prevista_recebimento AS data_prevista,
                 r.data_recebimento AS data_real,
@@ -167,36 +167,14 @@ class LancamentosAPI {
         $where_receitas = '';
         $bind_params = [];
         
-        // Filtro por período
-        $periodo = $params['periodo'] ?? 'mes';
-        switch ($periodo) {
-            case 'dia':
-                $where_despesas .= " AND DATE(d.data_compra) = CURDATE()";
-                $where_receitas .= " AND DATE(r.data_prevista_recebimento) = CURDATE()";
-                break;
-            case 'semana':
-                $where_despesas .= " AND YEARWEEK(d.data_compra, 1) = YEARWEEK(CURDATE(), 1)";
-                $where_receitas .= " AND YEARWEEK(r.data_prevista_recebimento, 1) = YEARWEEK(CURDATE(), 1)";
-                break;
-            case 'ano':
-                $where_despesas .= " AND YEAR(d.data_compra) = YEAR(CURDATE())";
-                $where_receitas .= " AND YEAR(r.data_prevista_recebimento) = YEAR(CURDATE())";
-                break;
-            case 'personalizado':
-                if (!empty($params['dataInicio']) && !empty($params['dataFim'])) {
-                    $where_despesas .= " AND d.data_compra BETWEEN :data_inicio1 AND :data_fim1";
-                    $where_receitas .= " AND r.data_prevista_recebimento BETWEEN :data_inicio2 AND :data_fim2";
-                    $bind_params[':data_inicio1'] = $params['dataInicio'];
-                    $bind_params[':data_fim1'] = $params['dataFim'];
-                    $bind_params[':data_inicio2'] = $params['dataInicio'];
-                    $bind_params[':data_fim2'] = $params['dataFim'];
-                }
-                break;
-            case 'mes':
-            default:
-                $where_despesas .= " AND MONTH(d.data_compra) = MONTH(CURDATE()) AND YEAR(d.data_compra) = YEAR(CURDATE())";
-                $where_receitas .= " AND MONTH(r.data_prevista_recebimento) = MONTH(CURDATE()) AND YEAR(r.data_prevista_recebimento) = YEAR(CURDATE())";
-                break;
+        // Filtro por período personalizado (sempre usar dataInicio e dataFim)
+        if (!empty($params['dataInicio']) && !empty($params['dataFim'])) {
+            $where_despesas .= " AND d.data_compra BETWEEN :data_inicio1 AND :data_fim1";
+            $where_receitas .= " AND r.data_prevista_recebimento BETWEEN :data_inicio2 AND :data_fim2";
+            $bind_params[':data_inicio1'] = $params['dataInicio'];
+            $bind_params[':data_fim1'] = $params['dataFim'];
+            $bind_params[':data_inicio2'] = $params['dataInicio'];
+            $bind_params[':data_fim2'] = $params['dataFim'];
         }
         
         // Filtro por tipo
@@ -238,7 +216,7 @@ class LancamentosAPI {
         // Filtro por busca
         if (!empty($params['busca'])) {
             $busca = '%' . $params['busca'] . '%';
-            $where_despesas .= " AND (d.onde_comprou LIKE :busca1 OR d.observacoes LIKE :busca1)";
+            $where_despesas .= " AND (fo.nome LIKE :busca1 OR d.observacoes LIKE :busca1)";
             $where_receitas .= " AND (r.origem_receita LIKE :busca2 OR r.observacoes LIKE :busca2)";
             $bind_params[':busca1'] = $busca;
             $bind_params[':busca2'] = $busca;
@@ -263,6 +241,7 @@ class LancamentosAPI {
         $sql = "
             SELECT COUNT(*) as total FROM (
                 SELECT d.id FROM despesas d 
+                LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
                 WHERE d.usuario_id = :usuario_id1 $where_despesas
                 UNION ALL
                 SELECT r.id FROM receitas r 
@@ -315,10 +294,10 @@ class LancamentosAPI {
         // Verificar se o lançamento pertence ao usuário
         if ($tipo === 'despesa') {
             $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ? AND data_pagamento IS NULL");
-            $update_sql = "UPDATE despesas SET data_pagamento = NOW() WHERE id = ? AND usuario_id = ?";
+            $update_sql = "UPDATE despesas SET data_pagamento = CURDATE() WHERE id = ? AND usuario_id = ?";
         } else {
             $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ? AND data_recebimento IS NULL");
-            $update_sql = "UPDATE receitas SET data_recebimento = NOW() WHERE id = ? AND usuario_id = ?";
+            $update_sql = "UPDATE receitas SET data_recebimento = CURDATE() WHERE id = ? AND usuario_id = ?";
         }
         
         $stmt->execute([$id, $this->usuario_id]);
@@ -397,6 +376,47 @@ class LancamentosAPI {
     }
     
     /**
+     * Exclui um lançamento
+     */
+    public function excluir($params) {
+        $this->setUsuario($params['usuario_id'] ?? null);
+        
+        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
+        $tipo = $params['tipo'] ?? '';
+        
+        if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
+            throw new Exception('Parâmetros inválidos', 400);
+        }
+        
+        // Verificar se o lançamento pertence ao usuário
+        if ($tipo === 'despesa') {
+            $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ?");
+            $delete_sql = "DELETE FROM despesas WHERE id = ? AND usuario_id = ?";
+        } else {
+            $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ?");
+            $delete_sql = "DELETE FROM receitas WHERE id = ? AND usuario_id = ?";
+        }
+        
+        $stmt->execute([$id, $this->usuario_id]);
+        if (!$stmt->fetch()) {
+            throw new Exception('Lançamento não encontrado', 404);
+        }
+        
+        // Excluir o registro
+        $stmt = $this->pdo->prepare($delete_sql);
+        $stmt->execute([$id, $this->usuario_id]);
+        
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Erro ao excluir lançamento', 500);
+        }
+        
+        return [
+            'success' => true,
+            'message' => ucfirst($tipo) . ' excluída com sucesso!'
+        ];
+    }
+    
+    /**
      * Obtém resumo/estatísticas dos lançamentos
      */
     public function obterResumo($params) {
@@ -449,81 +469,72 @@ class LancamentosAPI {
     }
 }
 
-// Tratamento de erros e execução
+// Processar requisição
 try {
     $api = new LancamentosAPI($pdo);
-    
     $method = $_SERVER['REQUEST_METHOD'];
-    $action = $_GET['action'] ?? $_POST['action'] ?? 'list';
     
-    // Obter parâmetros baseado no método HTTP
-    if ($method === 'GET') {
-        $params = $_GET;
-    } else {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $params = $input ?: $_POST;
-    }
-    
-    // Log da requisição (em ambiente de desenvolvimento)
-    if (defined('DEBUG') && DEBUG) {
-        error_log("LancamentosAPI - Action: $action, Method: $method, Params: " . json_encode($params));
-    }
-    
-    // Roteamento das ações
-    switch ($action) {
-        case 'list':
-        case 'listar':
-            $response = $api->listar($params);
-            break;
+    switch ($method) {
+        case 'GET':
+            $action = $_GET['action'] ?? 'list';
             
-        case 'quitar':
-            if ($method !== 'POST') {
-                throw new Exception('Método não permitido. Use POST.', 405);
+            switch ($action) {
+                case 'list':
+                    echo json_encode($api->listar($_GET));
+                    break;
+                    
+                case 'detalhes':
+                    echo json_encode($api->obterDetalhes($_GET));
+                    break;
+                    
+                case 'resumo':
+                    echo json_encode($api->obterResumo($_GET));
+                    break;
+                    
+                default:
+                    throw new Exception('Ação não reconhecida', 400);
             }
-            $response = $api->quitar($params);
             break;
             
-        case 'detalhes':
-            $response = $api->obterDetalhes($params);
+        case 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $action = $data['action'] ?? '';
+            
+            switch ($action) {
+                case 'quitar':
+                    echo json_encode($api->quitar($data));
+                    break;
+                    
+                default:
+                    throw new Exception('Ação não reconhecida', 400);
+            }
             break;
             
-        case 'resumo':
-            $response = $api->obterResumo($params);
+        case 'DELETE':
+            $action = $_GET['action'] ?? 'excluir';
+            
+            switch ($action) {
+                case 'excluir':
+                    echo json_encode($api->excluir($_GET));
+                    break;
+                    
+                default:
+                    throw new Exception('Ação não reconhecida', 400);
+            }
             break;
             
         default:
-            throw new Exception('Ação não encontrada', 404);
+            throw new Exception('Método não permitido', 405);
     }
     
-    // Resposta de sucesso
-    http_response_code(200);
-    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
-    
 } catch (Exception $e) {
-    // Log do erro
-    error_log("LancamentosAPI Error: " . $e->getMessage() . " - Trace: " . $e->getTraceAsString());
-    
-    // Resposta de erro
-    $http_code = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
-    http_response_code($http_code);
-    
+    $code = $e->getCode() ?: 500;
+    http_response_code($code);
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage(),
-        'code' => $e->getCode()
-    ], JSON_UNESCAPED_UNICODE);
-    
-} catch (Throwable $e) {
-    // Log de erro crítico
-    error_log("LancamentosAPI Critical Error: " . $e->getMessage() . " - Trace: " . $e->getTraceAsString());
-    
-    // Resposta de erro genérica
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Erro interno do servidor',
-        'code' => 500
-    ], JSON_UNESCAPED_UNICODE);
+        'message' => $e->getMessage(),
+        'code' => $code
+    ]);
 }
 ?>
 

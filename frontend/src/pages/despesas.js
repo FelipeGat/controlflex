@@ -75,6 +75,11 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                     <label htmlFor="data_compra">Data da Compra *</label>
                     <input id="data_compra" name="data_compra" type="date" value={form.data_compra} onChange={handleChange} className="form-control" required />
                 </div>
+                <div className="form-group">
+                    <label htmlFor="data_pagamento">Data do Pagamento</label>
+                    <input id="data_pagamento" name="data_pagamento" type="date" value={form.data_pagamento || ''} onChange={handleChange} className="form-control" />
+                    <small className="form-text">Deixe em branco se ainda não foi pago</small>
+                </div>
                 <div className="form-group form-group-full-width">
                     <label htmlFor="observacoes">Observações</label>
                     <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
@@ -141,7 +146,6 @@ const SortableHeader = ({ children, name, sortConfig, onSort }) => {
     );
 };
 
-
 // --- COMPONENTE PRINCIPAL DA PÁGINA ---
 export default function Despesas() {
     const navigate = useNavigate();
@@ -164,7 +168,7 @@ export default function Despesas() {
     const initialFormState = useMemo(() => ({
         quem_comprou: '', onde_comprou: '', categoria_id: '', forma_pagamento: '',
         valor: '', data_compra: new Date().toISOString().split('T')[0],
-        recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
+        data_pagamento: '', recorrente: false, parcelas: 1, frequencia: 'mensal', observacoes: ''
     }), []);
 
     useEffect(() => {
@@ -316,6 +320,22 @@ export default function Despesas() {
         fetchDespesas();
     };
 
+    // Função para determinar o status da despesa
+    const getStatusDespesa = (dataCompra, dataPagamento) => {
+        if (dataPagamento) return 'pago';
+        
+        const hoje = new Date().toISOString().split('T')[0];
+        if (dataCompra < hoje) return 'atrasado';
+        if (dataCompra === hoje) return 'hoje';
+        return 'pendente';
+    };
+
+    // Função para formatar data
+    const formatarData = (data) => {
+        if (!data) return '-';
+        return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+    };
+
     return (
         <div className="page-container">
             {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
@@ -378,27 +398,41 @@ export default function Despesas() {
                                     <SortableHeader name="onde_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>Fornecedor</SortableHeader>
                                     <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
                                     <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
-                                    <SortableHeader name="data_compra" sortConfig={sortConfig} onSort={handleSort}>Data</SortableHeader>
+                                    <SortableHeader name="data_compra" sortConfig={sortConfig} onSort={handleSort}>Data Compra</SortableHeader>
+                                    <th>Data Pagamento</th>
+                                    <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {despesas.length > 0 ? despesas.map(d => (
-                                    <tr key={d.id}>
-                                        <td>{d.quem_comprou_nome}</td>
-                                        <td>{d.onde_comprou_nome}</td>
-                                        <td>{d.categoria_nome}</td>
-                                        <td>{`R$ ${parseFloat(d.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</td>
-                                        <td>{new Date(d.data_compra).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                                        <td>
-                                            <div className="table-buttons">
-                                                <button onClick={() => handleEdit(d)} className="btn-icon" title="Editar"><i className="fas fa-pen"></i></button>
-                                                <button onClick={() => handleDelete(d)} className="btn-icon btn-delete" title="Excluir"><i className="fas fa-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan="6" className="empty-state">Nenhuma despesa encontrada.</td></tr>
+                                {despesas.length === 0 ? (
+                                    <tr><td colSpan="8" className="empty-state">Nenhuma despesa encontrada.</td></tr>
+                                ) : (
+                                    despesas.map(despesa => {
+                                        const status = getStatusDespesa(despesa.data_compra, despesa.data_pagamento);
+                                        return (
+                                            <tr key={despesa.id} className={`linha-${status}`}>
+                                                <td>{despesa.quem_comprou_nome}</td>
+                                                <td>{despesa.onde_comprou_nome}</td>
+                                                <td>{despesa.categoria_nome}</td>
+                                                <td>R$ {parseFloat(despesa.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                                <td>{formatarData(despesa.data_compra)}</td>
+                                                <td>{formatarData(despesa.data_pagamento)}</td>
+                                                <td>
+                                                    <span className={`status-badge ${status}`}>
+                                                        {status === 'pago' ? 'PAGO' : 
+                                                         status === 'atrasado' ? 'ATRASADO' :
+                                                         status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
+                                                    </span>
+                                                </td>
+                                                <td className="table-buttons">
+                                                    <button className="btn-icon" onClick={() => handleEdit(despesa)} title="Editar">✏️</button>
+                                                    <button className="btn-icon btn-delete" onClick={() => handleDelete(despesa)} title="Excluir">🗑️</button>
+                                                    {despesa.grupo_recorrencia_id && <span title="Despesa Recorrente">🔄</span>}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>
@@ -408,3 +442,4 @@ export default function Despesas() {
         </div>
     );
 }
+

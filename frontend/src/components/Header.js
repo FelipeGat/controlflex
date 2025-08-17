@@ -41,13 +41,19 @@ function Header() {
 
   return (
     <nav className="navbar">
-      <div className="navbar-left" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+      {/* ALTERAÇÃO: Logo agora redireciona para HOME */}
+      <div className="navbar-left" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
         <span className="navbar-logo">ControleFlex</span>
       </div>
 
       <div className="navbar-center">
+        {/* NOVO: Botão HOME como primeiro item */}
+        <button className="nav-item" onClick={() => navigate('/home')}>
+          🏠 Home
+        </button>
+
         <button className="nav-item" onClick={() => navigate('/dashboard')}>
-          Dashboard
+          📊 Dashboard
         </button>
 
         <div
@@ -61,19 +67,20 @@ function Header() {
           }}
         >
           <button className="nav-item">
-            Cadastro <FaChevronDown />
+            📝 Cadastro <FaChevronDown />
           </button>
           {showCadastroMenu && (
             <div className="dropdown-content">
-              <button onClick={() => navigate('/bancos')}>Bancos</button>
-              <button onClick={() => navigate('/familiares')}>Familiares</button>
-              <button onClick={() => navigate('/fornecedores')}>Fornecedores</button>
-              <button onClick={() => navigate('/usuarios')}>Usuários</button>
-              <button onClick={() => navigate('/despesas')}>Despesas</button>
-              <button onClick={() => navigate('/receitas')}>Receitas</button>
-              <button onClick={() => navigate('/categorias')}>Categorias</button>
-              <button onClick={() => navigate('/Investimentos')}>Investimentos</button>
-              <button onClick={() => navigate('/Lancamentos')}>Lancamentos</button>
+              <button onClick={() => navigate('/bancos')}>🏦 Bancos</button>
+              <button onClick={() => navigate('/familiares')}>👥 Familiares</button>
+              <button onClick={() => navigate('/fornecedores')}>🏪 Fornecedores</button>
+              <button onClick={() => navigate('/usuarios')}>👤 Usuários</button>
+              <button onClick={() => navigate('/despesas')}>💸 Despesas</button>
+              <button onClick={() => navigate('/receitas')}>💰 Receitas</button>
+              <button onClick={() => navigate('/categorias')}>📂 Categorias</button>
+              <button onClick={() => navigate('/investimentos')}>📈 Investimentos</button>
+              {/* CORREÇÃO: Lançamentos com L minúsculo para manter consistência */}
+              <button onClick={() => navigate('/lancamentos')}>📌 Lançamentos</button>
             </div>
           )}
         </div>
@@ -89,13 +96,15 @@ function Header() {
           }}
         >
           <button className="nav-item">
-            Relatórios <FaChevronDown />
+            📊 Relatórios <FaChevronDown />
           </button>
           {showRelatoriosMenu && (
             <div className="dropdown-content">
-              <button onClick={() => navigate('/relatorio-despesas')}>Despesas</button>
-              <button onClick={() => navigate('/relatorio-receitas')}>Receitas</button>
-              <button onClick={() => navigate('/relatorio-investimentos')}>Investimentos</button>
+              <button onClick={() => navigate('/relatorio-despesas')}>💸 Despesas</button>
+              <button onClick={() => navigate('/relatorio-receitas')}>💰 Receitas</button>
+              <button onClick={() => navigate('/relatorio-investimentos')}>📈 Investimentos</button>
+              {/* NOVO: Adicionar link direto para Lançamentos nos relatórios */}
+              <button onClick={() => navigate('/lancamentos')}>📌 Lançamentos</button>
             </div>
           )}
         </div>
@@ -127,8 +136,8 @@ function Header() {
 
         {showUserMenu && (
           <div className="profile-dropdown">
-            <button onClick={() => navigate('/perfil')}>Editar Perfil</button>
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={() => navigate('/perfil')}>✏️ Editar Perfil</button>
+            <button onClick={handleLogout}>🚪 Logout</button>
           </div>
         )}
       </div>

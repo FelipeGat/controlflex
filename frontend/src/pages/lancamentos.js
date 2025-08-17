@@ -43,7 +43,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
   );
 };
 
-// Componente de Filtros Avançados
+// Componente de Filtros Avançados - CORRIGIDO
 const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
   return (
     <div className="filtros-avancados">
@@ -55,10 +55,17 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
             onChange={(e) => onFiltrosChange({ ...filtros, periodo: e.target.value })}
             className="form-control"
           >
-            <option value="dia">Hoje</option>
-            <option value="semana">Esta Semana</option>
-            <option value="mes">Este Mês</option>
-            <option value="ano">Este Ano</option>
+            <option value="today">Hoje</option>
+            <option value="yesterday">Ontem</option>
+            <option value="tomorrow">Amanhã</option>
+            <option value="this_week">Esta Semana</option>
+            <option value="last_week">Última Semana</option>
+            <option value="this_month">Este Mês</option>
+            <option value="last_month">Último Mês</option>
+            <option value="next_month">Próximo Mês</option>
+            <option value="this_year">Este Ano</option>
+            <option value="last_year">Último Ano</option>
+            <option value="next_year">Próximo Ano</option>
             <option value="personalizado">Período Personalizado</option>
           </select>
         </div>
@@ -157,9 +164,9 @@ export default function Lancamentos() {
     total: 0
   });
 
-  // Estados de filtros
+  // Estados de filtros - CORRIGIDO
   const [filtros, setFiltros] = useState({
-    periodo: 'mes',
+    periodo: 'this_month',
     dataInicio: '',
     dataFim: '',
     tipo: '',
@@ -177,19 +184,104 @@ export default function Lancamentos() {
     }
   }, [navigate]);
 
-  // Função para buscar lançamentos
+  // Função para calcular datas baseado no período - NOVA
+  const calcularDatas = useCallback((periodo) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let inicio, fim;
+    
+    switch (periodo) {
+      case 'today':
+        inicio = fim = hoje.toISOString().split('T')[0];
+        break;
+      case 'yesterday':
+        const ontem = new Date(hoje);
+        ontem.setDate(hoje.getDate() - 1);
+        inicio = fim = ontem.toISOString().split('T')[0];
+        break;
+      case 'tomorrow':
+        const amanha = new Date(hoje);
+        amanha.setDate(hoje.getDate() + 1);
+        inicio = fim = amanha.toISOString().split('T')[0];
+        break;
+      case 'this_week':
+        const primeiroDiaSemana = new Date(hoje);
+        const diaSemana = hoje.getDay();
+        primeiroDiaSemana.setDate(hoje.getDate() - diaSemana);
+        const ultimoDiaSemana = new Date(primeiroDiaSemana);
+        ultimoDiaSemana.setDate(primeiroDiaSemana.getDate() + 6);
+        inicio = primeiroDiaSemana.toISOString().split('T')[0];
+        fim = ultimoDiaSemana.toISOString().split('T')[0];
+        break;
+      case 'last_week':
+        const inicioSemanaPassada = new Date(hoje);
+        inicioSemanaPassada.setDate(hoje.getDate() - hoje.getDay() - 7);
+        const fimSemanaPassada = new Date(inicioSemanaPassada);
+        fimSemanaPassada.setDate(inicioSemanaPassada.getDate() + 6);
+        inicio = inicioSemanaPassada.toISOString().split('T')[0];
+        fim = fimSemanaPassada.toISOString().split('T')[0];
+        break;
+      case 'this_month':
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().split('T')[0];
+        break;
+      case 'last_month':
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0).toISOString().split('T')[0];
+        break;
+      case 'next_month':
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0).toISOString().split('T')[0];
+        break;
+      case 'this_year':
+        inicio = new Date(hoje.getFullYear(), 0, 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear(), 11, 31).toISOString().split('T')[0];
+        break;
+      case 'last_year':
+        inicio = new Date(hoje.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+        break;
+      case 'next_year':
+        inicio = new Date(hoje.getFullYear() + 1, 0, 1).toISOString().split('T')[0];
+        fim = new Date(hoje.getFullYear() + 1, 11, 31).toISOString().split('T')[0];
+        break;
+      default:
+        inicio = fim = hoje.toISOString().split('T')[0];
+        break;
+    }
+    
+    return { inicio, fim };
+  }, []);
+
+  // Função para buscar lançamentos - CORRIGIDA
   const fetchLancamentos = useCallback(async (filtrosAtuais = filtros, paginaAtual = 1) => {
     if (!usuario) return;
 
     try {
       setLoading(true);
       
+      // Calcular datas se não for período personalizado
+      let dataInicio = filtrosAtuais.dataInicio;
+      let dataFim = filtrosAtuais.dataFim;
+      
+      if (filtrosAtuais.periodo !== 'personalizado') {
+        const datas = calcularDatas(filtrosAtuais.periodo);
+        dataInicio = datas.inicio;
+        dataFim = datas.fim;
+      }
+      
       const params = {
         action: 'list',
         usuario_id: usuario.id,
         pagina: paginaAtual,
         por_pagina: paginacao.porPagina,
-        ...filtrosAtuais
+        periodo: filtrosAtuais.periodo === 'personalizado' ? 'personalizado' : 'personalizado',
+        dataInicio: dataInicio,
+        dataFim: dataFim,
+        tipo: filtrosAtuais.tipo,
+        status: filtrosAtuais.status,
+        busca: filtrosAtuais.busca
       };
 
       const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, { params });
@@ -198,8 +290,8 @@ export default function Lancamentos() {
         setLancamentos(response.data.data || []);
         setPaginacao(prev => ({
           ...prev,
-          pagina: paginaAtual,
-          total: response.data.total || 0
+          pagina: response.data.pagination?.pagina || paginaAtual,
+          total: response.data.pagination?.total || 0
         }));
       } else {
         throw new Error(response.data.message || 'Erro ao carregar lançamentos');
@@ -210,7 +302,7 @@ export default function Lancamentos() {
     } finally {
       setLoading(false);
     }
-  }, [usuario, filtros, paginacao.porPagina]);
+  }, [usuario, calcularDatas, paginacao.porPagina]);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -224,7 +316,7 @@ export default function Lancamentos() {
     setNotification({ message, type });
   }, []);
 
-  // Função para quitar lançamento
+  // Função para quitar lançamento - CORRIGIDA
   const quitarLancamento = useCallback(async (id, tipo) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
@@ -246,6 +338,64 @@ export default function Lancamentos() {
     }
   }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
 
+  // Função para visualizar detalhes - NOVA
+  const visualizarDetalhes = useCallback(async (id, tipo) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, {
+        params: {
+          action: 'detalhes',
+          id,
+          tipo,
+          usuario_id: usuario.id
+        }
+      });
+
+      if (response.data.success) {
+        // Implementar modal de detalhes ou navegar para página de detalhes
+        showNotification('Funcionalidade de visualização em desenvolvimento', 'info');
+      } else {
+        throw new Error(response.data.message || 'Erro ao carregar detalhes');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar detalhes:', error);
+      showNotification('Erro ao carregar detalhes: ' + error.message, 'error');
+    }
+  }, [usuario, showNotification]);
+
+  // Função para editar lançamento - NOVA
+  const editarLancamento = useCallback((id, tipo) => {
+    // Navegar para a tela de edição correspondente
+    if (tipo === 'receita') {
+      navigate(`/receitas?edit=${id}`);
+    } else {
+      navigate(`/despesas?edit=${id}`);
+    }
+  }, [navigate]);
+
+  // Função para excluir lançamento - NOVA
+  const excluirLancamento = useCallback(async (id, tipo) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/lancamentos.php`, {
+        params: {
+          action: 'excluir',
+          id,
+          tipo,
+          usuario_id: usuario.id
+        }
+      });
+
+      if (response.data.success) {
+        showNotification(response.data.message || `${tipo} excluída com sucesso!`);
+        fetchLancamentos(filtros, paginacao.pagina);
+      } else {
+        throw new Error(response.data.message || 'Erro ao excluir lançamento');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir lançamento:', error);
+      showNotification('Erro ao excluir lançamento: ' + error.message, 'error');
+    }
+  }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
+
   // Função para confirmar quitação
   const confirmarQuitacao = useCallback((id, tipo, descricao) => {
     setConfirmDialog({
@@ -260,15 +410,29 @@ export default function Lancamentos() {
     });
   }, [quitarLancamento]);
 
+  // Função para confirmar exclusão - NOVA
+  const confirmarExclusao = useCallback((id, tipo, descricao) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `Confirmar Exclusão`,
+      message: `Deseja realmente excluir "${descricao}"?`,
+      onConfirm: () => {
+        excluirLancamento(id, tipo);
+        setConfirmDialog({ isOpen: false });
+      },
+      onCancel: () => setConfirmDialog({ isOpen: false })
+    });
+  }, [excluirLancamento]);
+
   // Função para aplicar filtros
   const aplicarFiltros = useCallback(() => {
     fetchLancamentos(filtros, 1);
   }, [filtros, fetchLancamentos]);
 
-  // Função para limpar filtros
+  // Função para limpar filtros - CORRIGIDA
   const limparFiltros = useCallback(() => {
     const filtrosLimpos = {
-      periodo: 'mes',
+      periodo: 'this_month',
       dataInicio: '',
       dataFim: '',
       tipo: '',
@@ -447,18 +611,21 @@ export default function Lancamentos() {
                           )}
                           <button
                             className="btn-action btn-info"
+                            onClick={() => visualizarDetalhes(item.id, item.tipo)}
                             title="Visualizar"
                           >
                             <FaEye />
                           </button>
                           <button
                             className="btn-action btn-warning"
+                            onClick={() => editarLancamento(item.id, item.tipo)}
                             title="Editar"
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="btn-action btn-danger"
+                            onClick={() => confirmarExclusao(item.id, item.tipo, item.descricao)}
                             title="Excluir"
                           >
                             <FaTrash />
@@ -502,3 +669,4 @@ export default function Lancamentos() {
     </div>
   );
 }
+

@@ -30,7 +30,8 @@ function Login() {
           foto: dados.foto || null,
         }));
 
-        navigate('/dashboard');
+        // ALTERAÇÃO: Redirecionar para HOME ao invés de Dashboard
+        navigate('/home');
       } else {
         setErro(dados.erro || 'Erro ao fazer login');
       }
@@ -88,3 +89,4 @@ function Login() {
 }
 
 export default Login;
+

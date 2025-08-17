@@ -1,5 +1,5 @@
 <?php
-// /api/receitas.php (Endpoint com Ordenação e Limite)
+// /api/receitas.php (Endpoint corrigido para novos nomes de colunas)
 
 // 1. CABEÇALHOS DE SEGURANÇA E CORS
 // ===================================================
@@ -25,7 +25,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     switch ($method) {
-        // ========= INÍCIO DA ALTERAÇÃO NO GET =========
         case 'GET':
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
@@ -34,25 +33,27 @@ try {
                 exit;
             }
 
-            // Novos parâmetros de filtro, ordenação e limite
+            // Parâmetros de filtro, ordenação e limite
             $inicio = filter_input(INPUT_GET, 'inicio', FILTER_SANITIZE_STRING);
             $fim = filter_input(INPUT_GET, 'fim', FILTER_SANITIZE_STRING);
-            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10; // Padrão de 10 linhas
-            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_recebimento'; // Padrão é ordenar por data
-            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC'; // Padrão é descendente
+            $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT) ?: 10;
+            $sortBy = filter_input(INPUT_GET, 'sortBy', FILTER_SANITIZE_STRING) ?: 'data_prevista_recebimento';
+            $sortOrder = filter_input(INPUT_GET, 'sortOrder', FILTER_SANITIZE_STRING) ?: 'DESC';
 
-            // Lista de colunas permitidas para ordenação para evitar SQL Injection
-            $allowedSortColumns = ['quem_recebeu_nome', 'categoria_nome', 'valor', 'data_recebimento'];
+            // Lista de colunas permitidas para ordenação
+            $allowedSortColumns = ['quem_recebeu_nome', 'categoria_nome', 'valor', 'data_prevista_recebimento', 'data_recebimento'];
             if (!in_array($sortBy, $allowedSortColumns)) {
-                $sortBy = 'data_recebimento'; // Volta para o padrão se a coluna for inválida
+                $sortBy = 'data_prevista_recebimento';
             }
             
             if (strtoupper($sortOrder) !== 'ASC' && strtoupper($sortOrder) !== 'DESC') {
                 $sortOrder = 'DESC';
             }
 
+            // Query corrigida com os novos nomes das colunas
             $sql = "SELECT 
-                        r.id, r.valor, r.data_recebimento, r.observacoes, r.recorrente, r.parcelas, r.grupo_recorrencia_id,
+                        r.id, r.valor, r.data_prevista_recebimento, r.data_recebimento, r.observacoes, 
+                        r.recorrente, r.parcelas, r.grupo_recorrencia_id,
                         r.quem_recebeu as quem_recebeu_id, f.nome as quem_recebeu_nome,
                         r.categoria_id, cat.nome as categoria_nome,
                         r.forma_recebimento as forma_recebimento_id, b.nome as forma_recebimento_nome
@@ -64,8 +65,9 @@ try {
             
             $params = [':uid' => $usuario_id];
 
+            // Filtro por data (usando data_prevista_recebimento)
             if ($inicio && $fim) {
-                $sql .= " AND r.data_recebimento BETWEEN :inicio AND :fim";
+                $sql .= " AND r.data_prevista_recebimento BETWEEN :inicio AND :fim";
                 $params[':inicio'] = $inicio;
                 $params[':fim'] = $fim;
             }
@@ -75,7 +77,6 @@ try {
             $sql .= " LIMIT :limit";
             
             $stmt = $pdo->prepare($sql);
-            // Precisamos vincular o limite como inteiro
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             foreach ($params as $key => &$val) {
                 if ($key !== ':limit') {
@@ -88,30 +89,47 @@ try {
 
             echo json_encode($receitas);
             break;
-        // ========= FIM DA ALTERAÇÃO NO GET =========
 
-        // ... (cases POST e DELETE permanecem os mesmos) ...
         case 'POST':
             $data = json_decode(file_get_contents("php://input"), true);
             $id = $data['id'] ?? null;
 
-            if (empty($data['usuario_id']) || empty($data['quem_recebeu']) || empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_recebimento'])) {
+            // Validação dos campos obrigatórios (corrigido para data_prevista_recebimento)
+            if (empty($data['usuario_id']) || empty($data['quem_recebeu']) || empty($data['categoria_id']) || 
+                !isset($data['valor']) || empty($data['data_prevista_recebimento'])) {
                 http_response_code(400 );
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
 
             if ($id) {
-                $sql = "UPDATE receitas SET quem_recebeu = :qr, categoria_id = :cid, forma_recebimento = :fr, valor = :v, data_recebimento = :dr, observacoes = :obs WHERE id = :id AND usuario_id = :uid";
+                // UPDATE - corrigido para usar os novos nomes das colunas
+                $sql = "UPDATE receitas SET 
+                            quem_recebeu = :qr, 
+                            categoria_id = :cid, 
+                            forma_recebimento = :fr, 
+                            valor = :v, 
+                            data_prevista_recebimento = :dpr,
+                            data_recebimento = :dr,
+                            observacoes = :obs 
+                        WHERE id = :id AND usuario_id = :uid";
+                
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
-                    ':qr' => $data['quem_recebeu'], ':cid' => $data['categoria_id'], ':fr' => $data['forma_recebimento'],
-                    ':v' => $data['valor'], ':dr' => $data['data_recebimento'], ':obs' => $data['observacoes'], 
-                    ':id' => $id, ':uid' => $data['usuario_id']
+                    ':qr' => $data['quem_recebeu'], 
+                    ':cid' => $data['categoria_id'], 
+                    ':fr' => $data['forma_recebimento'],
+                    ':v' => $data['valor'], 
+                    ':dpr' => $data['data_prevista_recebimento'],
+                    ':dr' => !empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
+                    ':obs' => $data['observacoes'], 
+                    ':id' => $id, 
+                    ':uid' => $data['usuario_id']
                 ]);
                 echo json_encode(['sucesso' => true, 'mensagem' => 'Receita atualizada com sucesso!']);
 
             } else {
+                // INSERT - corrigido para usar os novos nomes das colunas
                 $pdo->beginTransaction();
                 try {
                     $isRecorrente = !empty($data['recorrente']);
@@ -142,11 +160,17 @@ try {
                     
                     $grupoRecorrenciaId = ($totalParcelas > 1) ? uniqid('rec_') : null;
 
-                    $sql = "INSERT INTO receitas (usuario_id, quem_recebeu, categoria_id, forma_recebimento, valor, data_recebimento, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id) 
-                            VALUES (:uid, :qr, :cid, :fr, :v, :dr, :rec, :parc, :freq, :obs, :grid)";
+                    // SQL corrigido com os novos nomes das colunas
+                    $sql = "INSERT INTO receitas (
+                                usuario_id, quem_recebeu, categoria_id, forma_recebimento, valor, 
+                                data_prevista_recebimento, data_recebimento, recorrente, parcelas, 
+                                frequencia, observacoes, grupo_recorrencia_id
+                            ) VALUES (
+                                :uid, :qr, :cid, :fr, :v, :dpr, :dr, :rec, :parc, :freq, :obs, :grid
+                            )";
                     
                     $stmt = $pdo->prepare($sql);
-                    $dataRecebimentoInicial = new DateTime($data['data_recebimento']);
+                    $dataRecebimentoInicial = new DateTime($data['data_prevista_recebimento']);
 
                     for ($i = 0; $i < $totalParcelas; $i++) {
                         $dataParcela = clone $dataRecebimentoInicial;
@@ -160,7 +184,8 @@ try {
                             ':cid' => $data['categoria_id'],
                             ':fr' => $data['forma_recebimento'],
                             ':v' => $data['valor'],
-                            ':dr' => $dataParcela->format('Y-m-d'),
+                            ':dpr' => $dataParcela->format('Y-m-d'),
+                            ':dr' => !empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
                             ':rec' => $isRecorrente ? 1 : 0,
                             ':parc' => $totalParcelas,
                             ':freq' => $frequencia,
@@ -192,7 +217,8 @@ try {
 
             $pdo->beginTransaction();
             try {
-                $stmtInfo = $pdo->prepare("SELECT grupo_recorrencia_id, data_recebimento FROM receitas WHERE id = :id");
+                // Query corrigida para usar data_prevista_recebimento
+                $stmtInfo = $pdo->prepare("SELECT grupo_recorrencia_id, data_prevista_recebimento FROM receitas WHERE id = :id");
                 $stmtInfo->execute([':id' => $id]);
                 $receita = $stmtInfo->fetch(PDO::FETCH_ASSOC);
 
@@ -202,10 +228,11 @@ try {
 
                 $rowCount = 0;
                 if ($escopo === 'esta_e_futuras' && $receita['grupo_recorrencia_id']) {
-                    $stmtDelete = $pdo->prepare("DELETE FROM receitas WHERE grupo_recorrencia_id = :grid AND data_recebimento >= :dr");
+                    // Query corrigida para usar data_prevista_recebimento
+                    $stmtDelete = $pdo->prepare("DELETE FROM receitas WHERE grupo_recorrencia_id = :grid AND data_prevista_recebimento >= :dpr");
                     $stmtDelete->execute([
                         ':grid' => $receita['grupo_recorrencia_id'],
-                        ':dr' => $receita['data_recebimento']
+                        ':dpr' => $receita['data_prevista_recebimento']
                     ]);
                     $rowCount = $stmtDelete->rowCount();
                 } else {
@@ -235,3 +262,4 @@ try {
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>
+
