@@ -1,15 +1,15 @@
 <?php
-// /api/despesas.php (Endpoint corrigido para novos nomes de colunas)
+// /api/despesas.php
 
 // 1. CABEÇALHOS DE SEGURANÇA E CORS
 // ===================================================
 $frontend_url = "http://localhost:3000"; 
-header("Access-Control-Allow-Origin: " . $frontend_url );
+header("Access-Control-Allow-Origin: " . $frontend_url);
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200 );
+    http_response_code(200);
     exit();
 }
 
@@ -28,7 +28,7 @@ try {
         case 'GET':
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'ID do usuário é obrigatório.']);
                 exit;
             }
@@ -53,7 +53,7 @@ try {
             // Query corrigida com os nomes das colunas
             $sql = "SELECT 
                         d.id, d.valor, d.data_compra, d.data_pagamento, d.observacoes, 
-                        d.recorrente, d.parcelas, d.grupo_recorrencia_id, d.forma_pagamento,
+                        d.recorrente, d.parcelas, d.grupo_recorrencia_id, d.frequencia, d.forma_pagamento,
                         d.quem_comprou as quem_comprou_id, f.nome as quem_comprou_nome,
                         d.onde_comprou as onde_comprou_id, forn.nome as onde_comprou_nome,
                         d.categoria_id, cat.nome as categoria_nome
@@ -97,38 +97,72 @@ try {
             // Validação dos campos obrigatórios
             if (empty($data['usuario_id']) || empty($data['quem_comprou']) || empty($data['onde_comprou']) || 
                 empty($data['categoria_id']) || !isset($data['valor']) || empty($data['data_compra'])) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
 
             if ($id) {
-                // UPDATE - corrigido para incluir data_pagamento
-                $sql = "UPDATE despesas SET 
-                            quem_comprou = :qc, 
-                            onde_comprou = :oc, 
-                            categoria_id = :cid, 
-                            forma_pagamento = :fp, 
-                            valor = :v, 
-                            data_compra = :dc,
-                            data_pagamento = :dp,
-                            observacoes = :obs 
-                        WHERE id = :id AND usuario_id = :uid";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':qc' => $data['quem_comprou'], 
-                    ':oc' => $data['onde_comprou'], 
-                    ':cid' => $data['categoria_id'],
-                    ':fp' => $data['forma_pagamento'], 
-                    ':v' => $data['valor'], 
-                    ':dc' => $data['data_compra'],
-                    ':dp' => !empty($data['data_pagamento']) ? $data['data_pagamento'] : null,
-                    ':obs' => $data['observacoes'], 
-                    ':id' => $id, 
-                    ':uid' => $data['usuario_id']
-                ]);
-                echo json_encode(['sucesso' => true, 'mensagem' => 'Despesa atualizada com sucesso!']);
+                // LÓGICA DE UPDATE APRIMORADA
+                $escopo = $data['escopo'] ?? 'apenas_esta';
+                $grupoRecorrenciaId = $data['grupo_recorrencia_id'] ?? null;
+                $dataCompra = $data['data_compra'];
+
+                $pdo->beginTransaction();
+
+                try {
+                    $sql = "UPDATE despesas SET 
+                                quem_comprou = :qc, 
+                                onde_comprou = :oc, 
+                                categoria_id = :cid, 
+                                forma_pagamento = :fp, 
+                                valor = :v, 
+                                data_compra = :dc,
+                                data_pagamento = :dp,
+                                observacoes = :obs 
+                            WHERE usuario_id = :uid";
+
+                    if ($escopo === 'esta_e_futuras' && $grupoRecorrenciaId) {
+                        $sql .= " AND grupo_recorrencia_id = :grid AND data_compra >= :dc_filter";
+                    } else {
+                        $sql .= " AND id = :id";
+                    }
+                    
+                    $stmt = $pdo->prepare($sql);
+                    $params = [
+                        ':qc' => $data['quem_comprou'], 
+                        ':oc' => $data['onde_comprou'], 
+                        ':cid' => $data['categoria_id'], 
+                        ':fp' => $data['forma_pagamento'],
+                        ':v' => $data['valor'], 
+                        ':dc' => $data['data_compra'],
+                        ':dp' => !empty($data['data_pagamento']) ? $data['data_pagamento'] : null,
+                        ':obs' => $data['observacoes'], 
+                        ':uid' => $data['usuario_id']
+                    ];
+
+                    if ($escopo === 'esta_e_futuras' && $grupoRecorrenciaId) {
+                        $params[':grid'] = $grupoRecorrenciaId;
+                        $params[':dc_filter'] = $data['data_compra'];
+                    } else {
+                        $params[':id'] = $id;
+                    }
+
+                    $stmt->execute($params);
+                    $rowCount = $stmt->rowCount();
+                    $pdo->commit();
+
+                    $message = ($escopo === 'esta_e_futuras') 
+                        ? "{$rowCount} despesa(s) atualizada(s) com sucesso!" 
+                        : "Despesa atualizada com sucesso!";
+                    
+                    echo json_encode(['sucesso' => true, 'mensagem' => $message]);
+
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    http_response_code(500);
+                    echo json_encode(['erro' => 'Erro ao atualizar a despesa.', 'detalhes' => $e->getMessage()]);
+                }
 
             } else {
                 // INSERT - corrigido para incluir data_pagamento
@@ -162,7 +196,6 @@ try {
                     
                     $grupoRecorrenciaId = ($totalParcelas > 1) ? uniqid('rec_') : null;
 
-                    // SQL corrigido com data_pagamento
                     $sql = "INSERT INTO despesas (
                                 usuario_id, quem_comprou, onde_comprou, categoria_id, forma_pagamento, valor, 
                                 data_compra, data_pagamento, recorrente, parcelas, frequencia, observacoes, grupo_recorrencia_id
@@ -197,7 +230,7 @@ try {
                     }
 
                     $pdo->commit();
-                    http_response_code(201 );
+                    http_response_code(201);
                     echo json_encode(['sucesso' => true, 'mensagem' => "$totalParcelas despesa(s) salva(s) com sucesso!"]);
 
                 } catch (Exception $e) {
@@ -212,7 +245,7 @@ try {
             $escopo = filter_input(INPUT_GET, 'escopo', FILTER_SANITIZE_STRING) ?? 'apenas_esta';
 
             if (!$id) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'ID da despesa é obrigatório.']);
                 exit;
             }
@@ -253,15 +286,14 @@ try {
             break;
 
         default:
-            http_response_code(405 );
+            http_response_code(405);
             echo json_encode(['erro' => 'Método não permitido.']);
             break;
     }
 } catch (\Throwable $e) {
     error_log("Erro na API de despesas: " . $e->getMessage());
-    $httpCode = is_int($e->getCode( )) && $e->getCode() >= 400 ? $e->getCode() : 500;
-    http_response_code($httpCode );
+    $httpCode = is_int($e->getCode()) && $e->getCode() >= 400 ? $e->getCode() : 500;
+    http_response_code($httpCode);
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>
-

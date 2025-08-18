@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './despesas.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
-import ModalConfirmacao from './ModalConfirmacao'; 
+import ModalConfirmacao from './ModalConfirmacao'; 
 import './ModalConfirmacao.css';
 import ToggleSwitch from '../components/ToggleSwitch';
 
@@ -161,7 +161,8 @@ export default function Despesas() {
     const [limit, setLimit] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: 'data_compra', direction: 'desc' });
 
-    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {} });
+    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
 
     const DESPESAS_API_URL = `${API_BASE_URL}/despesas.php`;
 
@@ -236,6 +237,8 @@ export default function Despesas() {
         const payload = {
             usuario_id: usuario.id,
             id: editingDespesa ? editingDespesa.id : undefined,
+            escopo: editingDespesa?.escopo,
+            grupo_recorrencia_id: editingDespesa?.grupo_recorrencia_id,
             ...form
         };
         
@@ -292,12 +295,46 @@ export default function Despesas() {
     };
 
     const handleEdit = (despesa) => {
-        setEditingDespesa({
-            ...despesa,
-            quem_comprou: despesa.quem_comprou_id,
-            onde_comprou: despesa.onde_comprou_id,
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (despesa.grupo_recorrencia_id) {
+            setModalEditState({
+                isOpen: true,
+                title: 'Editar Despesa Recorrente',
+                message: 'Esta é uma despesa recorrente. Como você deseja editá-la?',
+                onConfirm: () => {
+                    // Opção 1: Editar "esta e as futuras"
+                    setEditingDespesa({
+                        ...despesa,
+                        quem_comprou: despesa.quem_comprou_id,
+                        onde_comprou: despesa.onde_comprou_id,
+                        escopo: 'esta_e_futuras' // Adiciona o escopo
+                    });
+                    setModalEditState({ isOpen: false });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                confirmText: 'Esta e as Futuras',
+                onCancel: () => {
+                    // Opção 2: Editar "apenas esta parcela"
+                    setEditingDespesa({
+                        ...despesa,
+                        quem_comprou: despesa.quem_comprou_id,
+                        onde_comprou: despesa.onde_comprou_id,
+                        escopo: 'apenas_esta' // Adiciona o escopo
+                    });
+                    setModalEditState({ isOpen: false });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                cancelText: 'Apenas Esta Parcela',
+                onClose: () => setModalEditState({ isOpen: false })
+            });
+        } else {
+            // Fluxo original para despesas não recorrentes
+            setEditingDespesa({
+                ...despesa,
+                quem_comprou: despesa.quem_comprou_id,
+                onde_comprou: despesa.onde_comprou_id,
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const handleCancel = () => setEditingDespesa(null);
@@ -347,9 +384,21 @@ export default function Despesas() {
                 confirmText={modalState.confirmText}
                 onCancel={modalState.onCancel}
                 cancelText={modalState.cancelText}
-                onClose={modalState.onClose}
+                onClose={() => setModalState({ isOpen: false })}
             >
                 <p>{modalState.message}</p>
+            </ModalConfirmacao>
+
+            <ModalConfirmacao
+                isOpen={modalEditState.isOpen}
+                title={modalEditState.title}
+                onConfirm={modalEditState.onConfirm}
+                confirmText={modalEditState.confirmText}
+                onCancel={modalEditState.onCancel}
+                cancelText={modalEditState.cancelText}
+                onClose={() => setModalEditState({ isOpen: false })}
+            >
+                <p>{modalEditState.message}</p>
             </ModalConfirmacao>
 
             <div className="content-card">
@@ -442,4 +491,3 @@ export default function Despesas() {
         </div>
     );
 }
-

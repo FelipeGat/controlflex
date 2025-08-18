@@ -40,7 +40,11 @@ function Login() {
     }
   };
 
-  // --- O seu JSX (return) permanece exatamente o mesmo ---
+  // Função para navegar para página de cadastro
+  const handleCadastroClick = () => {
+    navigate('/escolher-plano');
+  };
+
   return (
     <div className="bg-animated center-container">
       <div className="glass-card">
@@ -60,7 +64,7 @@ function Login() {
               className="form-control"
               placeholder="Email"
               value={usuario}
-              onChange={(e ) => setUsuario(e.target.value)}
+              onChange={(e) => setUsuario(e.target.value)}
               required
             />
           </div>
@@ -77,6 +81,20 @@ function Login() {
           </div>
           <button type="submit" className="btn btn-primary w-100 mt-3">Entrar</button>
         </form>
+
+        {/* NOVO: Link para cadastro */}
+        <div className="text-center mt-4">
+          <p className="cadastro-text">
+            É novo por aqui?{' '}
+            <button 
+              type="button"
+              className="link-cadastro"
+              onClick={handleCadastroClick}
+            >
+              Clique aqui!
+            </button>
+          </p>
+        </div>
       </div>
 
       <div className="wave-container">
@@ -85,7 +103,7 @@ function Login() {
         </svg>
       </div>
     </div>
-   );
+  );
 }
 
 export default Login;

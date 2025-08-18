@@ -15,12 +15,24 @@ import MainLayout from './layouts/MainLayout';
 import Investimentos from './pages/Investimentos';
 import Lancamentos from './pages/lancamentos';
 
+// NOVO: Importar a página de escolha de planos
+import PaginaEscolhaPlanos from './pages/PaginaEscolhaPlanos';
+
+// NOVO: Importar a tela de sucesso
+import TelaSucesso from './pages/TelaSucesso';
+
 function App() {
   return (
     <Router basename="/controleflex">
       <Routes>
         {/* Rota de Login */}
         <Route path="/" element={<Login />} />
+        
+        {/* NOVA: Rota para escolha de planos (sem MainLayout pois é página pública) */}
+        <Route path="/escolher-plano" element={<PaginaEscolhaPlanos />} />
+        
+        {/* NOVA: Rota para tela de sucesso (sem MainLayout pois é página pública) */}
+        <Route path="/sucesso" element={<TelaSucesso />} />
         
         {/* HOME como página inicial após login */}
         <Route path="/home" element={<MainLayout><Home /></MainLayout>} />

@@ -1,15 +1,15 @@
 <?php
-// /api/receitas.php (Endpoint corrigido para novos nomes de colunas)
+// /api/receitas.php
 
 // 1. CABEÇALHOS DE SEGURANÇA E CORS
 // ===================================================
 $frontend_url = "http://localhost:3000"; 
-header("Access-Control-Allow-Origin: " . $frontend_url );
+header("Access-Control-Allow-Origin: " . $frontend_url);
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200 );
+    http_response_code(200);
     exit();
 }
 
@@ -28,7 +28,7 @@ try {
         case 'GET':
             $usuario_id = filter_input(INPUT_GET, 'usuario_id', FILTER_VALIDATE_INT);
             if (!$usuario_id) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'ID do usuário é obrigatório.']);
                 exit;
             }
@@ -53,7 +53,7 @@ try {
             // Query corrigida com os novos nomes das colunas
             $sql = "SELECT 
                         r.id, r.valor, r.data_prevista_recebimento, r.data_recebimento, r.observacoes, 
-                        r.recorrente, r.parcelas, r.grupo_recorrencia_id,
+                        r.recorrente, r.parcelas, r.grupo_recorrencia_id, r.frequencia,
                         r.quem_recebeu as quem_recebeu_id, f.nome as quem_recebeu_nome,
                         r.categoria_id, cat.nome as categoria_nome,
                         r.forma_recebimento as forma_recebimento_id, b.nome as forma_recebimento_nome
@@ -97,37 +97,69 @@ try {
             // Validação dos campos obrigatórios (corrigido para data_prevista_recebimento)
             if (empty($data['usuario_id']) || empty($data['quem_recebeu']) || empty($data['categoria_id']) || 
                 !isset($data['valor']) || empty($data['data_prevista_recebimento'])) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'Campos obrigatórios não foram preenchidos.']);
                 exit;
             }
 
             if ($id) {
-                // UPDATE - corrigido para usar os novos nomes das colunas
-                $sql = "UPDATE receitas SET 
-                            quem_recebeu = :qr, 
-                            categoria_id = :cid, 
-                            forma_recebimento = :fr, 
-                            valor = :v, 
-                            data_prevista_recebimento = :dpr,
-                            data_recebimento = :dr,
-                            observacoes = :obs 
-                        WHERE id = :id AND usuario_id = :uid";
+                // LÓGICA DE UPDATE APRIMORADA
+                $escopo = $data['escopo'] ?? 'apenas_esta';
+                $grupoRecorrenciaId = $data['grupo_recorrencia_id'] ?? null;
+                $dataPrevista = $data['data_prevista_recebimento'];
                 
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':qr' => $data['quem_recebeu'], 
-                    ':cid' => $data['categoria_id'], 
-                    ':fr' => $data['forma_recebimento'],
-                    ':v' => $data['valor'], 
-                    ':dpr' => $data['data_prevista_recebimento'],
-                    ':dr' => !empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
-                    ':obs' => $data['observacoes'], 
-                    ':id' => $id, 
-                    ':uid' => $data['usuario_id']
-                ]);
-                echo json_encode(['sucesso' => true, 'mensagem' => 'Receita atualizada com sucesso!']);
+                $pdo->beginTransaction();
 
+                try {
+                    $sql = "UPDATE receitas SET 
+                                quem_recebeu = :qr, 
+                                categoria_id = :cid, 
+                                forma_recebimento = :fr, 
+                                valor = :v, 
+                                data_recebimento = :dr,
+                                observacoes = :obs 
+                            WHERE usuario_id = :uid";
+
+                    // Altera a cláusula WHERE baseada no escopo
+                    if ($escopo === 'esta_e_futuras' && $grupoRecorrenciaId) {
+                        $sql .= " AND grupo_recorrencia_id = :grid AND data_prevista_recebimento >= :dpr";
+                    } else {
+                        $sql .= " AND id = :id";
+                    }
+                    
+                    $stmt = $pdo->prepare($sql);
+                    $params = [
+                        ':qr' => $data['quem_recebeu'], 
+                        ':cid' => $data['categoria_id'], 
+                        ':fr' => $data['forma_recebimento'],
+                        ':v' => $data['valor'], 
+                        ':dr' => !empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
+                        ':obs' => $data['observacoes'], 
+                        ':uid' => $data['usuario_id']
+                    ];
+
+                    if ($escopo === 'esta_e_futuras' && $grupoRecorrenciaId) {
+                        $params[':grid'] = $grupoRecorrenciaId;
+                        $params[':dpr'] = $dataPrevista;
+                    } else {
+                        $params[':id'] = $id;
+                    }
+                    
+                    $stmt->execute($params);
+                    $rowCount = $stmt->rowCount();
+                    $pdo->commit();
+                    
+                    $message = ($escopo === 'esta_e_futuras') 
+                        ? "{$rowCount} receita(s) atualizada(s) com sucesso!" 
+                        : "Receita atualizada com sucesso!";
+
+                    echo json_encode(['sucesso' => true, 'mensagem' => $message]);
+
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    http_response_code(500);
+                    echo json_encode(['erro' => 'Erro ao atualizar a receita.', 'detalhes' => $e->getMessage()]);
+                }
             } else {
                 // INSERT - corrigido para usar os novos nomes das colunas
                 $pdo->beginTransaction();
@@ -195,7 +227,7 @@ try {
                     }
 
                     $pdo->commit();
-                    http_response_code(201 );
+                    http_response_code(201);
                     echo json_encode(['sucesso' => true, 'mensagem' => "$totalParcelas receita(s) salva(s) com sucesso!"]);
 
                 } catch (Exception $e) {
@@ -210,7 +242,7 @@ try {
             $escopo = filter_input(INPUT_GET, 'escopo', FILTER_SANITIZE_STRING) ?? 'apenas_esta';
 
             if (!$id) {
-                http_response_code(400 );
+                http_response_code(400);
                 echo json_encode(['erro' => 'ID da receita é obrigatório.']);
                 exit;
             }
@@ -251,15 +283,14 @@ try {
             break;
 
         default:
-            http_response_code(405 );
+            http_response_code(405);
             echo json_encode(['erro' => 'Método não permitido.']);
             break;
     }
 } catch (\Throwable $e) {
     error_log("Erro na API de receitas: " . $e->getMessage());
-    $httpCode = is_int($e->getCode( )) && $e->getCode() >= 400 ? $e->getCode() : 500;
-    http_response_code($httpCode );
+    $httpCode = is_int($e->getCode()) && $e->getCode() >= 400 ? $e->getCode() : 500;
+    http_response_code($httpCode);
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>
-

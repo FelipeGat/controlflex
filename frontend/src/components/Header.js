@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
 import './header.css';
-// Importa a variável de configuração para a pasta de uploads
 import { UPLOADS_BASE_URL } from '../apiConfig';
 
 function Header() {
@@ -136,7 +135,7 @@ function Header() {
 
         {showUserMenu && (
           <div className="profile-dropdown">
-            <button onClick={() => navigate('/perfil')}>✏️ Editar Perfil</button>
+            <button onClick={() => navigate('/usuarios')}>✏️ Editar Perfil</button>
             <button onClick={handleLogout}>🚪 Logout</button>
           </div>
         )}

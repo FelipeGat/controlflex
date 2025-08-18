@@ -150,7 +150,8 @@ export default function Receitas() {
     const [limit, setLimit] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: 'data_prevista_recebimento', direction: 'desc' });
 
-    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {} });
+    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
 
     const RECEITAS_API_URL = `${API_BASE_URL}/receitas.php`;
 
@@ -225,6 +226,8 @@ export default function Receitas() {
         const payload = {
             usuario_id: usuario.id,
             id: editingReceita ? editingReceita.id : undefined,
+            escopo: editingReceita?.escopo, // Envia o escopo de edição
+            grupo_recorrencia_id: editingReceita?.grupo_recorrencia_id, // Adiciona o grupo da recorrencia para o back end
             ...form
         };
         
@@ -281,12 +284,46 @@ export default function Receitas() {
     };
 
     const handleEdit = (receita) => {
-        setEditingReceita({
-            ...receita,
-            quem_recebeu: receita.quem_recebeu_id,
-            forma_recebimento: receita.forma_recebimento_id,
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (receita.grupo_recorrencia_id) {
+            setModalEditState({
+                isOpen: true,
+                title: 'Editar Receita Recorrente',
+                message: 'Esta é uma receita recorrente. Como você deseja editá-la?',
+                onConfirm: () => {
+                    // Opção 1: Editar "esta e as futuras"
+                    setEditingReceita({
+                        ...receita,
+                        quem_recebeu: receita.quem_recebeu_id,
+                        forma_recebimento: receita.forma_recebimento_id,
+                        escopo: 'esta_e_futuras' // Adiciona o escopo
+                    });
+                    setModalEditState({ isOpen: false });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                confirmText: 'Esta e as Futuras',
+                onCancel: () => {
+                    // Opção 2: Editar "apenas esta parcela"
+                    setEditingReceita({
+                        ...receita,
+                        quem_recebeu: receita.quem_recebeu_id,
+                        forma_recebimento: receita.forma_recebimento_id,
+                        escopo: 'apenas_esta' // Adiciona o escopo
+                    });
+                    setModalEditState({ isOpen: false });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                cancelText: 'Apenas Esta Parcela',
+                onClose: () => setModalEditState({ isOpen: false })
+            });
+        } else {
+            // Fluxo original para receitas não recorrentes
+            setEditingReceita({
+                ...receita,
+                quem_recebeu: receita.quem_recebeu_id,
+                forma_recebimento: receita.forma_recebimento_id,
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const handleCancel = () => setEditingReceita(null);
@@ -336,9 +373,21 @@ export default function Receitas() {
                 confirmText={modalState.confirmText}
                 onCancel={modalState.onCancel}
                 cancelText={modalState.cancelText}
-                onClose={modalState.onClose}
+                onClose={() => setModalState({ isOpen: false })}
             >
                 <p>{modalState.message}</p>
+            </ModalConfirmacao>
+
+            <ModalConfirmacao
+                isOpen={modalEditState.isOpen}
+                title={modalEditState.title}
+                onConfirm={modalEditState.onConfirm}
+                confirmText={modalEditState.confirmText}
+                onCancel={modalEditState.onCancel}
+                cancelText={modalEditState.cancelText}
+                onClose={() => setModalEditState({ isOpen: false })}
+            >
+                <p>{modalEditState.message}</p>
             </ModalConfirmacao>
 
             <div className="content-card">
@@ -429,4 +478,3 @@ export default function Receitas() {
         </div>
     );
 }
-
