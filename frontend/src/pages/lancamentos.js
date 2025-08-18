@@ -43,7 +43,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
   );
 };
 
-// Componente de Filtros Avançados - CORRIGIDO
+// Componente de Filtros Avançados
 const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
   return (
     <div className="filtros-avancados">
@@ -155,7 +155,7 @@ export default function Lancamentos() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
   const [lancamentos, setLancamentos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false });
   const [paginacao, setPaginacao] = useState({
@@ -164,7 +164,7 @@ export default function Lancamentos() {
     total: 0
   });
 
-  // Estados de filtros - CORRIGIDO
+  // ========= INÍCIO DA CORREÇÃO 1: MANTIDO O ESTADO DE FILTROS ORIGINAL =========
   const [filtros, setFiltros] = useState({
     periodo: 'this_month',
     dataInicio: '',
@@ -173,6 +173,15 @@ export default function Lancamentos() {
     status: '',
     busca: ''
   });
+  // ========= FIM DA CORREÇÃO 1 =========
+
+  // ========= INÍCIO DA CORREÇÃO 2: ADICIONADO ESTADO PARA OS TOTAIS GERAIS =========
+  const [resumoTotais, setResumoTotais] = useState({
+    total_receitas: 0,
+    total_despesas: 0,
+    saldo: 0,
+  });
+  // ========= FIM DA CORREÇÃO 2 =========
 
   // Verificar usuário logado
   useEffect(() => {
@@ -184,7 +193,7 @@ export default function Lancamentos() {
     }
   }, [navigate]);
 
-  // Função para calcular datas baseado no período - NOVA
+  // Função para calcular datas baseado no período
   const calcularDatas = useCallback((periodo) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -254,14 +263,12 @@ export default function Lancamentos() {
     return { inicio, fim };
   }, []);
 
-  // Função para buscar lançamentos - CORRIGIDA
+  // ========= INÍCIO DA CORREÇÃO 3: FUNÇÃO DE BUSCA ATUALIZADA =========
   const fetchLancamentos = useCallback(async (filtrosAtuais = filtros, paginaAtual = 1) => {
     if (!usuario) return;
 
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Calcular datas se não for período personalizado
       let dataInicio = filtrosAtuais.dataInicio;
       let dataFim = filtrosAtuais.dataFim;
       
@@ -271,12 +278,8 @@ export default function Lancamentos() {
         dataFim = datas.fim;
       }
       
-      const params = {
-        action: 'list',
+      const baseParams = {
         usuario_id: usuario.id,
-        pagina: paginaAtual,
-        por_pagina: paginacao.porPagina,
-        periodo: filtrosAtuais.periodo === 'personalizado' ? 'personalizado' : 'personalizado',
         dataInicio: dataInicio,
         dataFim: dataFim,
         tipo: filtrosAtuais.tipo,
@@ -284,31 +287,53 @@ export default function Lancamentos() {
         busca: filtrosAtuais.busca
       };
 
-      const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, { params });
+      // Cria duas promessas: uma para a lista paginada e outra para o resumo total
+      const listPromise = axios.get(`${API_BASE_URL}/lancamentos.php`, {
+        params: { ...baseParams, action: 'list', pagina: paginaAtual, por_pagina: paginacao.porPagina }
+      });
       
-      if (response.data.success) {
-        setLancamentos(response.data.data || []);
+      const resumoPromise = axios.get(`${API_BASE_URL}/lancamentos.php`, {
+        params: { ...baseParams, action: 'resumo' }
+      });
+
+      // Executa as duas requisições em paralelo para otimizar o tempo de carregamento
+      const [listResponse, resumoResponse] = await Promise.all([listPromise, resumoPromise]);
+
+      // Processa a resposta da lista de lançamentos
+      if (listResponse.data.success) {
+        setLancamentos(listResponse.data.data || []);
         setPaginacao(prev => ({
           ...prev,
-          pagina: response.data.pagination?.pagina || paginaAtual,
-          total: response.data.pagination?.total || 0
+          pagina: listResponse.data.pagination?.pagina || paginaAtual,
+          total: listResponse.data.pagination?.total || 0
         }));
       } else {
-        throw new Error(response.data.message || 'Erro ao carregar lançamentos');
+        throw new Error(listResponse.data.message || 'Erro ao carregar lançamentos');
       }
+
+      // Processa a resposta do resumo de totais
+      if (resumoResponse.data.success) {
+        setResumoTotais(resumoResponse.data.data);
+      } else {
+        console.error(resumoResponse.data.message || 'Erro ao carregar resumo de totais');
+        setResumoTotais({ total_receitas: 0, total_despesas: 0, saldo: 0 }); // Reseta em caso de erro
+      }
+
     } catch (error) {
-      console.error('Erro ao carregar lançamentos:', error);
-      showNotification('Erro ao carregar lançamentos: ' + error.message, 'error');
+      console.error('Erro ao carregar dados:', error);
+      showNotification('Erro ao carregar dados: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, [usuario, calcularDatas, paginacao.porPagina]);
+  }, [usuario, calcularDatas, paginacao.porPagina, filtros]);
+  // ========= FIM DA CORREÇÃO 3 =========
 
   // Carregar dados iniciais
   useEffect(() => {
     if (usuario) {
       fetchLancamentos();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
   // Função para mostrar notificação
@@ -316,7 +341,7 @@ export default function Lancamentos() {
     setNotification({ message, type });
   }, []);
 
-  // Função para quitar lançamento - CORRIGIDA
+  // Função para quitar lançamento
   const quitarLancamento = useCallback(async (id, tipo) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
@@ -328,7 +353,7 @@ export default function Lancamentos() {
 
       if (response.data.success) {
         showNotification(response.data.message || `${tipo} quitada com sucesso!`);
-        fetchLancamentos(filtros, paginacao.pagina);
+        fetchLancamentos(filtros, paginacao.pagina); // Recarrega os dados da página atual
       } else {
         throw new Error(response.data.message || 'Erro ao quitar lançamento');
       }
@@ -338,7 +363,7 @@ export default function Lancamentos() {
     }
   }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
 
-  // Função para visualizar detalhes - NOVA
+  // Função para visualizar detalhes
   const visualizarDetalhes = useCallback(async (id, tipo) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, {
@@ -351,7 +376,6 @@ export default function Lancamentos() {
       });
 
       if (response.data.success) {
-        // Implementar modal de detalhes ou navegar para página de detalhes
         showNotification('Funcionalidade de visualização em desenvolvimento', 'info');
       } else {
         throw new Error(response.data.message || 'Erro ao carregar detalhes');
@@ -362,9 +386,8 @@ export default function Lancamentos() {
     }
   }, [usuario, showNotification]);
 
-  // Função para editar lançamento - NOVA
+  // Função para editar lançamento
   const editarLancamento = useCallback((id, tipo) => {
-    // Navegar para a tela de edição correspondente
     if (tipo === 'receita') {
       navigate(`/receitas?edit=${id}`);
     } else {
@@ -372,7 +395,7 @@ export default function Lancamentos() {
     }
   }, [navigate]);
 
-  // Função para excluir lançamento - NOVA
+  // Função para excluir lançamento
   const excluirLancamento = useCallback(async (id, tipo) => {
     try {
       const response = await axios.delete(`${API_BASE_URL}/lancamentos.php`, {
@@ -386,7 +409,7 @@ export default function Lancamentos() {
 
       if (response.data.success) {
         showNotification(response.data.message || `${tipo} excluída com sucesso!`);
-        fetchLancamentos(filtros, paginacao.pagina);
+        fetchLancamentos(filtros, 1); // Volta para a página 1 após excluir
       } else {
         throw new Error(response.data.message || 'Erro ao excluir lançamento');
       }
@@ -394,7 +417,7 @@ export default function Lancamentos() {
       console.error('Erro ao excluir lançamento:', error);
       showNotification('Erro ao excluir lançamento: ' + error.message, 'error');
     }
-  }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
+  }, [usuario, filtros, fetchLancamentos, showNotification]);
 
   // Função para confirmar quitação
   const confirmarQuitacao = useCallback((id, tipo, descricao) => {
@@ -410,7 +433,7 @@ export default function Lancamentos() {
     });
   }, [quitarLancamento]);
 
-  // Função para confirmar exclusão - NOVA
+  // Função para confirmar exclusão
   const confirmarExclusao = useCallback((id, tipo, descricao) => {
     setConfirmDialog({
       isOpen: true,
@@ -429,7 +452,7 @@ export default function Lancamentos() {
     fetchLancamentos(filtros, 1);
   }, [filtros, fetchLancamentos]);
 
-  // Função para limpar filtros - CORRIGIDA
+  // Função para limpar filtros
   const limparFiltros = useCallback(() => {
     const filtrosLimpos = {
       periodo: 'this_month',
@@ -467,26 +490,18 @@ export default function Lancamentos() {
 
   // Função para formatar data
   const formatarData = useCallback((data) => {
+    if (!data) return '-';
     return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
   }, []);
 
   // Função para exportar dados
   const exportarDados = useCallback(() => {
-    // Implementar exportação para CSV/Excel
     showNotification('Funcionalidade de exportação em desenvolvimento', 'info');
   }, [showNotification]);
 
-  // Calcular totais
-  const totais = useMemo(() => {
-    return lancamentos.reduce((acc, item) => {
-      if (item.tipo === 'receita') {
-        acc.receitas += parseFloat(item.valor);
-      } else {
-        acc.despesas += parseFloat(item.valor);
-      }
-      return acc;
-    }, { receitas: 0, despesas: 0 });
-  }, [lancamentos]);
+  // ========= INÍCIO DA CORREÇÃO 4: REMOVIDO O 'useMemo' DESNECESSÁRIO =========
+  // O cálculo dos totais agora é feito no backend e armazenado em 'resumoTotais'
+  // ========= FIM DA CORREÇÃO 4 =========
 
   // Calcular páginas
   const totalPaginas = Math.ceil(paginacao.total / paginacao.porPagina);
@@ -501,7 +516,6 @@ export default function Lancamentos() {
 
   return (
     <div className="page-container">
-      {/* Notificação */}
       {notification && (
         <Notification
           message={notification.message}
@@ -510,7 +524,6 @@ export default function Lancamentos() {
         />
       )}
 
-      {/* Dialog de Confirmação */}
       <ConfirmDialog {...confirmDialog} />
 
       <div className="content-card">
@@ -523,7 +536,6 @@ export default function Lancamentos() {
           </div>
         </div>
 
-        {/* Filtros Avançados */}
         <FiltrosAvancados
           filtros={filtros}
           onFiltrosChange={setFiltros}
@@ -531,25 +543,25 @@ export default function Lancamentos() {
           onLimpar={limparFiltros}
         />
 
-        {/* Resumo */}
+        {/* ========= INÍCIO DA CORREÇÃO 5: USANDO O ESTADO 'resumoTotais' PARA OS CARDS ========= */}
         <div className="resumo-cards">
           <div className="resumo-card receitas">
             <h3>Total Receitas</h3>
-            <span>{formatarMoeda(totais.receitas)}</span>
+            <span>{formatarMoeda(resumoTotais.total_receitas)}</span>
           </div>
           <div className="resumo-card despesas">
             <h3>Total Despesas</h3>
-            <span>{formatarMoeda(totais.despesas)}</span>
+            <span>{formatarMoeda(resumoTotais.total_despesas)}</span>
           </div>
           <div className="resumo-card saldo">
             <h3>Saldo</h3>
-            <span className={totais.receitas - totais.despesas >= 0 ? 'positivo' : 'negativo'}>
-              {formatarMoeda(totais.receitas - totais.despesas)}
+            <span className={resumoTotais.saldo >= 0 ? 'positivo' : 'negativo'}>
+              {formatarMoeda(resumoTotais.saldo)}
             </span>
           </div>
         </div>
+        {/* ========= FIM DA CORREÇÃO 5 ========= */}
 
-        {/* Tabela */}
         <div className="table-container">
           {loading && (
             <div className="loading-overlay">
@@ -572,10 +584,10 @@ export default function Lancamentos() {
                 </tr>
               </thead>
               <tbody>
-                {lancamentos.length === 0 ? (
+                {!loading && lancamentos.length === 0 ? (
                   <tr>
                     <td colSpan="8" className="empty-state">
-                      {loading ? 'Carregando...' : 'Nenhum lançamento encontrado'}
+                      Nenhum lançamento encontrado para os filtros aplicados.
                     </td>
                   </tr>
                 ) : (
@@ -592,7 +604,7 @@ export default function Lancamentos() {
                       </td>
                       <td>{item.familiar || '-'}</td>
                       <td>{formatarData(item.data_prevista)}</td>
-                      <td>{item.data_real ? formatarData(item.data_real) : '-'}</td>
+                      <td>{formatarData(item.data_real)}</td>
                       <td>
                         <span className={`status-badge ${item.status}`}>
                           {item.status.toUpperCase()}
@@ -639,7 +651,6 @@ export default function Lancamentos() {
             </table>
           </div>
 
-          {/* Paginação */}
           {totalPaginas > 1 && (
             <div className="pagination">
               <button
@@ -669,4 +680,3 @@ export default function Lancamentos() {
     </div>
   );
 }
-

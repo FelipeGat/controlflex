@@ -1,16 +1,63 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bar, Doughnut } from 'react-chartjs-2'; 
+import { Bar, Doughnut } from 'react-chartjs-2';
 
 import './dashboard.css';
-// ========= INÍCIO DA CORREÇÃO =========
-// Corrigidos os caminhos para subir apenas um nível de diretório.
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
-// ========= FIM DA CORREÇÃO =========
 
-// ... (O restante do código permanece o mesmo) ...
+// Componente genérico para gráficos de Pizza/Doughnut
+const DoughnutChartCard = ({ title, chartData }) => {
+    const data = {
+        labels: chartData.map(c => c.nome), // Usando 'nome' como chave padrão
+        datasets: [{
+            data: chartData.map(c => c.total),
+            backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#8A2BE2'],
+            borderColor: '#fff',
+            borderWidth: 2,
+        }],
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: { boxWidth: 10, padding: 15 }
+            },
+            title: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                        if (total === 0) return `${label}: R$ 0,00 (0%)`;
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                    }
+                }
+            }
+        },
+    };
+
+    return (
+        <div className="chart-card chart-card-doughnut">
+            <h3 className="chart-title">{title}</h3>
+            {chartData && chartData.length > 0 ? (
+                <div className="chart-container">
+                    <Doughnut data={data} options={options} />
+                </div>
+            ) : (
+                <div className="empty-chart">Nenhum dado para exibir no período.</div>
+            )}
+        </div>
+    );
+};
+
+
 const KpiCard = ({ title, value, backgroundColor, icon, variation }) => (
     <div className="kpi-card" style={{ backgroundColor: backgroundColor }}>
         <div className="kpi-content">
@@ -25,96 +72,118 @@ const KpiCard = ({ title, value, backgroundColor, icon, variation }) => (
         <div className="kpi-icon">{icon}</div>
     </div>
 );
-const CategoryChartCard = ({ categoryChart }) => {
-    const categoryChartData = {
-        labels: categoryChart.map(c => c.categoria_nome),
-        datasets: [{
-            data: categoryChart.map(c => c.total),
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
-            borderColor: '#fff',
-            borderWidth: 2,
-        }],
-    };
-    const categoryChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'right',
-                labels: {
-                    boxWidth: 10,
-                    padding: 15,
-                }
-            },
-            title: {
-                display: false,
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.parsed;
-                        const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
-                        const percentage = ((value / total) * 100).toFixed(1);
-                        return `${label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
-                    }
-                }
+
+// ========= INÍCIO DA CORREÇÃO: LÓGICA DE ORDENAÇÃO E LINK CORRIGIDO =========
+const LatestTransactionsCard = ({ latestTransactions }) => {
+    const [transactions, setTransactions] = useState([]);
+    const [sortConfig, setSortConfig] = useState({ key: 'data', direction: 'desc' });
+
+    // Efeito para inicializar e ordenar os dados quando a prop é recebida
+    useEffect(() => {
+        let initialTransactions = [...latestTransactions];
+        // Ordena os dados iniciais com base na configuração padrão (data, desc)
+        initialTransactions.sort((a, b) => {
+            const valA = new Date(a.data);
+            const valB = new Date(b.data);
+            if (valA < valB) return 1;
+            if (valA > valB) return -1;
+            return 0;
+        });
+        setTransactions(initialTransactions);
+    }, [latestTransactions]);
+
+    const handleSort = (key) => {
+        let newDirection = 'asc';
+        // Se a chave for a mesma, inverte a direção
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            newDirection = 'desc';
+        }
+
+        const sortedTransactions = [...transactions].sort((a, b) => {
+            let valA = a[key];
+            let valB = b[key];
+
+            // Tratamento especial para data e valor
+            if (key === 'data') {
+                valA = new Date(valA);
+                valB = new Date(valB);
+            } else if (key === 'valor') {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
             }
-        },
+
+            if (valA < valB) {
+                return newDirection === 'asc' ? -1 : 1;
+            }
+            if (valA > valB) {
+                return newDirection === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+
+        setTransactions(sortedTransactions);
+        setSortConfig({ key, direction: newDirection });
     };
+
+    // Função para obter o ícone de ordenação para o cabeçalho
+    const getSortIndicator = (columnKey) => {
+        if (sortConfig.key !== columnKey) {
+            return <span style={{ opacity: 0.5, fontSize: '0.8em' }}> ↕</span>;
+        }
+        return sortConfig.direction === 'asc' ? ' 🔼' : ' 🔽';
+    };
+
     return (
-        <div className="chart-card chart-card-doughnut">
-            <h3 className="chart-title">Despesas por Categoria</h3>
-            {categoryChart.length > 0 ? (
-                <div className="chart-container">
-                    <Doughnut data={categoryChartData} options={categoryChartOptions} />
-                </div>
-            ) : (
-                <div className="empty-chart">Nenhuma despesa no período para exibir.</div>
-            )}
+        <div className="transactions-card">
+            <h3 className="table-title">Últimos Lançamentos</h3>
+            <div className="table-wrapper">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th onClick={() => handleSort('tipo')} style={{ cursor: 'pointer' }}>
+                                Tipo{getSortIndicator('tipo')}
+                            </th>
+                            <th onClick={() => handleSort('categoria_nome')} style={{ cursor: 'pointer' }}>
+                                Categoria{getSortIndicator('categoria_nome')}
+                            </th>
+                            <th onClick={() => handleSort('data')} style={{ cursor: 'pointer' }}>
+                                Data{getSortIndicator('data')}
+                            </th>
+                            <th onClick={() => handleSort('valor')} style={{ textAlign: 'right', cursor: 'pointer' }}>
+                                Valor{getSortIndicator('valor')}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {transactions.length > 0 ? transactions.map(t => (
+                            <tr key={`${t.tipo}-${t.id}`}>
+                                <td>
+                                    <span className={`transaction-icon ${t.tipo === 'receita' ? 'receita' : 'despesa'}`}>
+                                        {t.tipo === 'receita' ? '💰' : '💸'}
+                                    </span>
+                                </td>
+                                <td>{t.tipo === 'receita' ? 'Receita' : 'Despesa'}</td>
+                                <td>{t.categoria_nome}</td>
+                                <td>{new Date(t.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                                <td className={t.tipo === 'receita' ? 'text-success' : 'text-danger'} style={{ textAlign: 'right' }}>
+                                    {`${t.tipo === 'receita' ? '+' : '-'} R$ ${parseFloat(t.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr><td colSpan="5" className="empty-state">Nenhum lançamento recente.</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+            <div className="table-footer">
+                {/* Link corrigido para o ambiente local */}
+                <a href="/controleflex/lancamentos">Ver todos os lançamentos</a>
+            </div>
         </div>
     );
 };
-const LatestTransactionsCard = ({ latestTransactions }) => (
-    <div className="transactions-card">
-        <h3 className="table-title">Últimos Lançamentos</h3>
-        <div className="table-wrapper">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Tipo</th>
-                        <th>Categoria</th>
-                        <th>Data</th>
-                        <th style={{ textAlign: 'right' }}>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {latestTransactions.length > 0 ? latestTransactions.map(t => (
-                        <tr key={`${t.tipo}-${t.id}`}>
-                            <td>
-                                <span className={`transaction-icon ${t.tipo === 'receita' ? 'receita' : 'despesa'}`}>
-                                    {t.tipo === 'receita' ? '💰' : '💸'}
-                                </span>
-                            </td>
-                            <td>{t.tipo === 'receita' ? 'Receita' : 'Despesa'}</td>
-                            <td>{t.categoria_nome}</td>
-                            <td>{new Date(t.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                            <td className={t.tipo === 'receita' ? 'text-success' : 'text-danger'} style={{ textAlign: 'right' }}>
-                                {`${t.tipo === 'receita' ? '+' : '-'} R$ ${parseFloat(t.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                            </td>
-                        </tr>
-                    )) : (
-                        <tr><td colSpan="5" className="empty-state">Nenhum lançamento recente.</td></tr>
-                    )}
-                </tbody>
-            </table>
-        </div>
-        <div className="table-footer">
-            <a href="/lancamentos">Ver todos os lançamentos</a>
-        </div>
-    </div>
-);
+// ========= FIM DA CORREÇÃO =========
 
 
 // Componente Principal do Dashboard
@@ -123,12 +192,13 @@ export default function Dashboard() {
     const [usuario, setUsuario] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [period, setPeriod] = useState('today');
+    const [period, setPeriod] = useState('this_month'); // Alterado para 'Este Mês' como padrão
+    
     const fetchDashboardData = useCallback(async (selectedPeriod) => {
         if (!usuario) return;
         setIsLoading(true);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); 
+        today.setHours(0, 0, 0, 0);
         let inicio, fim;
         switch (selectedPeriod) {
             case 'today':
@@ -146,7 +216,7 @@ export default function Dashboard() {
                 break;
             case 'this_week':
                 const firstDayOfWeek = new Date(today);
-                const dayOfWeek = today.getDay(); 
+                const dayOfWeek = today.getDay();
                 firstDayOfWeek.setDate(today.getDate() - dayOfWeek);
                 const lastDayOfWeek = new Date(firstDayOfWeek);
                 lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
@@ -200,20 +270,22 @@ export default function Dashboard() {
             setIsLoading(false);
         }
     }, [usuario]);
+
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('usuarioLogado'));
         if (!user) navigate('/');
         else setUsuario(user);
     }, [navigate]);
+
     useEffect(() => {
         if (usuario) {
             fetchDashboardData(period);
         }
     }, [usuario, period, fetchDashboardData]);
+
     const handlePeriodChange = (e) => {
         setPeriod(e.target.value);
     };
-
 
     if (isLoading) {
         return <div className="page-container"><Spinner /></div>;
@@ -223,7 +295,7 @@ export default function Dashboard() {
         return <div className="page-container">Não foi possível carregar os dados.</div>;
     }
 
-    const { kpi, annualChart, categoryChart, investments, latestTransactions, investmentChart } = dashboardData;
+    const { kpi, annualChart, investments, investmentChart, latestTransactions, ...charts } = dashboardData;
 
     const annualChartOptions = {
         responsive: true,
@@ -259,11 +331,7 @@ export default function Dashboard() {
                 }
             }
         },
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
+        scales: { y: { beginAtZero: true } }
     };
 
     const investmentChartData = {
@@ -292,7 +360,6 @@ export default function Dashboard() {
     return (
         <div className="page-container dashboard-container">
             <div className="dashboard-header">
-                {/* <h1>{`Olá, ${usuario?.nome || ''}! Seja bem-vindo(a)!`}</h1> */}
                 <div className="period-filter">
                     <label htmlFor="period">Mostrar período:</label>
                     <select id="period" value={period} onChange={handlePeriodChange} className="form-control">
@@ -329,14 +396,19 @@ export default function Dashboard() {
                             ],
                         }} />
                     </div>
+                    {/* ÚLTIMOS LANÇAMENTOS MOVIDO PARA CÁ */}
+                    <LatestTransactionsCard latestTransactions={latestTransactions} />
                     <div className="chart-card chart-large">
                         <Bar data={investmentChartData} options={investmentChartOptions} />
                     </div>
                 </div>
                 
                 <div className="side-panel">
-                    <CategoryChartCard categoryChart={categoryChart} />
-                    <LatestTransactionsCard latestTransactions={latestTransactions} />
+                    {/* NOVOS GRÁFICOS ADICIONADOS */}
+                    <DoughnutChartCard title="Despesas por Categoria" chartData={charts.expensesByCategory} />
+                    <DoughnutChartCard title="Receitas por Categoria" chartData={charts.incomesByCategory} />
+                    <DoughnutChartCard title="Despesas por Familiar" chartData={charts.expensesByFamilyMember} />
+                    <DoughnutChartCard title="Receitas por Familiar" chartData={charts.incomesByFamilyMember} />
                 </div>
             </div>
         </div>
