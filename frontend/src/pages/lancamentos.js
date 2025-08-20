@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaSearch, FaFilter, FaDownload, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaCheckCircle, FaSearch, FaFilter, FaDownload, FaEye, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
 import './lancamentos.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
+import { FaTimes } from 'react-icons/fa';
 
 // Componente de Notificação
 const Notification = ({ message, type, onClose }) => {
@@ -22,7 +23,8 @@ const Notification = ({ message, type, onClose }) => {
 };
 
 // Componente de Confirmação
-const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
+// Adicionei um input para a data aqui
+const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, showDateInput, onDateChange, dateValue }) => {
   if (!isOpen) return null;
 
   return (
@@ -30,6 +32,17 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
       <div className="modal-content">
         <h3>{title}</h3>
         <p>{message}</p>
+        {showDateInput && (
+          <div className="form-group">
+            <label>Data de Pagamento/Recebimento:</label>
+            <input
+              type="date"
+              className="form-control"
+              value={dateValue}
+              onChange={(e) => onDateChange(e.target.value)}
+            />
+          </div>
+        )}
         <div className="modal-buttons">
           <button className="btn btn-danger" onClick={onConfirm}>
             Confirmar
@@ -50,8 +63,8 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
       <div className="filtros-linha">
         <div className="filtro-grupo">
           <label>Período:</label>
-          <select 
-            value={filtros.periodo} 
+          <select
+            value={filtros.periodo}
             onChange={(e) => onFiltrosChange({ ...filtros, periodo: e.target.value })}
             className="form-control"
           >
@@ -95,8 +108,8 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
 
         <div className="filtro-grupo">
           <label>Tipo:</label>
-          <select 
-            value={filtros.tipo} 
+          <select
+            value={filtros.tipo}
             onChange={(e) => onFiltrosChange({ ...filtros, tipo: e.target.value })}
             className="form-control"
           >
@@ -108,8 +121,8 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
 
         <div className="filtro-grupo">
           <label>Status:</label>
-          <select 
-            value={filtros.status} 
+          <select
+            value={filtros.status}
             onChange={(e) => onFiltrosChange({ ...filtros, status: e.target.value })}
             className="form-control"
           >
@@ -163,8 +176,9 @@ export default function Lancamentos() {
     porPagina: 20,
     total: 0
   });
+  // Adicionei um novo estado para o modal de quitação
+  const [quitacaoDialog, setQuitacaoDialog] = useState({ isOpen: false, item: null, data: '' });
 
-  // ========= INÍCIO DA CORREÇÃO 1: MANTIDO O ESTADO DE FILTROS ORIGINAL =========
   const [filtros, setFiltros] = useState({
     periodo: 'this_month',
     dataInicio: '',
@@ -173,15 +187,12 @@ export default function Lancamentos() {
     status: '',
     busca: ''
   });
-  // ========= FIM DA CORREÇÃO 1 =========
 
-  // ========= INÍCIO DA CORREÇÃO 2: ADICIONADO ESTADO PARA OS TOTAIS GERAIS =========
   const [resumoTotais, setResumoTotais] = useState({
     total_receitas: 0,
     total_despesas: 0,
     saldo: 0,
   });
-  // ========= FIM DA CORREÇÃO 2 =========
 
   // Verificar usuário logado
   useEffect(() => {
@@ -197,9 +208,9 @@ export default function Lancamentos() {
   const calcularDatas = useCallback((periodo) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    
+
     let inicio, fim;
-    
+
     switch (periodo) {
       case 'today':
         inicio = fim = hoje.toISOString().split('T')[0];
@@ -259,11 +270,10 @@ export default function Lancamentos() {
         inicio = fim = hoje.toISOString().split('T')[0];
         break;
     }
-    
+
     return { inicio, fim };
   }, []);
 
-  // ========= INÍCIO DA CORREÇÃO 3: FUNÇÃO DE BUSCA ATUALIZADA =========
   const fetchLancamentos = useCallback(async (filtrosAtuais = filtros, paginaAtual = 1) => {
     if (!usuario) return;
 
@@ -271,13 +281,13 @@ export default function Lancamentos() {
     try {
       let dataInicio = filtrosAtuais.dataInicio;
       let dataFim = filtrosAtuais.dataFim;
-      
+
       if (filtrosAtuais.periodo !== 'personalizado') {
         const datas = calcularDatas(filtrosAtuais.periodo);
         dataInicio = datas.inicio;
         dataFim = datas.fim;
       }
-      
+
       const baseParams = {
         usuario_id: usuario.id,
         dataInicio: dataInicio,
@@ -287,19 +297,16 @@ export default function Lancamentos() {
         busca: filtrosAtuais.busca
       };
 
-      // Cria duas promessas: uma para a lista paginada e outra para o resumo total
       const listPromise = axios.get(`${API_BASE_URL}/lancamentos.php`, {
         params: { ...baseParams, action: 'list', pagina: paginaAtual, por_pagina: paginacao.porPagina }
       });
-      
+
       const resumoPromise = axios.get(`${API_BASE_URL}/lancamentos.php`, {
         params: { ...baseParams, action: 'resumo' }
       });
 
-      // Executa as duas requisições em paralelo para otimizar o tempo de carregamento
       const [listResponse, resumoResponse] = await Promise.all([listPromise, resumoPromise]);
 
-      // Processa a resposta da lista de lançamentos
       if (listResponse.data.success) {
         setLancamentos(listResponse.data.data || []);
         setPaginacao(prev => ({
@@ -311,12 +318,11 @@ export default function Lancamentos() {
         throw new Error(listResponse.data.message || 'Erro ao carregar lançamentos');
       }
 
-      // Processa a resposta do resumo de totais
       if (resumoResponse.data.success) {
         setResumoTotais(resumoResponse.data.data);
       } else {
         console.error(resumoResponse.data.message || 'Erro ao carregar resumo de totais');
-        setResumoTotais({ total_receitas: 0, total_despesas: 0, saldo: 0 }); // Reseta em caso de erro
+        setResumoTotais({ total_receitas: 0, total_despesas: 0, saldo: 0 });
       }
 
     } catch (error) {
@@ -326,14 +332,13 @@ export default function Lancamentos() {
       setLoading(false);
     }
   }, [usuario, calcularDatas, paginacao.porPagina, filtros]);
-  // ========= FIM DA CORREÇÃO 3 =========
 
   // Carregar dados iniciais
   useEffect(() => {
     if (usuario) {
       fetchLancamentos();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
   // Função para mostrar notificação
@@ -342,18 +347,20 @@ export default function Lancamentos() {
   }, []);
 
   // Função para quitar lançamento
-  const quitarLancamento = useCallback(async (id, tipo) => {
+  const quitarLancamento = async (id, tipo, dataReal) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
         action: 'quitar',
         id,
         tipo,
-        usuario_id: usuario.id
+        usuario_id: usuario.id,
+        data_real: dataReal
       });
 
       if (response.data.success) {
-        showNotification(response.data.message || `${tipo} quitada com sucesso!`);
-        fetchLancamentos(filtros, paginacao.pagina); // Recarrega os dados da página atual
+        showNotification(response.data.message || `${tipo} quitado com sucesso!`);
+        fetchLancamentos(filtros, paginacao.pagina);
+        setQuitacaoDialog({ isOpen: false, item: null, data: '' }); // Fechar modal de quitação
       } else {
         throw new Error(response.data.message || 'Erro ao quitar lançamento');
       }
@@ -361,7 +368,7 @@ export default function Lancamentos() {
       console.error('Erro ao quitar lançamento:', error);
       showNotification('Erro ao quitar lançamento: ' + error.message, 'error');
     }
-  }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
+  };
 
   // Função para visualizar detalhes
   const visualizarDetalhes = useCallback(async (id, tipo) => {
@@ -409,7 +416,7 @@ export default function Lancamentos() {
 
       if (response.data.success) {
         showNotification(response.data.message || `${tipo} excluída com sucesso!`);
-        fetchLancamentos(filtros, 1); // Volta para a página 1 após excluir
+        fetchLancamentos(filtros, 1);
       } else {
         throw new Error(response.data.message || 'Erro ao excluir lançamento');
       }
@@ -419,18 +426,31 @@ export default function Lancamentos() {
     }
   }, [usuario, filtros, fetchLancamentos, showNotification]);
 
-  // Função para confirmar quitação
-  const confirmarQuitacao = useCallback((id, tipo, descricao) => {
-    setConfirmDialog({
-      isOpen: true,
-      title: `Confirmar ${tipo === 'receita' ? 'Recebimento' : 'Pagamento'}`,
-      message: `Deseja realmente ${tipo === 'receita' ? 'receber' : 'pagar'} "${descricao}"?`,
-      onConfirm: () => {
-        quitarLancamento(id, tipo);
-        setConfirmDialog({ isOpen: false });
-      },
-      onCancel: () => setConfirmDialog({ isOpen: false })
-    });
+  // Função para confirmar quitação, agora usando o modal
+  const confirmarQuitacao = useCallback((item) => {
+    const hoje = new Date().toISOString().split('T')[0];
+    const isVencimentoHoje = item.data_prevista === hoje;
+
+    if (isVencimentoHoje) {
+      // Se for hoje, quita diretamente sem o modal de data
+      setConfirmDialog({
+        isOpen: true,
+        title: `Confirmar Quitação`,
+        message: `Deseja quitar "${item.descricao}"?`,
+        onConfirm: () => {
+          quitarLancamento(item.id, item.tipo, hoje);
+          setConfirmDialog({ isOpen: false });
+        },
+        onCancel: () => setConfirmDialog({ isOpen: false })
+      });
+    } else {
+      // Abre o modal com o input de data
+      setQuitacaoDialog({
+        isOpen: true,
+        item: item,
+        data: hoje, // Data padrão
+      });
+    }
   }, [quitarLancamento]);
 
   // Função para confirmar exclusão
@@ -499,12 +519,49 @@ export default function Lancamentos() {
     showNotification('Funcionalidade de exportação em desenvolvimento', 'info');
   }, [showNotification]);
 
-  // ========= INÍCIO DA CORREÇÃO 4: REMOVIDO O 'useMemo' DESNECESSÁRIO =========
-  // O cálculo dos totais agora é feito no backend e armazenado em 'resumoTotais'
-  // ========= FIM DA CORREÇÃO 4 =========
-
   // Calcular páginas
   const totalPaginas = Math.ceil(paginacao.total / paginacao.porPagina);
+
+  // Função para lidar com o clique no status
+  const handleStatusClick = (item) => {
+    if (item.data_real) {
+      setConfirmDialog({
+        isOpen: true,
+        title: 'Confirmação',
+        message: `Este lançamento já está marcado como ${item.tipo === 'receita' ? 'Recebido' : 'Pago'}. Deseja cancelar?`,
+        onConfirm: () => {
+          desquitarLancamento(item.id, item.tipo);
+          setConfirmDialog({ isOpen: false });
+        },
+        onCancel: () => setConfirmDialog({ isOpen: false })
+      });
+    } else {
+      confirmarQuitacao(item);
+    }
+  };
+
+  // Função para desquitar lançamento
+  const desquitarLancamento = async (id, tipo) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
+        action: 'desquitar',
+        id,
+        tipo,
+        usuario_id: usuario.id
+      });
+
+      if (response.data.success) {
+        showNotification(response.data.message || `${tipo} desquitado com sucesso!`);
+        fetchLancamentos(filtros, paginacao.pagina);
+      } else {
+        throw new Error(response.data.message || 'Erro ao desquitar lançamento');
+      }
+    } catch (error) {
+      console.error('Erro ao desquitar lançamento:', error);
+      showNotification('Erro ao desquitar lançamento: ' + error.message, 'error');
+    }
+  };
+
 
   if (loading && lancamentos.length === 0) {
     return (
@@ -524,7 +581,20 @@ export default function Lancamentos() {
         />
       )}
 
+      {/* Confirmação de Exclusão (o ConfirmDialog antigo) */}
       <ConfirmDialog {...confirmDialog} />
+
+      {/* Novo modal para Quitação (com input de data) */}
+      <ConfirmDialog
+        isOpen={quitacaoDialog.isOpen}
+        title={`Confirmar ${quitacaoDialog.item?.tipo === 'receita' ? 'Recebimento' : 'Pagamento'}`}
+        message={`Selecione a data real para o lançamento: "${quitacaoDialog.item?.descricao}"`}
+        showDateInput={true}
+        dateValue={quitacaoDialog.data}
+        onDateChange={(data) => setQuitacaoDialog({ ...quitacaoDialog, data })}
+        onConfirm={() => quitarLancamento(quitacaoDialog.item.id, quitacaoDialog.item.tipo, quitacaoDialog.data)}
+        onCancel={() => setQuitacaoDialog({ isOpen: false, item: null, data: '' })}
+      />
 
       <div className="content-card">
         <div className="page-header">
@@ -543,7 +613,6 @@ export default function Lancamentos() {
           onLimpar={limparFiltros}
         />
 
-        {/* ========= INÍCIO DA CORREÇÃO 5: USANDO O ESTADO 'resumoTotais' PARA OS CARDS ========= */}
         <div className="resumo-cards">
           <div className="resumo-card receitas">
             <h3>Total Receitas</h3>
@@ -560,7 +629,6 @@ export default function Lancamentos() {
             </span>
           </div>
         </div>
-        {/* ========= FIM DA CORREÇÃO 5 ========= */}
 
         <div className="table-container">
           {loading && (
@@ -568,7 +636,7 @@ export default function Lancamentos() {
               <Spinner />
             </div>
           )}
-          
+
           <div className="table-wrapper">
             <table className="data-table">
               <thead>
@@ -612,15 +680,29 @@ export default function Lancamentos() {
                       </td>
                       <td>
                         <div className="table-actions">
-                          {item.status !== 'pago' && (
-                            <button
-                              className="btn-action btn-success"
-                              onClick={() => confirmarQuitacao(item.id, item.tipo, item.descricao)}
-                              title={item.tipo === 'despesa' ? 'Pagar' : 'Receber'}
-                            >
-                              <FaCheckCircle />
-                            </button>
-                          )}
+                          <button
+                            className={`btn-status ${item.data_real ? 'btn-warning' : 'btn-success'}`}
+                            onClick={() => handleStatusClick(item)}
+                            title={
+                              item.data_real
+                                ? `Cancelar ${item.tipo === 'receita' ? 'Recebimento' : 'Pagamento'}`
+                                : item.tipo === 'receita'
+                                  ? 'Marcar como Recebido'
+                                  : 'Marcar como Pago'
+                            }
+                          >
+                            {item.data_real ? (
+                              <>
+                                <FaTimes style={{ marginRight: '6px' }} />
+                                {item.tipo === 'receita' ? 'Recebido' : 'Pago'}
+                              </>
+                            ) : (
+                              <>
+                                <FaCheck style={{ marginRight: '6px' }} />
+                                {item.tipo === 'receita' ? 'Receber' : 'Pagar'}
+                              </>
+                            )}
+                          </button>
                           <button
                             className="btn-action btn-info"
                             onClick={() => visualizarDetalhes(item.id, item.tipo)}
@@ -628,6 +710,7 @@ export default function Lancamentos() {
                           >
                             <FaEye />
                           </button>
+
                           <button
                             className="btn-action btn-warning"
                             onClick={() => editarLancamento(item.id, item.tipo)}
@@ -635,6 +718,7 @@ export default function Lancamentos() {
                           >
                             <FaEdit />
                           </button>
+
                           <button
                             className="btn-action btn-danger"
                             onClick={() => confirmarExclusao(item.id, item.tipo, item.descricao)}
@@ -660,12 +744,12 @@ export default function Lancamentos() {
               >
                 Anterior
               </button>
-              
+
               <span className="pagination-info">
-                Página {paginacao.pagina} de {totalPaginas} 
+                Página {paginacao.pagina} de {totalPaginas}
                 ({paginacao.total} registros)
               </span>
-              
+
               <button
                 className="btn btn-secondary"
                 disabled={paginacao.pagina === totalPaginas}

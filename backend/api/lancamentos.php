@@ -282,42 +282,73 @@ class LancamentosAPI {
      * Quita um lançamento (marca como pago/recebido)
      */
     public function quitar($params) {
-        $this->setUsuario($params['usuario_id'] ?? null);
-        
-        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
-        $tipo = $params['tipo'] ?? '';
-        
-        if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
-            throw new Exception('Parâmetros inválidos', 400);
-        }
-        
-        // Verificar se o lançamento pertence ao usuário
-        if ($tipo === 'despesa') {
-            $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ? AND data_pagamento IS NULL");
-            $update_sql = "UPDATE despesas SET data_pagamento = CURDATE() WHERE id = ? AND usuario_id = ?";
-        } else {
-            $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ? AND data_recebimento IS NULL");
-            $update_sql = "UPDATE receitas SET data_recebimento = CURDATE() WHERE id = ? AND usuario_id = ?";
-        }
-        
-        $stmt->execute([$id, $this->usuario_id]);
-        if (!$stmt->fetch()) {
-            throw new Exception('Lançamento não encontrado ou já quitado', 404);
-        }
-        
-        // Atualizar o registro
-        $stmt = $this->pdo->prepare($update_sql);
-        $stmt->execute([$id, $this->usuario_id]);
-        
-        if ($stmt->rowCount() === 0) {
-            throw new Exception('Erro ao quitar lançamento', 500);
-        }
-        
-        return [
-            'success' => true,
-            'message' => ucfirst($tipo) . ' quitada com sucesso!'
-        ];
+    $this->setUsuario($params['usuario_id'] ?? null);
+
+    $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
+    $tipo = $params['tipo'] ?? '';
+    $data_real = $params['data_real'] ?? date('Y-m-d'); // 👈 pega do POST ou usa hoje
+
+    if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
+        throw new Exception('Parâmetros inválidos', 400);
     }
+
+    if ($tipo === 'despesa') {
+        $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ? AND data_pagamento IS NULL");
+        $update_sql = "UPDATE despesas SET data_pagamento = ? WHERE id = ? AND usuario_id = ?";
+    } else {
+        $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ? AND data_recebimento IS NULL");
+        $update_sql = "UPDATE receitas SET data_recebimento = ? WHERE id = ? AND usuario_id = ?";
+    }
+
+    $stmt->execute([$id, $this->usuario_id]);
+    if (!$stmt->fetch()) {
+        throw new Exception('Lançamento não encontrado ou já quitado', 404);
+    }
+
+    $stmt = $this->pdo->prepare($update_sql);
+    $stmt->execute([$data_real, $id, $this->usuario_id]);
+
+    if ($stmt->rowCount() === 0) {
+        throw new Exception('Erro ao quitar lançamento', 500);
+    }
+
+    return [
+        'success' => true,
+        'message' => ucfirst($tipo) . ' quitado com sucesso!'
+    ];
+}
+
+ /**
+     * Desquitar um lançamento (marca como não pago/recebido)
+     */
+public function desquitar($params) {
+    $this->setUsuario($params['usuario_id'] ?? null);
+
+    $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
+    $tipo = $params['tipo'] ?? '';
+
+    if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
+        throw new Exception('Parâmetros inválidos', 400);
+    }
+
+    if ($tipo === 'despesa') {
+        $update_sql = "UPDATE despesas SET data_pagamento = NULL WHERE id = ? AND usuario_id = ?";
+    } else {
+        $update_sql = "UPDATE receitas SET data_recebimento = NULL WHERE id = ? AND usuario_id = ?";
+    }
+
+    $stmt = $this->pdo->prepare($update_sql);
+    $stmt->execute([$id, $this->usuario_id]);
+
+    if ($stmt->rowCount() === 0) {
+        throw new Exception('Erro ao desquitar lançamento', 500);
+    }
+
+    return [
+        'success' => true,
+        'message' => ucfirst($tipo) . ' desquitado com sucesso!'
+    ];
+}
     
     /**
      * Obtém detalhes de um lançamento específico
@@ -504,6 +535,10 @@ try {
                 case 'quitar':
                     echo json_encode($api->quitar($data));
                     break;
+
+                case 'desquitar':
+                    echo json_encode($api->desquitar($data));
+                    break;
                     
                 default:
                     throw new Exception('Ação não reconhecida', 400);
@@ -535,6 +570,9 @@ try {
         'message' => $e->getMessage(),
         'code' => $code
     ]);
+    
 }
+
 ?>
+
 
