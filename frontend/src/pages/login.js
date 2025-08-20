@@ -28,6 +28,7 @@ function Login() {
           nome: dados.nome,
           email: dados.email,
           foto: dados.foto || null,
+          tenant_id: dados.tenant_id
         }));
 
         // ALTERAÇÃO: Redirecionar para HOME ao invés de Dashboard

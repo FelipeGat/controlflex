@@ -11,6 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+// Iniciar sessão
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Detectar ambiente local ou produção
 $isLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $_SERVER['HTTP_HOST'] === 'localhost';
 
@@ -56,13 +61,19 @@ try {
 
     if ($user) {
         if (password_verify($senha, $user['senha'])) {
+            // Salvar na sessão
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['tenant_id'] = $user['tenant_id'];
+
+            // Resposta de sucesso
             echo json_encode([
                 'sucesso' => true,
                 'msg' => 'Login bem-sucedido',
                 'id' => $user['id'],
                 'email' => $user['email'],
                 'nome' => $user['nome'],
-                'foto' => $user['foto']
+                'foto' => $user['foto'],
+                'tenant_id' => $user['tenant_id'] // Retornado para o frontend
             ]);
         } else {
             http_response_code(401);
