@@ -681,7 +681,7 @@ export default function Lancamentos() {
                       <td>
                         <div className="table-actions">
                           <button
-                            className={`btn-status ${item.data_real ? 'btn-warning' : 'btn-success'}`}
+                            className={`btn-status ${item.data_real ? 'btn-warning' : (item.tipo === 'despesa' ? 'btn-danger' : 'btn-success')}`}
                             onClick={() => handleStatusClick(item)}
                             title={
                               item.data_real

@@ -93,10 +93,9 @@ try {
 
     // --- 5. ÚLTIMOS LANÇAMENTOS ---
     $stmtLancamentos = $pdo->prepare("
-        (SELECT r.id, 'receita' as tipo, r.valor, r.data_prevista_recebimento as data, c.nome as categoria_nome FROM receitas r LEFT JOIN categorias c ON r.categoria_id = c.id WHERE r.usuario_id = :uid1)
+        (SELECT r.id, 'receita' as tipo, r.valor, r.data_prevista_recebimento as data, COALESCE(c.nome, 'Sem categoria') as categoria_nome FROM receitas r LEFT JOIN categorias c ON r.categoria_id = c.id WHERE r.usuario_id = :uid1)
         UNION ALL
-        (SELECT d.id, 'despesa' as tipo, d.valor, d.data_compra as data, c.nome as categoria_nome FROM despesas d LEFT JOIN categorias c ON d.categoria_id = c.id WHERE d.usuario_id = :uid2)
-        ORDER BY data DESC LIMIT 10
+        (SELECT d.id, 'despesa' as tipo, d.valor, d.data_compra as data, COALESCE(c.nome, 'Sem categoria') as categoria_nome FROM despesas d LEFT JOIN categorias c ON d.categoria_id = c.id WHERE d.usuario_id = :uid2)
     ");
     $stmtLancamentos->execute([':uid1' => $usuario_id, ':uid2' => $usuario_id]);
     $ultimos_lancamentos = $stmtLancamentos->fetchAll();
@@ -111,6 +110,33 @@ try {
     $stmtInvestChart->execute([':uid' => $usuario_id, ':ano' => $ano_selecionado]);
     $invest_data_raw = $stmtInvestChart->fetchAll();
     
+    // --- 7. NOVOS KPIs: valores realizados no período ---
+    $stmtRealizados = $pdo->prepare("
+        SELECT 
+            (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_recebimento BETWEEN :inicio1 AND :fim1) as receitas_realizadas,
+            (SELECT COALESCE(SUM(valor), 0) FROM despesas WHERE usuario_id = :uid2 AND data_pagamento BETWEEN :inicio2 AND :fim2) as despesas_realizadas
+    ");
+    $stmtRealizados->execute([
+        ':uid1' => $usuario_id, ':inicio1' => $inicio, ':fim1' => $fim,
+        ':uid2' => $usuario_id, ':inicio2' => $inicio, ':fim2' => $fim
+    ]);
+    $realizados_data = $stmtRealizados->fetch();
+
+    $realizados_data['saldo_realizado'] = $realizados_data['receitas_realizadas'] - $realizados_data['despesas_realizadas'];
+
+    // Percentual realizado em relação ao previsto
+    $realizados_data['perc_receita'] = $kpi_data['total_receitas'] > 0 
+        ? round(($realizados_data['receitas_realizadas'] / $kpi_data['total_receitas']) * 100, 2) 
+        : 0;
+
+    $realizados_data['perc_despesa'] = $kpi_data['total_despesas'] > 0 
+        ? round(($realizados_data['despesas_realizadas'] / $kpi_data['total_despesas']) * 100, 2) 
+        : 0;
+
+    $realizados_data['perc_saldo'] = $kpi_data['saldo'] != 0 
+        ? round(($realizados_data['saldo_realizado'] / $kpi_data['saldo']) * 100, 2) 
+        : 0;
+
     $patrimonio_acumulado = [];
     $rendimento_acumulado = [];
     $saldo_anterior = 0;
@@ -128,11 +154,11 @@ try {
     // --- MONTA A RESPOSTA FINAL ---
     echo json_encode([
         'kpi' => $kpi_data,
+        'realizados' => $realizados_data,
         'annualChart' => $annual_chart_data,
         'investments' => $investments_data,
         'latestTransactions' => $ultimos_lancamentos,
         'investmentChart' => $investment_chart_data,
-        // Novos dados para os gráficos de pizza
         'expensesByCategory' => $expensesByCategory,
         'incomesByCategory' => $incomesByCategory,
         'expensesByFamilyMember' => $expensesByFamilyMember,

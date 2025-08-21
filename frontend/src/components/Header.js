@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
+import { FaUserCircle, FaChevronDown, FaThumbtack } from 'react-icons/fa';
 import './header.css';
 import { UPLOADS_BASE_URL } from '../apiConfig';
 
@@ -40,19 +40,22 @@ function Header() {
 
   return (
     <nav className="navbar">
-      {/* ALTERAÇÃO: Logo agora redireciona para HOME */}
       <div className="navbar-left" onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>
         <span className="navbar-logo">ControleFlex</span>
       </div>
 
       <div className="navbar-center">
-        {/* NOVO: Botão HOME como primeiro item */}
         <button className="nav-item" onClick={() => navigate('/home')}>
           🏠 Home
         </button>
 
         <button className="nav-item" onClick={() => navigate('/dashboard')}>
           📊 Dashboard
+        </button>
+
+        <button className="nav-item" onClick={() => navigate('/lancamentos')}>
+          <FaThumbtack style={{ color: "white", marginRight: "6px" }} />
+          Lançamentos
         </button>
 
         <div
@@ -78,8 +81,6 @@ function Header() {
               <button onClick={() => navigate('/receitas')}>💰 Receitas</button>
               <button onClick={() => navigate('/categorias')}>📂 Categorias</button>
               <button onClick={() => navigate('/investimentos')}>📈 Investimentos</button>
-              {/* CORREÇÃO: Lançamentos com L minúsculo para manter consistência */}
-              <button onClick={() => navigate('/lancamentos')}>📌 Lançamentos</button>
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Login from './pages/login';
-import Home from './components/Home_clima_automatico'; // TELA HOME COM CLIMA
+import Home from './components/Home_clima_automatico';
 import Dashboard from './pages/dashboard';
 import CadastroCategoria from './pages/categorias/CadastroCategoria';
 import Despesas from './pages/despesas';
@@ -27,16 +27,16 @@ function App() {
       <Routes>
         {/* Rota de Login */}
         <Route path="/" element={<Login />} />
-        
+
         {/* NOVA: Rota para escolha de planos (sem MainLayout pois é página pública) */}
         <Route path="/escolher-plano" element={<PaginaEscolhaPlanos />} />
-        
+
         {/* NOVA: Rota para tela de sucesso (sem MainLayout pois é página pública) */}
         <Route path="/sucesso" element={<TelaSucesso />} />
-        
+
         {/* HOME como página inicial após login */}
         <Route path="/home" element={<MainLayout><Home /></MainLayout>} />
-        
+
         {/* Outras rotas do sistema */}
         <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
         <Route path="/categorias" element={<MainLayout><CadastroCategoria /></MainLayout>} />

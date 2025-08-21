@@ -1,4 +1,4 @@
-/* --- Cores e Variáveis (sem alterações) --- */
+/* --- Cores e Variáveis --- */
 :root {
     --primary-color: #1a73e8;
     --success-color: #34a853;
@@ -9,7 +9,7 @@
     --text-color: #202124;
     --secondary-text-color: #5f6368;
     --border-radius: 8px;
-    --card-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+    --card-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
 }
 
 body {
@@ -17,7 +17,7 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-/* --- LAYOUT PRINCIPAL DO DASHBOARD (sem alterações) --- */
+/* --- LAYOUT PRINCIPAL DO DASHBOARD --- */
 .dashboard-container {
     display: flex;
     flex-direction: column;
@@ -46,9 +46,8 @@ body {
     gap: 0.5rem;
 }
 
-/* ========= INÍCIO DA CORREÇÃO (PASSO 2) ========= */
 .period-filter select {
-    padding: 0.5rem 2.5rem 0.5rem 1rem; /* Aumenta o padding à direita para a seta */
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
     border: 1px solid #dadce0;
     border-radius: var(--border-radius);
     background-color: var(--card-background);
@@ -58,35 +57,35 @@ body {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235f6368%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E' );
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235f6368%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 0.6em;
-    /* A linha 'transform: rotate(180deg);' foi REMOVIDA */
 }
-/* ========= FIM DA CORREÇÃO (PASSO 2) ========= */
 
-
-/* --- GRID DOS CARDS DE KPI (sem alterações) --- */
+/* --- GRID DOS CARDS DE KPI --- */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
 }
 
 .kpi-card {
-    color: white;
-    padding: 1.5rem;
+    background-color: var(--card-background);
+    padding: 1.8rem 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    color: var(--text-color);
+    cursor: default;
 }
 
 .kpi-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .kpi-icon {
@@ -94,16 +93,54 @@ body {
     opacity: 0.8;
 }
 
+.kpi-blue {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.kpi-blue .kpi-icon {
+    color: #b3d4fc;
+}
+
+.kpi-green {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.kpi-green .kpi-icon {
+    color: #a4d5a4;
+}
+
+.kpi-red {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.kpi-red .kpi-icon {
+    color: #f5a6a4;
+}
+
+.kpi-yellow {
+    background-color: var(--warning-color);
+    color: #333;
+}
+
+.kpi-yellow .kpi-icon {
+    color: #d4b400;
+}
+
 .kpi-content {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    max-width: 70%;
 }
 
 .kpi-title {
     font-size: 0.9rem;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
 }
 
 .kpi-value {
@@ -114,25 +151,35 @@ body {
 
 .kpi-variation {
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 800;
     color: rgba(255, 255, 255, 0.85);
 }
 
-/* --- NOVO GRID DE CONTEÚDO PRINCIPAL (sem alterações) --- */
+.kpi-realizado-percentual {
+    font-size: 0.9rem;
+    font-weight: bold;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.5rem;
+}
+
+/* --- NOVO GRID DE CONTEÚDO PRINCIPAL --- */
 .main-content-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     align-items: flex-start;
 }
 
 .main-panel {
+    grid-column: span 3;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
 .side-panel {
+    grid-column: span 1;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -177,7 +224,7 @@ body {
     margin: auto;
 }
 
-/* --- CARD DE TRANSAÇÕES (sem alterações) --- */
+/* --- CARD DE TRANSAÇÕES --- */
 .transactions-card {
     background-color: var(--card-background);
     padding: 1.5rem;
@@ -203,7 +250,8 @@ body {
     font-size: 0.9rem;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
     padding: 0.75rem;
     border-bottom: 1px solid #e8e8e8;
     text-align: left;
@@ -232,11 +280,23 @@ body {
     justify-content: center;
 }
 
-.transaction-icon.receita { background-color: rgba(52, 168, 83, 0.1); }
-.transaction-icon.despesa { background-color: rgba(234, 67, 53, 0.1); }
+.transaction-icon.receita {
+    background-color: rgba(52, 168, 83, 0.1);
+}
 
-.text-success { color: var(--success-color); font-weight: 600; }
-.text-danger { color: var(--danger-color); font-weight: 600; }
+.transaction-icon.despesa {
+    background-color: rgba(234, 67, 53, 0.1);
+}
+
+.text-success {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.text-danger {
+    color: var(--danger-color);
+    font-weight: 600;
+}
 
 .table-footer {
     padding-top: 1rem;
@@ -253,11 +313,12 @@ body {
     text-decoration: underline;
 }
 
-/* --- RESPONSIVIDADE (sem alterações) --- */
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 1200px) {
     .main-content-grid {
         grid-template-columns: 1.5fr 1fr;
     }
+
     .kpi-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -270,14 +331,76 @@ body {
 }
 
 @media (max-width: 768px) {
-    .dashboard-container {
-        padding: 1rem;
+    .kpi-grid {
+        grid-template-columns: 1fr;
     }
+
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
     }
+
     .kpi-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* --- ESTILOS PARA AS SEÇÕES DE RECOLHIMENTO/EXPANSÃO --- */
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    transition: color 0.3s ease;
+}
+
+.section-title:hover {
+    color: var(--primary-color);
+}
+
+.toggle-icon {
+    display: inline-block;
+    font-size: 1rem;
+    color: var(--secondary-text-color);
+    user-select: none;
+    font-weight: bold;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+/* Gira o ícone para cima quando a classe 'up' estiver presente */
+.toggle-icon.up {
+    transform: rotate(180deg);
+}
+
+/* Estilos de transição para o bloco de cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 2000px;
+    opacity: 1;
+    padding-top: 1.5rem;
+}
+
+/* Classe para o estado "recolhido" */
+.kpi-grid.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    pointer-events: none;
 }
