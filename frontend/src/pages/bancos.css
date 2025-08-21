@@ -31,8 +31,9 @@
   padding: 2.5rem;
 }
 
-/* ===== Formulário ===== */
-.form-title, .table-title {
+/* ===== Formulário e Títulos ===== */
+.form-title,
+.table-title {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--primary-color);
@@ -75,6 +76,61 @@
   box-shadow: 0 0 0 3px rgba(10, 59, 102, 0.2);
 }
 
+/* ===== Estilos para os Checkboxes como Botões (Toggle Buttons) ===== */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.checkbox-container input[type="checkbox"] {
+  position: absolute;
+  /* Esconde a caixa de seleção padrão */
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.btn-toggle-label {
+  display: inline-block;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+/* Estilo para quando o checkbox está checado */
+.checkbox-container input[type="checkbox"]:checked+.btn-toggle-label {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo para quando o label está em hover */
+.btn-toggle-label:hover {
+  background-color: #e0e0e0;
+  border-color: #999;
+}
+
+/* Estilo para quando o checkbox está desabilitado */
+.checkbox-container input[type="checkbox"]:disabled+.btn-toggle-label {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+
+/* ===== Botões de Ação do Formulário ===== */
 .form-buttons {
   display: flex;
   justify-content: flex-end;
@@ -96,6 +152,7 @@
   background-color: var(--primary-color) !important;
   color: white !important;
 }
+
 .form-buttons .btn-save:hover {
   background-color: #082f50 !important;
   transform: translateY(-2px);
@@ -105,6 +162,7 @@
   background-color: var(--danger-color) !important;
   color: white !important;
 }
+
 .form-buttons .btn-cancel:hover {
   background-color: #c82333 !important;
 }
@@ -159,7 +217,8 @@
   text-align: left;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
@@ -212,7 +271,30 @@
   color: #6c757d;
 }
 
-/* ===== Notificações (igual ao de Categorias) ===== */
+/* ===== Estilos para o componente React-Select ===== */
+.form-group .react-select__control {
+  border-radius: 8px;
+  /* Mantém a consistência com os outros inputs */
+  border: 1px solid #ccc;
+  box-shadow: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group .react-select__control--is-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(10, 59, 102, 0.2);
+}
+
+.form-group .react-select__single-value {
+  color: var(--text-color);
+}
+
+.form-group .react-select__placeholder {
+  color: #999;
+}
+
+
+/* ===== Notificações ===== */
 .notification {
   position: fixed;
   top: 20px;
@@ -221,16 +303,38 @@
   border-radius: 8px;
   color: white;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.notification.success { background-color: var(--success-color); }
-.notification.error { background-color: var(--danger-color); }
+
+.notification.success {
+  background-color: var(--success-color);
+}
+
+.notification.error {
+  background-color: var(--danger-color);
+}
 
 /* ===== Responsividade ===== */
 @media (max-width: 768px) {
-  .page-container { padding: 1rem; gap: 1rem; }
-  .content-card { padding: 1.5rem; }
-  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .form-buttons { flex-direction: column-reverse; }
-  .btn { width: 100%; }
+  .page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .content-card {
+    padding: 1.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }

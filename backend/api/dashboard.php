@@ -1,12 +1,15 @@
 <?php
 // /api/dashboard.php
 
-header("Access-Control-Allow-Origin: http://localhost:3000" );
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+// 1. CABEÇALHOS DE SEGURANÇA E CORS
+// ===================================================
+$frontend_url = "http://localhost:3000";
+header("Access-Control-Allow-Origin: " . $frontend_url);
+header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200 );
+    http_response_code(200);
     exit();
 }
 
@@ -33,10 +36,10 @@ try {
     ");
     $stmtCards->execute([':uid1' => $usuario_id, ':inicio1' => $inicio, ':fim1' => $fim, ':uid2' => $usuario_id, ':inicio2' => $inicio, ':fim2' => $fim]);
     $kpi_data = $stmtCards->fetch();
-    
+
     $inicio_anterior = date('Y-m-d', strtotime($inicio . ' -1 month'));
     $fim_anterior = date('Y-m-d', strtotime($fim . ' -1 month'));
-    
+
     $stmtCardsAnterior = $pdo->prepare("
         SELECT
             (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_prevista_recebimento BETWEEN :inicio1 AND :fim1) as total_receitas,
@@ -44,9 +47,16 @@ try {
     ");
     $stmtCardsAnterior->execute([':uid1' => $usuario_id, ':inicio1' => $inicio_anterior, ':fim1' => $fim_anterior, ':uid2' => $usuario_id, ':inicio2' => $inicio_anterior, ':fim2' => $fim_anterior]);
     $kpi_data_anterior = $stmtCardsAnterior->fetch();
-    
-    $calculate_variation = fn($current, $previous) => ($previous == 0) ? ($current > 0 ? 100.0 : 0.0) : (($current - $previous) / abs($previous)) * 100;
-    
+
+    // Lógica para calcular a variação de forma compatível com PHP < 7.4
+    $calculate_variation = function($current, $previous) {
+        if ($previous == 0) {
+            return ($current > 0) ? 100.0 : 0.0;
+        } else {
+            return (($current - $previous) / abs($previous)) * 100;
+        }
+    };
+
     $kpi_data['saldo'] = $kpi_data['total_receitas'] - $kpi_data['total_despesas'];
     $kpi_data_anterior['saldo'] = $kpi_data_anterior['total_receitas'] - $kpi_data_anterior['total_despesas'];
     $kpi_data['variacao_receitas'] = round($calculate_variation($kpi_data['total_receitas'], $kpi_data_anterior['total_receitas']), 2);
@@ -109,8 +119,8 @@ try {
     ");
     $stmtInvestChart->execute([':uid' => $usuario_id, ':ano' => $ano_selecionado]);
     $invest_data_raw = $stmtInvestChart->fetchAll();
-    
-    // --- 7. NOVOS KPIs: valores realizados no período ---
+
+    // --- 7. KPIs: valores realizados no período ---
     $stmtRealizados = $pdo->prepare("
         SELECT 
             (SELECT COALESCE(SUM(valor), 0) FROM receitas WHERE usuario_id = :uid1 AND data_recebimento BETWEEN :inicio1 AND :fim1) as receitas_realizadas,
@@ -125,16 +135,16 @@ try {
     $realizados_data['saldo_realizado'] = $realizados_data['receitas_realizadas'] - $realizados_data['despesas_realizadas'];
 
     // Percentual realizado em relação ao previsto
-    $realizados_data['perc_receita'] = $kpi_data['total_receitas'] > 0 
-        ? round(($realizados_data['receitas_realizadas'] / $kpi_data['total_receitas']) * 100, 2) 
+    $realizados_data['perc_receita'] = $kpi_data['total_receitas'] > 0
+        ? round(($realizados_data['receitas_realizadas'] / $kpi_data['total_receitas']) * 100, 2)
         : 0;
 
-    $realizados_data['perc_despesa'] = $kpi_data['total_despesas'] > 0 
-        ? round(($realizados_data['despesas_realizadas'] / $kpi_data['total_despesas']) * 100, 2) 
+    $realizados_data['perc_despesa'] = $kpi_data['total_despesas'] > 0
+        ? round(($realizados_data['despesas_realizadas'] / $kpi_data['total_despesas']) * 100, 2)
         : 0;
 
-    $realizados_data['perc_saldo'] = $kpi_data['saldo'] != 0 
-        ? round(($realizados_data['saldo_realizado'] / $kpi_data['saldo']) * 100, 2) 
+    $realizados_data['perc_saldo'] = $kpi_data['saldo'] != 0
+        ? round(($realizados_data['saldo_realizado'] / $kpi_data['saldo']) * 100, 2)
         : 0;
 
     $patrimonio_acumulado = [];
@@ -151,6 +161,46 @@ try {
     }
     $investment_chart_data = ['labels' => ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'], 'patrimonio' => $patrimonio_acumulado, 'rendimentos' => $rendimento_acumulado];
 
+
+       // --- NOVO: SEÇÃO DE SALDOS BANCÁRIOS E CARTÕES CORRIGIDA ---
+    $saldos = [
+        'bancarios' => [],
+        'cartoes' => []
+    ];
+
+    // Busca todas as contas (bancárias e de cartão) do usuário em uma única consulta
+    $stmtBancos = $pdo->prepare("SELECT id, nome, tipo_conta, saldo, cheque_especial, limite_cartao, saldo_cartao FROM bancos WHERE usuario_id = :uid ORDER BY nome");
+    $stmtBancos->execute([':uid' => $usuario_id]);
+    $contas_raw = $stmtBancos->fetchAll();
+
+    foreach ($contas_raw as $conta) {
+        // Lógica para Saldo Bancário
+        // Se o tipo for Dinheiro ou Conta Corrente, adicione à seção 'bancarios'
+        if ($conta['tipo_conta'] === 'Dinheiro' || $conta['tipo_conta'] === 'Conta Corrente') {
+            $saldo_real = $conta['saldo'] + $conta['cheque_especial'];
+
+            $saldos['bancarios'][] = [
+                'id' => $conta['id'],
+                'nome' => $conta['nome'],
+                'saldo' => number_format($saldo_real, 2, '.', '')
+            ];
+        }
+
+        // Lógica para Saldo de Cartão de Crédito
+        // Se tiver limite de cartão (maior que 0), adicione à seção 'cartoes'
+        if (isset($conta['limite_cartao']) && $conta['limite_cartao'] > 0) {
+            $saldo_disponivel_cartao = $conta['limite_cartao'] - $conta['saldo_cartao'];
+
+            $saldos['cartoes'][] = [
+                'id' => $conta['id'],
+                'nome' => $conta['nome'],
+                'saldo' => number_format($saldo_disponivel_cartao, 2, '.', ''),
+                'limite_credito' => number_format($conta['limite_cartao'], 2, '.', ''),
+                'credito_utilizado' => number_format($conta['saldo_cartao'], 2, '.', '')
+            ];
+        }
+    }
+
     // --- MONTA A RESPOSTA FINAL ---
     echo json_encode([
         'kpi' => $kpi_data,
@@ -163,11 +213,12 @@ try {
         'incomesByCategory' => $incomesByCategory,
         'expensesByFamilyMember' => $expensesByFamilyMember,
         'incomesByFamilyMember' => $incomesByFamilyMember,
+        'saldos' => $saldos
     ]);
 
 } catch (\Throwable $e) {
-    $httpCode = is_int($e->getCode( )) && $e->getCode() >= 400 ? $e->getCode() : 500;
-    http_response_code($httpCode );
+    $httpCode = is_int($e->getCode()) && $e->getCode() >= 400 ? $e->getCode() : 500;
+    http_response_code($httpCode);
     echo json_encode(['erro' => 'Ocorreu um erro crítico no servidor.', 'detalhes' => $e->getMessage()]);
 }
 ?>

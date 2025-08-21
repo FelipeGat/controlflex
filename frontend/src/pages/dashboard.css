@@ -1,4 +1,6 @@
-/* --- Cores e Variáveis --- */
+/* =================================================================
+    1. CORES E VARIÁVEIS
+    ================================================================= */
 :root {
     --primary-color: #1a73e8;
     --success-color: #34a853;
@@ -15,9 +17,12 @@
 body {
     background-color: var(--background-color);
     font-family: 'Roboto', sans-serif;
+    color: var(--text-color);
 }
 
-/* --- LAYOUT PRINCIPAL DO DASHBOARD --- */
+/* =================================================================
+    2. LAYOUT PRINCIPAL DO DASHBOARD
+    ================================================================= */
 .dashboard-container {
     display: flex;
     flex-direction: column;
@@ -37,13 +42,16 @@ body {
     margin: 0;
     font-size: 2rem;
     font-weight: 400;
-    color: var(--text-color);
 }
 
 .period-filter {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.period-filter label {
+    color: var(--secondary-text-color);
 }
 
 .period-filter select {
@@ -63,24 +71,124 @@ body {
     background-size: 0.6em;
 }
 
-/* --- GRID DOS CARDS DE KPI --- */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+.toggle-values-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: background-color 0.3s ease;
 }
 
-.kpi-card {
-    background-color: var(--card-background);
-    padding: 1.8rem 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
+.toggle-values-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* =================================================================
+    3. SEÇÕES RECOLHÍVEIS E GRIDS
+    ================================================================= */
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.section-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-    color: var(--text-color);
-    cursor: default;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    transition: color 0.3s ease;
+}
+
+.section-title:hover {
+    color: var(--primary-color);
+}
+
+.toggle-icon {
+    display: inline-block;
+    font-size: 1rem;
+    color: var(--secondary-text-color);
+    user-select: none;
+    font-weight: bold;
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon.up {
+    transform: rotate(180deg);
+}
+
+.toggle-icon.down {
+    transform: rotate(0deg);
+}
+
+/* --- GRID E CARDS DE KPI - ESTILO CORRIGIDO --- */
+.kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    justify-content: stretch;
+    align-items: stretch;
+    gap: 1.5rem;
+    width: 100%;
+    /* garantir que ocupe toda largura */
+    max-width: 1200px;
+    /* opcional, centraliza no desktop */
+    margin: 0 auto;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        padding-top 0.5s ease;
+    max-height: 2000px;
+    opacity: 1;
+    padding-top: 1.5rem;
+}
+
+.kpi-grid.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    pointer-events: none;
+}
+
+/* ESTILO BASE DO CARD - NEUTRO E CLEAN */
+.kpi-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+    min-height: 120px;
+    border-left: 6px solid transparent;
+}
+
+.kpi-green {
+    border-left-color: #28a745;
+    /* verde */
+}
+
+.kpi-red {
+    border-left-color: #dc3545;
+    /* vermelho */
+}
+
+.kpi-blue {
+    border-left-color: #007bff;
+    /* azul */
+}
+
+.kpi-yellow {
+    border-left-color: #ffc107;
+    /* amarelo */
 }
 
 .kpi-card:hover {
@@ -88,82 +196,147 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-.kpi-icon {
-    font-size: 2.5rem;
-    opacity: 0.8;
+/* ESTILOS DE TEMA PARA OS CARDS - APENAS CORES SUTIS */
+.kpi-card.primary {
+    border-left-color: var(--primary-color);
 }
 
-.kpi-blue {
-    background-color: var(--primary-color);
-    color: white;
+.kpi-card.success {
+    border-left-color: var(--success-color);
 }
 
-.kpi-blue .kpi-icon {
-    color: #b3d4fc;
+.kpi-card.danger {
+    border-left-color: var(--danger-color);
 }
 
-.kpi-green {
-    background-color: var(--success-color);
-    color: white;
+.kpi-card.warning {
+    border-left-color: var(--warning-color);
 }
 
-.kpi-green .kpi-icon {
-    color: #a4d5a4;
+/* TEMAS PARA SALDOS POSITIVOS, NEGATIVOS E NEUTROS */
+.kpi-card.positive {
+    border-left-color: var(--success-color);
 }
 
-.kpi-red {
-    background-color: var(--danger-color);
-    color: white;
+.kpi-card.negative {
+    border-left-color: var(--danger-color);
 }
 
-.kpi-red .kpi-icon {
-    color: #f5a6a4;
+.kpi-card.neutral {
+    border-left-color: var(--secondary-text-color);
 }
 
-.kpi-yellow {
-    background-color: var(--warning-color);
-    color: #333;
-}
-
-.kpi-yellow .kpi-icon {
-    color: #d4b400;
-}
-
+/* ESTILO DOS ELEMENTOS INTERNOS DO CARD */
 .kpi-content {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    max-width: 70%;
+    flex: 1;
+    min-width: 0;
+}
+
+.valor-banco {
+    font-size: 1.2rem;
+    font-weight: bold;
+    /* white-space: nowrap; */
 }
 
 .kpi-title {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
     font-weight: 600;
+    color: #666;
+    display: block;
+    margin-bottom: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* evita texto quebrado */
 }
 
 .kpi-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #222;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.kpi-icon {
+    flex-shrink: 0;
+    font-size: 2rem;
+    margin-left: 1rem;
+    color: #444;
+}
+
+/* Cores dos ícones baseadas no tema do card */
+.kpi-card.primary .kpi-icon {
+    color: var(--primary-color);
+}
+
+.kpi-card.success .kpi-icon {
+    color: var(--success-color);
+}
+
+.kpi-card.danger .kpi-icon {
+    color: var(--danger-color);
+}
+
+.kpi-card.warning .kpi-icon {
+    color: var(--warning-color);
+}
+
+.kpi-card.positive .kpi-icon {
+    color: var(--success-color);
+}
+
+.kpi-card.negative .kpi-icon {
+    color: var(--danger-color);
+}
+
+.kpi-card.neutral .kpi-icon {
+    color: var(--secondary-text-color);
 }
 
 .kpi-variation {
-    font-size: 0.9rem;
-    font-weight: 800;
-    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: block;
+}
+
+.kpi-variation.positive {
+    color: var(--success-color);
+}
+
+.kpi-variation.negative {
+    color: var(--danger-color);
 }
 
 .kpi-realizado-percentual {
     font-size: 0.9rem;
-    font-weight: bold;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--secondary-text-color);
     margin-top: 0.5rem;
 }
 
-/* --- NOVO GRID DE CONTEÚDO PRINCIPAL --- */
+/* Novo estilo para informações de cartão de crédito */
+.credit-info-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+}
+
+.credit-info-item {
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+    font-weight: 400;
+}
+
+.credit-info-item:first-child {
+    margin-bottom: 0.2rem;
+}
+
+/* =================================================================
+    4. GRIDS DE CONTEÚDO E GRÁFICOS
+    ================================================================= */
 .main-content-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -224,7 +397,9 @@ body {
     margin: auto;
 }
 
-/* --- CARD DE TRANSAÇÕES --- */
+/* =================================================================
+    5. TABELA DE TRANSAÇÕES
+    ================================================================= */
 .transactions-card {
     background-color: var(--card-background);
     padding: 1.5rem;
@@ -313,14 +488,18 @@ body {
     text-decoration: underline;
 }
 
-/* --- RESPONSIVIDADE --- */
+.empty-state {
+    color: var(--secondary-text-color);
+    text-align: center;
+    padding: 1rem;
+}
+
+/* =================================================================
+    6. RESPONSIVIDADE
+    ================================================================= */
 @media (max-width: 1200px) {
     .main-content-grid {
         grid-template-columns: 1.5fr 1fr;
-    }
-
-    .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -339,68 +518,10 @@ body {
         flex-direction: column;
         align-items: flex-start;
     }
+}
 
-    .kpi-grid {
-        grid-template-columns: 1fr;
+@media (max-width: 992px) {
+    .kpi-card:has(.large-value) .kpi-content .kpi-value {
+        font-size: 1.2rem;
     }
-}
-
-/* --- ESTILOS PARA AS SEÇÕES DE RECOLHIMENTO/EXPANSÃO --- */
-.dashboard-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.section-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--text-color);
-    margin: 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #ddd;
-    transition: color 0.3s ease;
-}
-
-.section-title:hover {
-    color: var(--primary-color);
-}
-
-.toggle-icon {
-    display: inline-block;
-    font-size: 1rem;
-    color: var(--secondary-text-color);
-    user-select: none;
-    font-weight: bold;
-    margin-left: 0.5rem;
-    transition: transform 0.3s ease;
-}
-
-/* Gira o ícone para cima quando a classe 'up' estiver presente */
-.toggle-icon.up {
-    transform: rotate(180deg);
-}
-
-/* Estilos de transição para o bloco de cards */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    overflow: hidden;
-    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    max-height: 2000px;
-    opacity: 1;
-    padding-top: 1.5rem;
-}
-
-/* Classe para o estado "recolhido" */
-.kpi-grid.collapsed {
-    max-height: 0;
-    opacity: 0;
-    padding-top: 0;
-    pointer-events: none;
 }

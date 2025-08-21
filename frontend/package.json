@@ -25,6 +25,7 @@
     "react-number-format": "^5.4.4",
     "react-router-dom": "^7.6.3",
     "react-scripts": "5.0.1",
+    "react-select": "^5.10.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

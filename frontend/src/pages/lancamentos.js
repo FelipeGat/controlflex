@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaSearch, FaFilter, FaDownload, FaEye, FaEdit, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaDownload, FaEye, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 import './lancamentos.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
-import { FaTimes } from 'react-icons/fa';
 
 // Componente de Notificação
 const Notification = ({ message, type, onClose }) => {
@@ -22,9 +21,30 @@ const Notification = ({ message, type, onClose }) => {
   );
 };
 
-// Componente de Confirmação
-// Adicionei um input para a data aqui
-const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, showDateInput, onDateChange, dateValue }) => {
+// Componente de Confirmação (AGORA SÓ RENDERIZA O QUE RECEBE)
+const ConfirmDialog = ({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  showDateInput,
+  onDateChange,
+  dateValue,
+  showContaInput,
+  contasDisponiveis, // Recebe apenas as contas válidas
+  contaValue,
+  onContaChange
+}) => {
+  const gruposContas = useMemo(() => {
+    const contasParaFiltrar = Array.isArray(contasDisponiveis) ? contasDisponiveis : [];
+
+    const dinheiro = contasParaFiltrar.filter(c => c.tipo_conta === 'Dinheiro');
+    const bancarias = contasParaFiltrar.filter(c => c.tipo_conta !== 'Dinheiro');
+
+    return { dinheiro, bancarias };
+  }, [contasDisponiveis]);
+
   if (!isOpen) return null;
 
   return (
@@ -43,6 +63,53 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, showDateIn
             />
           </div>
         )}
+        {showContaInput && (
+          <div className="form-group">
+            <label>Conta de Origem:</label>
+            <select
+              className="form-control"
+              value={contaValue}
+              onChange={(e) => onContaChange(e.target.value)}
+              required
+            >
+              <option value="">Selecione a conta...</option>
+
+              {/* Opções para Dinheiro */}
+              {gruposContas.dinheiro.length > 0 && (
+                <optgroup label="Dinheiro">
+                  {gruposContas.dinheiro.map((conta) => (
+                    <option key={conta.id} value={JSON.stringify({ id: conta.id, tipo: 'Dinheiro' })}>
+                      {`${conta.nome} - Saldo: ${parseFloat(conta.saldo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+
+              {/* Opções para Contas Bancárias (Pix, Débito e Crédito) */}
+              {gruposContas.bancarias.length > 0 && (
+                <optgroup label="Contas Bancárias">
+                  {gruposContas.bancarias.map((conta) => (
+                    <React.Fragment key={conta.id}>
+                      {/* Opção para Débito */}
+                      {conta.tipo_conta === 'Conta Corrente' && (
+                        <option value={JSON.stringify({ id: conta.id, tipo: 'Débito' })}>
+                          {`${conta.nome} (Débito) - Saldo: ${parseFloat(conta.saldo_total_disponivel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                        </option>
+                      )}
+
+                      {/* Opção para Crédito */}
+                      {conta.tipo_conta === 'Cartão de Crédito' && (
+                        <option value={JSON.stringify({ id: conta.id, tipo: 'Crédito' })}>
+                          {`${conta.nome} (Crédito) - Limite: ${conta.limite_cartao_limpo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                        </option>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          </div>
+        )}
         <div className="modal-buttons">
           <button className="btn btn-danger" onClick={onConfirm}>
             Confirmar
@@ -56,7 +123,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, showDateIn
   );
 };
 
-// Componente de Filtros Avançados
+// Componente de Filtros Avançados (sem alterações)
 const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
   return (
     <div className="filtros-avancados">
@@ -176,8 +243,14 @@ export default function Lancamentos() {
     porPagina: 20,
     total: 0
   });
-  // Adicionei um novo estado para o modal de quitação
-  const [quitacaoDialog, setQuitacaoDialog] = useState({ isOpen: false, item: null, data: '' });
+
+  const [quitacaoDialog, setQuitacaoDialog] = useState({
+    isOpen: false,
+    item: null,
+    data: '',
+    contaId: '',
+    contasDisponiveis: [] // Novo estado para as contas já validadas
+  });
 
   const [filtros, setFiltros] = useState({
     periodo: 'this_month',
@@ -194,23 +267,44 @@ export default function Lancamentos() {
     saldo: 0,
   });
 
-  // Verificar usuário logado
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-    if (!user) {
-      navigate('/');
-    } else {
-      setUsuario(user);
-    }
-  }, [navigate]);
+  const [contasBancarias, setContasBancarias] = useState([]);
 
-  // Função para calcular datas baseado no período
+  // Função para mostrar notificação
+  const showNotification = useCallback((message, type = 'success') => {
+    setNotification({ message, type });
+  }, []);
+
+  // Funções de formatação e utilitários
+  const formatarMoeda = useCallback((valor) => {
+    return parseFloat(valor).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }, []);
+
+  const formatarData = useCallback((data) => {
+    if (!data) return '-';
+    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+  }, []);
+
+  const getRowClass = useCallback((status) => {
+    switch (status) {
+      case 'pago':
+        return 'linha-verde';
+      case 'hoje':
+        return 'linha-amarela';
+      case 'atrasado':
+        return 'linha-vermelha';
+      default:
+        return 'linha-normal';
+    }
+  }, []);
+
   const calcularDatas = useCallback((periodo) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
     let inicio, fim;
-
     switch (periodo) {
       case 'today':
         inicio = fim = hoje.toISOString().split('T')[0];
@@ -270,10 +364,10 @@ export default function Lancamentos() {
         inicio = fim = hoje.toISOString().split('T')[0];
         break;
     }
-
     return { inicio, fim };
   }, []);
 
+  // Funções de Ações de Lançamentos
   const fetchLancamentos = useCallback(async (filtrosAtuais = filtros, paginaAtual = 1) => {
     if (!usuario) return;
 
@@ -331,36 +425,84 @@ export default function Lancamentos() {
     } finally {
       setLoading(false);
     }
-  }, [usuario, calcularDatas, paginacao.porPagina, filtros]);
+  }, [usuario, calcularDatas, paginacao.porPagina, filtros, showNotification]);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    if (usuario) {
-      fetchLancamentos();
+  const fetchContas = useCallback(async () => {
+    if (!usuario) return;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/bancos.php?usuario_id=${usuario.id}`);
+      let contasFetched = response.data.data || response.data || [];
+
+      // Limpeza e conversão dos valores monetários
+      contasFetched = contasFetched.map(conta => {
+        // Limpar limite_cartao
+        let limiteCartaoLimpo = 0;
+        if (conta.limite_cartao) {
+          const cleanValue = String(conta.limite_cartao).replace(/[^\d,]/g, '').replace(',', '.');
+          limiteCartaoLimpo = parseFloat(cleanValue) || 0;
+        }
+
+        // Limpar saldo
+        let saldoLimpo = 0;
+        if (conta.saldo) {
+          const cleanValue = String(conta.saldo).replace(/[^\d,]/g, '').replace(',', '.');
+          saldoLimpo = parseFloat(cleanValue) || 0;
+        }
+
+        // Limpar cheque_especial (NOVO)
+        let limiteChequeEspecialLimpo = 0;
+        if (conta.cheque_especial) {
+          const cleanValue = String(conta.cheque_especial).replace(/[^\d,]/g, '').replace(',', '.');
+          limiteChequeEspecialLimpo = parseFloat(cleanValue) || 0;
+        }
+
+        // Calcular saldo total disponível (Saldo + Cheque Especial)
+        const saldoTotalDisponivel = saldoLimpo + limiteChequeEspecialLimpo;
+
+        return {
+          ...conta,
+          limite_cartao_limpo: limiteCartaoLimpo,
+          saldo_limpo: saldoLimpo,
+          limite_cheque_especial_limpo: limiteChequeEspecialLimpo,
+          saldo_total_disponivel: saldoTotalDisponivel
+        };
+      });
+      setContasBancarias(contasFetched);
+    } catch (error) {
+      console.error("Erro ao carregar contas bancárias:", error);
+      setContasBancarias([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
-  // Função para mostrar notificação
-  const showNotification = useCallback((message, type = 'success') => {
-    setNotification({ message, type });
-  }, []);
+  const quitarLancamento = useCallback(async (id, tipo, dataReal, contaValue) => {
+    if (!contaValue) {
+      showNotification('Por favor, selecione uma conta.', 'error');
+      return;
+    }
 
-  // Função para quitar lançamento
-  const quitarLancamento = async (id, tipo, dataReal) => {
+    let contaSelecionada;
+    try {
+      contaSelecionada = JSON.parse(contaValue);
+    } catch (e) {
+      showNotification('Erro ao processar a conta selecionada. Tente novamente.', 'error');
+      return;
+    }
+
     try {
       const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
         action: 'quitar',
         id,
         tipo,
         usuario_id: usuario.id,
-        data_real: dataReal
+        data_real: dataReal,
+        conta_id: contaSelecionada.id,
+        tipo_pagamento: contaSelecionada.tipo
       });
 
       if (response.data.success) {
         showNotification(response.data.message || `${tipo} quitado com sucesso!`);
         fetchLancamentos(filtros, paginacao.pagina);
-        setQuitacaoDialog({ isOpen: false, item: null, data: '' }); // Fechar modal de quitação
+        setQuitacaoDialog({ isOpen: false, item: null, data: '', contaId: '', contasDisponiveis: [] });
       } else {
         throw new Error(response.data.message || 'Erro ao quitar lançamento');
       }
@@ -368,32 +510,33 @@ export default function Lancamentos() {
       console.error('Erro ao quitar lançamento:', error);
       showNotification('Erro ao quitar lançamento: ' + error.message, 'error');
     }
-  };
+  }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
 
-  // Função para visualizar detalhes
-  const visualizarDetalhes = useCallback(async (id, tipo) => {
+  const desquitarLancamento = useCallback(async (id, tipo) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, {
-        params: {
-          action: 'detalhes',
-          id,
-          tipo,
-          usuario_id: usuario.id
-        }
+      const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
+        action: 'desquitar',
+        id,
+        tipo,
+        usuario_id: usuario.id
       });
 
       if (response.data.success) {
-        showNotification('Funcionalidade de visualização em desenvolvimento', 'info');
+        showNotification(response.data.message || `${tipo} desquitado com sucesso!`);
+        fetchLancamentos(filtros, paginacao.pagina);
       } else {
-        throw new Error(response.data.message || 'Erro ao carregar detalhes');
+        throw new Error(response.data.message || 'Erro ao desquitar lançamento');
       }
     } catch (error) {
-      console.error('Erro ao carregar detalhes:', error);
-      showNotification('Erro ao carregar detalhes: ' + error.message, 'error');
+      console.error('Erro ao desquitar lançamento:', error);
+      showNotification('Erro ao desquitar lançamento: ' + error.message, 'error');
     }
-  }, [usuario, showNotification]);
+  }, [usuario, filtros, paginacao.pagina, fetchLancamentos, showNotification]);
 
-  // Função para editar lançamento
+  const visualizarDetalhes = useCallback(async (id, tipo) => {
+    showNotification('Funcionalidade de visualização em desenvolvimento', 'info');
+  }, [showNotification]);
+
   const editarLancamento = useCallback((id, tipo) => {
     if (tipo === 'receita') {
       navigate(`/receitas?edit=${id}`);
@@ -402,7 +545,6 @@ export default function Lancamentos() {
     }
   }, [navigate]);
 
-  // Função para excluir lançamento
   const excluirLancamento = useCallback(async (id, tipo) => {
     try {
       const response = await axios.delete(`${API_BASE_URL}/lancamentos.php`, {
@@ -426,34 +568,6 @@ export default function Lancamentos() {
     }
   }, [usuario, filtros, fetchLancamentos, showNotification]);
 
-  // Função para confirmar quitação, agora usando o modal
-  const confirmarQuitacao = useCallback((item) => {
-    const hoje = new Date().toISOString().split('T')[0];
-    const isVencimentoHoje = item.data_prevista === hoje;
-
-    if (isVencimentoHoje) {
-      // Se for hoje, quita diretamente sem o modal de data
-      setConfirmDialog({
-        isOpen: true,
-        title: `Confirmar Quitação`,
-        message: `Deseja quitar "${item.descricao}"?`,
-        onConfirm: () => {
-          quitarLancamento(item.id, item.tipo, hoje);
-          setConfirmDialog({ isOpen: false });
-        },
-        onCancel: () => setConfirmDialog({ isOpen: false })
-      });
-    } else {
-      // Abre o modal com o input de data
-      setQuitacaoDialog({
-        isOpen: true,
-        item: item,
-        data: hoje, // Data padrão
-      });
-    }
-  }, [quitarLancamento]);
-
-  // Função para confirmar exclusão
   const confirmarExclusao = useCallback((id, tipo, descricao) => {
     setConfirmDialog({
       isOpen: true,
@@ -467,12 +581,10 @@ export default function Lancamentos() {
     });
   }, [excluirLancamento]);
 
-  // Função para aplicar filtros
   const aplicarFiltros = useCallback(() => {
     fetchLancamentos(filtros, 1);
   }, [filtros, fetchLancamentos]);
 
-  // Função para limpar filtros
   const limparFiltros = useCallback(() => {
     const filtrosLimpos = {
       periodo: 'this_month',
@@ -486,44 +598,12 @@ export default function Lancamentos() {
     fetchLancamentos(filtrosLimpos, 1);
   }, [fetchLancamentos]);
 
-  // Função para determinar classe da linha
-  const getRowClass = useCallback((status) => {
-    switch (status) {
-      case 'pago':
-        return 'linha-verde';
-      case 'hoje':
-        return 'linha-amarela';
-      case 'atrasado':
-        return 'linha-vermelha';
-      default:
-        return 'linha-normal';
-    }
-  }, []);
-
-  // Função para formatar moeda
-  const formatarMoeda = useCallback((valor) => {
-    return parseFloat(valor).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  }, []);
-
-  // Função para formatar data
-  const formatarData = useCallback((data) => {
-    if (!data) return '-';
-    return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
-  }, []);
-
-  // Função para exportar dados
   const exportarDados = useCallback(() => {
     showNotification('Funcionalidade de exportação em desenvolvimento', 'info');
   }, [showNotification]);
 
-  // Calcular páginas
-  const totalPaginas = Math.ceil(paginacao.total / paginacao.porPagina);
-
-  // Função para lidar com o clique no status
-  const handleStatusClick = (item) => {
+  // ** FUNÇÃO PARA INICIAR O DIÁLOGO DE QUITAÇÃO COM AS VALIDAÇÕES **
+  const handleStatusClick = useCallback((item) => {
     if (item.data_real) {
       setConfirmDialog({
         isOpen: true,
@@ -536,32 +616,66 @@ export default function Lancamentos() {
         onCancel: () => setConfirmDialog({ isOpen: false })
       });
     } else {
-      confirmarQuitacao(item);
-    }
-  };
+      const valorLancamento = parseFloat(item.valor);
 
-  // Função para desquitar lançamento
-  const desquitarLancamento = async (id, tipo) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/lancamentos.php`, {
-        action: 'desquitar',
-        id,
-        tipo,
-        usuario_id: usuario.id
-      });
+      // Filtra as contas de débito (Dinheiro e Conta Corrente) que têm saldo total suficiente
+      const contasDebitoValidas = contasBancarias.filter(
+        (conta) =>
+          (conta.tipo_conta === 'Dinheiro' || conta.tipo_conta === 'Conta Corrente') &&
+          conta.saldo_total_disponivel >= valorLancamento
+      );
 
-      if (response.data.success) {
-        showNotification(response.data.message || `${tipo} desquitado com sucesso!`);
-        fetchLancamentos(filtros, paginacao.pagina);
+      // Filtra as contas de crédito que têm limite suficiente (apenas para despesas)
+      const contasCreditoValidas = item.tipo === 'despesa'
+        ? contasBancarias.filter(
+          (conta) =>
+            conta.tipo_conta === 'Cartão de Crédito' &&
+            conta.limite_cartao_limpo >= valorLancamento
+        )
+        : [];
+
+      // Une as listas de contas válidas
+      const contasDisponiveis = [...contasDebitoValidas, ...contasCreditoValidas];
+
+      if (contasDisponiveis.length === 0) {
+        showNotification(
+          `Você não possui nenhuma conta com saldo ou limite suficiente para pagar este lançamento de ${formatarMoeda(valorLancamento)}.`,
+          'error'
+        );
       } else {
-        throw new Error(response.data.message || 'Erro ao desquitar lançamento');
+        const hoje = new Date().toISOString().split('T')[0];
+        setQuitacaoDialog({
+          isOpen: true,
+          item: item,
+          data: hoje,
+          contaId: '',
+          contasDisponiveis: contasDisponiveis
+        });
       }
-    } catch (error) {
-      console.error('Erro ao desquitar lançamento:', error);
-      showNotification('Erro ao desquitar lançamento: ' + error.message, 'error');
     }
-  };
+  }, [desquitarLancamento, contasBancarias, showNotification, formatarMoeda]);
 
+  // EFEITOS (Hooks)
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+    if (!user) {
+      navigate('/');
+    } else {
+      setUsuario(user);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (usuario) {
+        await fetchContas();
+        await fetchLancamentos();
+      }
+    };
+    loadInitialData();
+  }, [usuario, fetchContas, fetchLancamentos]);
+
+  const totalPaginas = Math.ceil(paginacao.total / paginacao.porPagina);
 
   if (loading && lancamentos.length === 0) {
     return (
@@ -581,19 +695,21 @@ export default function Lancamentos() {
         />
       )}
 
-      {/* Confirmação de Exclusão (o ConfirmDialog antigo) */}
       <ConfirmDialog {...confirmDialog} />
 
-      {/* Novo modal para Quitação (com input de data) */}
       <ConfirmDialog
         isOpen={quitacaoDialog.isOpen}
         title={`Confirmar ${quitacaoDialog.item?.tipo === 'receita' ? 'Recebimento' : 'Pagamento'}`}
-        message={`Selecione a data real para o lançamento: "${quitacaoDialog.item?.descricao}"`}
+        message={`Selecione a data real e a conta para o lançamento: "${quitacaoDialog.item?.descricao}"`}
         showDateInput={true}
         dateValue={quitacaoDialog.data}
         onDateChange={(data) => setQuitacaoDialog({ ...quitacaoDialog, data })}
-        onConfirm={() => quitarLancamento(quitacaoDialog.item.id, quitacaoDialog.item.tipo, quitacaoDialog.data)}
-        onCancel={() => setQuitacaoDialog({ isOpen: false, item: null, data: '' })}
+        showContaInput={true}
+        contasDisponiveis={quitacaoDialog.contasDisponiveis} // Passa a lista filtrada
+        contaValue={quitacaoDialog.contaId}
+        onContaChange={(contaId) => setQuitacaoDialog({ ...quitacaoDialog, contaId })}
+        onConfirm={() => quitarLancamento(quitacaoDialog.item.id, quitacaoDialog.item.tipo, quitacaoDialog.data, quitacaoDialog.contaId)}
+        onCancel={() => setQuitacaoDialog({ isOpen: false, item: null, data: '', contaId: '', contasDisponiveis: [] })}
       />
 
       <div className="content-card">
@@ -729,8 +845,7 @@ export default function Lancamentos() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
+                  )))}
               </tbody>
             </table>
           </div>

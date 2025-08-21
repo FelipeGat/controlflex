@@ -4,6 +4,11 @@
  * Versão corrigida com funcionalidades completas
  */
 
+// Ativar a exibição de erros durante o desenvolvimento
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Headers CORS mais seguros
 $allowed_origins = [
     'http://localhost:3000',
@@ -15,10 +20,10 @@ if (in_array($origin, $allowed_origins)) {
     header("Access-Control-Allow-Origin: $origin");
 }
 
-header("Access-Control-Allow-Origin: http://localhost:3000" );
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
+header('Content-Type: application/json');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -27,7 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Incluir configuração do banco
-require_once __DIR__ . '/../config/db.php';
+// O arquivo db.php deve inicializar a variável $pdo
+try {
+    require_once __DIR__ . '/../config/db.php';
+    if (!isset($pdo) || !$pdo instanceof PDO) {
+        throw new Exception("Erro de configuração: a variável \$pdo não foi definida ou não é uma instância de PDO em db.php", 500);
+    }
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Erro na conexão com o banco de dados: ' . $e->getMessage()]);
+    exit();
+} catch (Exception $e) {
+    $code = $e->getCode() ?: 500;
+    http_response_code($code);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    exit();
+}
+
 
 /**
  * Classe para gerenciar lançamentos
@@ -62,22 +83,39 @@ class LancamentosAPI {
     /**
      * Lista lançamentos com filtros e paginação
      */
-    public function listar($params) {
-        $this->setUsuario($params['usuario_id'] ?? null);
-        
-        // Parâmetros de paginação
-        $pagina = max(1, intval($params['pagina'] ?? 1));
-        $por_pagina = min(100, max(10, intval($params['por_pagina'] ?? 20)));
-        $offset = ($pagina - 1) * $por_pagina;
-        
-        // Construir filtros
-        $filtros = $this->construirFiltros($params);
-        $where_despesas = $filtros['where_despesas'];
-        $where_receitas = $filtros['where_receitas'];
-        $bind_params = $filtros['bind_params'];
-        
-        // Query principal com JOIN para nomes dos familiares
-        $sql = "
+    /**
+ * Lista lançamentos com filtros e paginação
+ */
+public function listar($params) {
+    $this->setUsuario($params['usuario_id'] ?? null);
+
+    // Parâmetros de paginação
+    $pagina = max(1, intval($params['pagina'] ?? 1));
+    $por_pagina = min(100, max(10, intval($params['por_pagina'] ?? 20)));
+    $offset = ($pagina - 1) * $por_pagina;
+
+    // Construir filtros
+    $filtros = $this->construirFiltros($params);
+    $where_despesas = $filtros['where_despesas'];
+    $where_receitas = $filtros['where_receitas'];
+    $bind_params = $filtros['bind_params'];
+
+    // Query principal com JOIN para nomes dos familiares e bancos
+    $sql = "
+        SELECT 
+            id,
+            tipo,
+            descricao,
+            valor,
+            data_prevista,
+            data_real,
+            familiar,
+            categoria,
+            banco_nome,
+            banco_tipo_conta,
+            observacoes,
+            banco_id
+        FROM (
             SELECT 
                 d.id,
                 'despesa' AS tipo,
@@ -85,15 +123,18 @@ class LancamentosAPI {
                 d.valor,
                 d.data_compra AS data_prevista,
                 d.data_pagamento AS data_real,
-                d.quem_comprou AS familiar_id,
                 f1.nome AS familiar,
                 c1.nome AS categoria,
-                d.observacoes
+                b1.nome AS banco_nome,
+                b1.tipo_conta AS banco_tipo_conta,
+                d.observacoes,
+                d.conta_id AS banco_id  -- Renomeado para 'banco_id' para unificar
             FROM despesas d
             LEFT JOIN familiares f1 ON d.quem_comprou = f1.id
             LEFT JOIN categorias c1 ON d.categoria_id = c1.id
             LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
-            WHERE d.usuario_id = :usuario_id1 $where_despesas
+            LEFT JOIN bancos b1 ON d.conta_id = b1.id  -- Corrigido para 'd.conta_id'
+            WHERE d.usuario_id = :usuario_id1 {$where_despesas}
 
             UNION ALL
 
@@ -104,38 +145,46 @@ class LancamentosAPI {
                 r.valor,
                 r.data_prevista_recebimento AS data_prevista,
                 r.data_recebimento AS data_real,
-                r.quem_recebeu AS familiar_id,
                 f2.nome AS familiar,
                 c2.nome AS categoria,
-                r.observacoes
+                b2.nome AS banco_nome,
+                b2.tipo_conta AS banco_tipo_conta,
+                r.observacoes,
+                r.conta_id AS banco_id  -- Renomeado para 'banco_id' para unificar
             FROM receitas r
             LEFT JOIN familiares f2 ON r.quem_recebeu = f2.id
             LEFT JOIN categorias c2 ON r.categoria_id = c2.id
-            WHERE r.usuario_id = :usuario_id2 $where_receitas
-
-            ORDER BY data_prevista DESC, tipo, id DESC
-            LIMIT :limit OFFSET :offset
-        ";
+            LEFT JOIN bancos b2 ON r.conta_id = b2.id  -- Corrigido para 'r.conta_id'
+            WHERE r.usuario_id = :usuario_id2 {$where_receitas}
+        ) AS combined
+        ORDER BY data_prevista DESC, tipo, id DESC
+        LIMIT :limit OFFSET :offset
+    ";
         
         // Preparar parâmetros
         $bind_params[':usuario_id1'] = $this->usuario_id;
         $bind_params[':usuario_id2'] = $this->usuario_id;
         $bind_params[':limit'] = $por_pagina;
         $bind_params[':offset'] = $offset;
-        
-        $stmt = $this->pdo->prepare($sql);
-        
-        // Bind dos parâmetros
-        foreach ($bind_params as $key => $value) {
-            if ($key === ':limit' || $key === ':offset') {
-                $stmt->bindValue($key, $value, PDO::PARAM_INT);
-            } else {
-                $stmt->bindValue($key, $value);
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            
+            // Bind dos parâmetros
+            foreach ($bind_params as $key => $value) {
+                if ($key === ':limit' || $key === ':offset') {
+                    $stmt->bindValue($key, $value, PDO::PARAM_INT);
+                } else {
+                    $stmt->bindValue($key, $value);
+                }
             }
+            
+            $stmt->execute();
+            $lancamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // Lança uma exceção mais detalhada para o bloco de tratamento principal
+            throw new Exception("Erro de SQL na função listar: " . $e->getMessage(), 500);
         }
-        
-        $stmt->execute();
-        $lancamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Calcular status e processar dados
         $hoje = date('Y-m-d');
@@ -242,10 +291,10 @@ class LancamentosAPI {
             SELECT COUNT(*) as total FROM (
                 SELECT d.id FROM despesas d 
                 LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
-                WHERE d.usuario_id = :usuario_id1 $where_despesas
+                WHERE d.usuario_id = :usuario_id1 {$where_despesas}
                 UNION ALL
                 SELECT r.id FROM receitas r 
-                WHERE r.usuario_id = :usuario_id2 $where_receitas
+                WHERE r.usuario_id = :usuario_id2 {$where_receitas}
             ) as combined
         ";
         
@@ -277,78 +326,254 @@ class LancamentosAPI {
             return 'pendente';
         }
     }
-    
+
     /**
      * Quita um lançamento (marca como pago/recebido)
      */
     public function quitar($params) {
-    $this->setUsuario($params['usuario_id'] ?? null);
+        $this->setUsuario($params['usuario_id'] ?? null);
 
-    $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
-    $tipo = $params['tipo'] ?? '';
-    $data_real = $params['data_real'] ?? date('Y-m-d'); // 👈 pega do POST ou usa hoje
+        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
+        $tipo = $params['tipo'] ?? '';
+        $data_real = $params['data_real'] ?? date('Y-m-d');
+        $banco_id = filter_var($params['banco_id'] ?? null, FILTER_VALIDATE_INT);
+        
+        if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
+            throw new Exception('Parâmetros inválidos (id ou tipo)', 400);
+        }
+        if (!$banco_id) {
+            throw new Exception('Banco de pagamento/recebimento é obrigatório', 400);
+        }
 
-    if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
-        throw new Exception('Parâmetros inválidos', 400);
+        $this->pdo->beginTransaction();
+
+        try {
+            // 1. Obter o valor do lançamento e verificar se já foi quitado
+            if ($tipo === 'despesa') {
+                $stmt = $this->pdo->prepare("SELECT valor, data_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
+            } else {
+                $stmt = $this->pdo->prepare("SELECT valor, data_recebimento FROM receitas WHERE id = ? AND usuario_id = ?");
+            }
+            $stmt->execute([$id, $this->usuario_id]);
+            $lancamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$lancamento || $lancamento[($tipo === 'despesa' ? 'data_pagamento' : 'data_recebimento')] !== null) {
+                throw new Exception('Lançamento não encontrado ou já quitado', 404);
+            }
+            $valor_lancamento = floatval($lancamento['valor']);
+
+            // 2. Atualizar o saldo/limite do banco
+            $this->atualizarSaldoBanco($banco_id, $valor_lancamento, $tipo);
+
+            // 3. Quitar o lançamento
+            if ($tipo === 'despesa') {
+                $update_sql = "UPDATE despesas SET data_pagamento = ?, banco_id = ? WHERE id = ? AND usuario_id = ?";
+            } else {
+                $update_sql = "UPDATE receitas SET data_recebimento = ?, banco_id = ? WHERE id = ? AND usuario_id = ?";
+            }
+            $stmt = $this->pdo->prepare($update_sql);
+            $stmt->execute([$data_real, $banco_id, $id, $this->usuario_id]);
+
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('Erro ao quitar lançamento', 500);
+            }
+
+            $this->pdo->commit();
+            return [
+                'success' => true,
+                'message' => ucfirst($tipo) . ' quitado com sucesso!'
+            ];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
-    if ($tipo === 'despesa') {
-        $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ? AND data_pagamento IS NULL");
-        $update_sql = "UPDATE despesas SET data_pagamento = ? WHERE id = ? AND usuario_id = ?";
-    } else {
-        $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ? AND data_recebimento IS NULL");
-        $update_sql = "UPDATE receitas SET data_recebimento = ? WHERE id = ? AND usuario_id = ?";
-    }
-
-    $stmt->execute([$id, $this->usuario_id]);
-    if (!$stmt->fetch()) {
-        throw new Exception('Lançamento não encontrado ou já quitado', 404);
-    }
-
-    $stmt = $this->pdo->prepare($update_sql);
-    $stmt->execute([$data_real, $id, $this->usuario_id]);
-
-    if ($stmt->rowCount() === 0) {
-        throw new Exception('Erro ao quitar lançamento', 500);
-    }
-
-    return [
-        'success' => true,
-        'message' => ucfirst($tipo) . ' quitado com sucesso!'
-    ];
-}
-
- /**
-     * Desquitar um lançamento (marca como não pago/recebido)
+    /**
+     * Desquita um lançamento (marca como não pago/recebido)
      */
-public function desquitar($params) {
-    $this->setUsuario($params['usuario_id'] ?? null);
+    public function desquitar($params) {
+        $this->setUsuario($params['usuario_id'] ?? null);
 
-    $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
-    $tipo = $params['tipo'] ?? '';
+        $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
+        $tipo = $params['tipo'] ?? '';
+        
+        if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
+            throw new Exception('Parâmetros inválidos (id ou tipo)', 400);
+        }
+        
+        $this->pdo->beginTransaction();
 
-    if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
-        throw new Exception('Parâmetros inválidos', 400);
+        try {
+            // 1. Obter o valor do lançamento e o banco
+            if ($tipo === 'despesa') {
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
+            } else {
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento FROM receitas WHERE id = ? AND usuario_id = ?");
+            }
+            $stmt->execute([$id, $this->usuario_id]);
+            $lancamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$lancamento || $lancamento[($tipo === 'despesa' ? 'data_pagamento' : 'data_recebimento')] === null) {
+                throw new Exception('Lançamento não encontrado ou não está quitado', 404);
+            }
+            
+            $valor_lancamento = floatval($lancamento['valor']);
+            $banco_id = $lancamento['banco_id'];
+
+            // 2. Reverter a atualização do saldo/limite
+            $this->reverterSaldoBanco($banco_id, $valor_lancamento, $tipo);
+
+            // 3. Desquitar o lançamento
+            if ($tipo === 'despesa') {
+                $update_sql = "UPDATE despesas SET data_pagamento = NULL, banco_id = NULL WHERE id = ? AND usuario_id = ?";
+            } else {
+                $update_sql = "UPDATE receitas SET data_recebimento = NULL, banco_id = NULL WHERE id = ? AND usuario_id = ?";
+            }
+            $stmt = $this->pdo->prepare($update_sql);
+            $stmt->execute([$id, $this->usuario_id]);
+
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('Erro ao desquitar lançamento', 500);
+            }
+
+            $this->pdo->commit();
+            return [
+                'success' => true,
+                'message' => ucfirst($tipo) . ' desquitado com sucesso!'
+            ];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
-    if ($tipo === 'despesa') {
-        $update_sql = "UPDATE despesas SET data_pagamento = NULL WHERE id = ? AND usuario_id = ?";
-    } else {
-        $update_sql = "UPDATE receitas SET data_recebimento = NULL WHERE id = ? AND usuario_id = ?";
+    /**
+     * Método interno para atualizar o saldo/limite do banco
+     */
+    private function atualizarSaldoBanco($banco_id, $valor, $tipo_lancamento) {
+        $stmt = $this->pdo->prepare("SELECT * FROM bancos WHERE id = ? AND usuario_id = ? FOR UPDATE");
+        $stmt->execute([$banco_id, $this->usuario_id]);
+        $banco = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$banco) {
+            throw new Exception("Banco de ID {$banco_id} não encontrado ou não pertence a este usuário.", 404);
+        }
+
+        $novo_saldo = floatval($banco['saldo']);
+        $novo_limite_cartao = floatval($banco['limite_cartao']);
+        $novo_cheque_especial = floatval($banco['cheque_especial']);
+        $tipo_conta = $banco['tipo_conta'];
+
+        // Lógica de despesa
+        if ($tipo_lancamento === 'despesa') {
+            if ($tipo_conta === 'Cartão de Crédito') {
+                $novo_limite_cartao -= $valor;
+            } else { // Conta Corrente, Dinheiro, etc.
+                if ($novo_saldo >= $valor) {
+                    $novo_saldo -= $valor;
+                } else {
+                    $saldo_restante = $valor - $novo_saldo;
+                    $novo_saldo = 0;
+                    $novo_cheque_especial -= $saldo_restante;
+                }
+            }
+        }
+        // Lógica de receita
+        else if ($tipo_lancamento === 'receita') {
+              // Conta Corrente, Dinheiro, etc.
+            if ($tipo_conta !== 'Cartão de Crédito') {
+                if ($novo_saldo < 0) { // Se o saldo estiver negativo (usando cheque especial)
+                    $debito_cheque_especial = abs($novo_saldo);
+                    $valor_para_cheque = min($valor, $debito_cheque_especial);
+                    $novo_cheque_especial += $valor_para_cheque;
+                    $novo_saldo += $valor_para_cheque; // Adiciona o valor para zerar o débito
+                    $valor_restante = $valor - $valor_para_cheque;
+                    $novo_saldo += $valor_restante;
+                } else {
+                    $novo_saldo += $valor;
+                }
+            } else { // Cartão de Crédito (caso de estorno/reembolso)
+                $novo_limite_cartao += $valor;
+            }
+        }
+
+        // Atualizar no banco de dados
+        $stmt_update = $this->pdo->prepare("
+            UPDATE bancos
+            SET saldo = :saldo,
+                limite_cartao = :limite_cartao,
+                cheque_especial = :cheque_especial
+            WHERE id = :id AND usuario_id = :usuario_id
+        ");
+        $stmt_update->execute([
+            ':saldo' => $novo_saldo,
+            ':limite_cartao' => $novo_limite_cartao,
+            ':cheque_especial' => $novo_cheque_especial,
+            ':id' => $banco_id,
+            ':usuario_id' => $this->usuario_id
+        ]);
+        if ($stmt_update->rowCount() === 0) {
+            throw new Exception('Erro ao atualizar saldo do banco. Nenhum registro alterado.', 500);
+        }
     }
 
-    $stmt = $this->pdo->prepare($update_sql);
-    $stmt->execute([$id, $this->usuario_id]);
+    /**
+     * Método interno para reverter o saldo/limite do banco
+     */
+    private function reverterSaldoBanco($banco_id, $valor, $tipo_lancamento) {
+        $stmt = $this->pdo->prepare("SELECT * FROM bancos WHERE id = ? AND usuario_id = ? FOR UPDATE");
+        $stmt->execute([$banco_id, $this->usuario_id]);
+        $banco = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($stmt->rowCount() === 0) {
-        throw new Exception('Erro ao desquitar lançamento', 500);
+        if (!$banco) {
+            throw new Exception("Banco de ID {$banco_id} não encontrado ou não pertence a este usuário.", 404);
+        }
+        
+        $novo_saldo = floatval($banco['saldo']);
+        $novo_limite_cartao = floatval($banco['limite_cartao']);
+        $novo_cheque_especial = floatval($banco['cheque_especial']);
+        $tipo_conta = $banco['tipo_conta'];
+
+        // Lógica de despesa (reverter)
+        if ($tipo_lancamento === 'despesa') {
+            if ($tipo_conta === 'Cartão de Crédito') {
+                $novo_limite_cartao += $valor;
+            } else { // Conta Corrente, Dinheiro, etc.
+                // A lógica de reversão é simplesmente somar o valor
+                $novo_saldo += $valor;
+            }
+        }
+        // Lógica de receita (reverter)
+        else if ($tipo_lancamento === 'receita') {
+            // Conta Corrente, Dinheiro, etc.
+            if ($tipo_conta !== 'Cartão de Crédito') {
+                // A lógica de reversão é simplesmente subtrair o valor
+                $novo_saldo -= $valor;
+            } else { // Cartão de Crédito (caso de estorno/reembolso)
+                $novo_limite_cartao -= $valor;
+            }
+        }
+
+        // Atualizar no banco de dados
+        $stmt_update = $this->pdo->prepare("
+            UPDATE bancos
+            SET saldo = :saldo,
+                limite_cartao = :limite_cartao,
+                cheque_especial = :cheque_especial
+            WHERE id = :id AND usuario_id = :usuario_id
+        ");
+        $stmt_update->execute([
+            ':saldo' => $novo_saldo,
+            ':limite_cartao' => $novo_limite_cartao,
+            ':cheque_especial' => $novo_cheque_especial,
+            ':id' => $banco_id,
+            ':usuario_id' => $this->usuario_id
+        ]);
+        if ($stmt_update->rowCount() === 0) {
+            throw new Exception('Erro ao reverter saldo do banco. Nenhum registro alterado.', 500);
+        }
     }
-
-    return [
-        'success' => true,
-        'message' => ucfirst($tipo) . ' desquitado com sucesso!'
-    ];
-}
     
     /**
      * Obtém detalhes de um lançamento específico
@@ -369,11 +594,14 @@ public function desquitar($params) {
                     d.*,
                     f.nome as familiar_nome,
                     c.nome as categoria_nome,
-                    fo.nome as fornecedor_nome
+                    fo.nome as fornecedor_nome,
+                    b.nome as banco_nome,
+                    b.tipo_conta as banco_tipo_conta
                 FROM despesas d
                 LEFT JOIN familiares f ON d.quem_comprou = f.id
                 LEFT JOIN categorias c ON d.categoria_id = c.id
                 LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
+                LEFT JOIN bancos b ON d.banco_id = b.id
                 WHERE d.id = ? AND d.usuario_id = ?
             ";
         } else {
@@ -381,10 +609,13 @@ public function desquitar($params) {
                 SELECT 
                     r.*,
                     f.nome as familiar_nome,
-                    c.nome as categoria_nome
+                    c.nome as categoria_nome,
+                    b.nome as banco_nome,
+                    b.tipo_conta as banco_tipo_conta
                 FROM receitas r
                 LEFT JOIN familiares f ON r.quem_recebeu = f.id
                 LEFT JOIN categorias c ON r.categoria_id = c.id
+                LEFT JOIN bancos b ON r.banco_id = b.id
                 WHERE r.id = ? AND r.usuario_id = ?
             ";
         }
@@ -419,32 +650,46 @@ public function desquitar($params) {
             throw new Exception('Parâmetros inválidos', 400);
         }
         
-        // Verificar se o lançamento pertence ao usuário
-        if ($tipo === 'despesa') {
-            $stmt = $this->pdo->prepare("SELECT id FROM despesas WHERE id = ? AND usuario_id = ?");
-            $delete_sql = "DELETE FROM despesas WHERE id = ? AND usuario_id = ?";
-        } else {
-            $stmt = $this->pdo->prepare("SELECT id FROM receitas WHERE id = ? AND usuario_id = ?");
-            $delete_sql = "DELETE FROM receitas WHERE id = ? AND usuario_id = ?";
+        $this->pdo->beginTransaction();
+
+        try {
+            // Verificar se o lançamento está quitado para reverter o saldo
+            if ($tipo === 'despesa') {
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
+                $delete_sql = "DELETE FROM despesas WHERE id = ? AND usuario_id = ?";
+            } else {
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento FROM receitas WHERE id = ? AND usuario_id = ?");
+                $delete_sql = "DELETE FROM receitas WHERE id = ? AND usuario_id = ?";
+            }
+            $stmt->execute([$id, $this->usuario_id]);
+            $lancamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$lancamento) {
+                throw new Exception('Lançamento não encontrado', 404);
+            }
+
+            if ($lancamento[($tipo === 'despesa' ? 'data_pagamento' : 'data_recebimento')] !== null) {
+                $this->reverterSaldoBanco($lancamento['banco_id'], floatval($lancamento['valor']), $tipo);
+            }
+            
+            // Excluir o registro
+            $stmt = $this->pdo->prepare($delete_sql);
+            $stmt->execute([$id, $this->usuario_id]);
+            
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('Erro ao excluir lançamento', 500);
+            }
+
+            $this->pdo->commit();
+            
+            return [
+                'success' => true,
+                'message' => ucfirst($tipo) . ' excluída com sucesso!'
+            ];
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            throw $e;
         }
-        
-        $stmt->execute([$id, $this->usuario_id]);
-        if (!$stmt->fetch()) {
-            throw new Exception('Lançamento não encontrado', 404);
-        }
-        
-        // Excluir o registro
-        $stmt = $this->pdo->prepare($delete_sql);
-        $stmt->execute([$id, $this->usuario_id]);
-        
-        if ($stmt->rowCount() === 0) {
-            throw new Exception('Erro ao excluir lançamento', 500);
-        }
-        
-        return [
-            'success' => true,
-            'message' => ucfirst($tipo) . ' excluída com sucesso!'
-        ];
     }
     
     /**
@@ -466,13 +711,11 @@ public function desquitar($params) {
                 COUNT(CASE WHEN tipo = 'receita' THEN 1 END) as qtd_receitas,
                 COUNT(CASE WHEN tipo = 'despesa' THEN 1 END) as qtd_despesas
             FROM (
-                SELECT 'receita' as tipo, r.valor
-                FROM receitas r
-                WHERE r.usuario_id = :usuario_id1 $where_receitas
+                SELECT 'receita' as tipo, r.valor FROM receitas r
+                WHERE r.usuario_id = :usuario_id1 {$where_receitas}
                 UNION ALL
-                SELECT 'despesa' as tipo, d.valor
-                FROM despesas d
-                WHERE d.usuario_id = :usuario_id2 $where_despesas
+                SELECT 'despesa' as tipo, d.valor FROM despesas d
+                WHERE d.usuario_id = :usuario_id2 {$where_despesas}
             ) as combined
         ";
         
@@ -563,16 +806,15 @@ try {
     }
     
 } catch (Exception $e) {
-    $code = $e->getCode() ?: 500;
+    // Tratamento de erro corrigido
+    $code = $e->getCode();
+    if (!is_int($code) || $code < 100 || $code > 599) {
+        $code = 500; // Fallback para código de status HTTP válido
+    }
     http_response_code($code);
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage(),
         'code' => $code
     ]);
-    
 }
-
-?>
-
-
