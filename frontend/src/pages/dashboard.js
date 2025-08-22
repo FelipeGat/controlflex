@@ -122,17 +122,37 @@ const KpiCard = ({ title, value, percentage, theme, showValues }) => {
     );
 };
 
+// COMPONENTE CORRIGIDO - SaldosChart com cores diferentes para cartões
 const SaldosChart = ({ data, showValues }) => {
     const chartData = useMemo(() => ({
         labels: data.map(item => item.nome),
         datasets: [{
             label: 'Saldo Disponível',
             data: data.map(item => showValues ? parseFloat(item.saldo) : 0),
-            backgroundColor: data.map(item => parseFloat(item.saldo) >= 0 ? 'rgba(52, 168, 83, 0.7)' : 'rgba(234, 67, 53, 0.7)'),
-            borderColor: data.map(item => parseFloat(item.saldo) >= 0 ? 'rgba(52, 168, 83, 1)' : 'rgba(234, 67, 53, 1)'),
+            backgroundColor: data.map(item => {
+                const saldo = parseFloat(item.saldo);
+                const isCartao = item.nome.includes('💳');
+
+                if (saldo >= 0) {
+                    return isCartao ? 'rgba(33, 150, 243, 0.7)' : 'rgba(52, 168, 83, 0.7)'; // Azul para cartões, Verde para contas
+                } else {
+                    return 'rgba(234, 67, 53, 0.7)'; // Vermelho para saldos negativos
+                }
+            }),
+            borderColor: data.map(item => {
+                const saldo = parseFloat(item.saldo);
+                const isCartao = item.nome.includes('💳');
+
+                if (saldo >= 0) {
+                    return isCartao ? 'rgba(33, 150, 243, 1)' : 'rgba(52, 168, 83, 1)'; // Azul para cartões, Verde para contas
+                } else {
+                    return 'rgba(234, 67, 53, 1)'; // Vermelho para saldos negativos
+                }
+            }),
             borderWidth: 1,
         }],
     }), [data, showValues]);
+
     const options = {
         responsive: true, maintainAspectRatio: false,
         plugins: {
@@ -325,6 +345,7 @@ export default function Dashboard() {
     const toggleShowValues = () => setShowValues(!showValues);
     const handlePeriodChange = (e) => setPeriod(e.target.value);
 
+    // LÓGICA CORRIGIDA - processedData com valores corretos para os cards
     const processedData = useMemo(() => {
         if (!dashboardData) return null;
         const { kpi, realizados, saldos, lastMonth, nextMonth, latestTransactions, ...charts } = dashboardData;
@@ -336,12 +357,15 @@ export default function Dashboard() {
         const percentualDespesa = despesaPrevista > 0 ? ((despesaRealizada / despesaPrevista) * 100).toFixed(1) : "0.0";
         const saldosContas = saldos?.bancarios?.map(b => ({ ...b, nome: `🏦 ${b.nome}` })) || [];
         const saldosCartoes = saldos?.cartoes?.map(c => ({ ...c, nome: `💳 ${c.nome}`, saldo: parseFloat(c.limite_credito) - parseFloat(c.credito_utilizado) })) || [];
+
         return {
             receitaPrevista, receitaRealizada, despesaPrevista, despesaRealizada,
             percentualReceita, percentualDespesa,
             allSaldos: [...saldosContas, ...saldosCartoes],
+            // CORREÇÃO: Último mês deve mostrar valores EFETIVADOS (realizados)
             pagoUltimoMes: parseFloat(lastMonth?.despesas_realizadas) || 0,
             recebidoUltimoMes: parseFloat(lastMonth?.receitas_realizadas) || 0,
+            // CORREÇÃO: Próximo mês deve mostrar valores PREVISTOS (total)
             aPagarProximoMes: parseFloat(nextMonth?.total_despesas) || 0,
             aReceberProximoMes: parseFloat(nextMonth?.total_receitas) || 0,
             latestTransactions: latestTransactions || [],
@@ -366,25 +390,38 @@ export default function Dashboard() {
         return {
             labels: dashboardData.annualChart?.labels || [],
             datasets: [
-                { label: 'Receitas', data: dashboardData.annualChart?.receitas || [], backgroundColor: 'rgba(52, 168, 83, 0.8)' },
-                { label: 'Despesas', data: dashboardData.annualChart?.despesas || [], backgroundColor: 'rgba(234, 67, 53, 0.8)' }
+                { label: 'Receitas', data: dashboardData.annualChart?.receitas || [], backgroundColor: 'rgba(52, 168, 83, 0.7)', borderColor: 'rgba(52, 168, 83, 1)', borderWidth: 1 },
+                { label: 'Despesas', data: dashboardData.annualChart?.despesas || [], backgroundColor: 'rgba(234, 67, 53, 0.7)', borderColor: 'rgba(234, 67, 53, 1)', borderWidth: 1 },
             ],
         };
     }, [dashboardData]);
 
     const chartOptions = (title) => ({
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { position: 'top' },
-            title: { display: true, text: title, font: { size: 16 } },
+            title: { display: true, text: title, font: { size: 16 }, color: '#333' },
             tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${formatCurrency(context.parsed.y)}` } }
         },
-        scales: { y: { beginAtZero: true } }
+        scales: { y: { beginAtZero: true, ticks: { callback: (value) => formatCurrency(value) } } }
     });
 
+    if (isLoading) {
+        return (
+            <div className="page-container">
+                <Spinner />
+            </div>
+        );
+    }
 
-    if (isLoading) return <div className="page-container"><Spinner /></div>;
-    if (!processedData) return <div className="page-container">Não foi possível carregar os dados.</div>;
+    if (!processedData) {
+        return (
+            <div className="page-container">
+                <div className="error-message">Erro ao carregar dados do dashboard.</div>
+            </div>
+        );
+    }
 
     const { charts } = processedData;
 
@@ -457,3 +494,4 @@ export default function Dashboard() {
         </div>
     );
 }
+

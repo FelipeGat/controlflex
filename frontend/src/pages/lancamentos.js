@@ -95,7 +95,8 @@ const ConfirmDialog = ({
                       {/* Opção para Débito */}
                       {conta.tipo_conta === 'Conta Corrente' && (
                         <option value={JSON.stringify({ id: conta.id, tipo: 'Débito' })}>
-                          {`${conta.nome} (Débito) - Saldo: ${parseFloat(conta.saldo_total_disponivel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
+                          {/* CORREÇÃO AQUI: EXIBIR SALDO TOTAL DISPONÍVEL */}
+                          {`${conta.nome} (Débito) - Saldo Disponível: ${parseFloat(conta.saldo_total_disponivel).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                         </option>
                       )}
 
@@ -245,6 +246,55 @@ export default function Lancamentos() {
     porPagina: 20,
     total: 0
   });
+
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  const sortedLancamentos = useMemo(() => {
+    if (!sortConfig.key) {
+      return lancamentos;
+    }
+    const sortableItems = [...lancamentos];
+    sortableItems.sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      // Lógica para lidar com valores ausentes ou nulos
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      // Lógica para ordenar por tipo (string) e outros valores
+      if (typeof aValue === 'string') {
+        return sortConfig.direction === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // Lógica para ordenar valores numéricos ou de data
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+    return sortableItems;
+  }, [lancamentos, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (key) => {
+    if (sortConfig.key !== key) {
+      return ' ↕';
+    }
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
 
   const [quitacaoDialog, setQuitacaoDialog] = useState({
     isOpen: false,
@@ -748,25 +798,39 @@ export default function Lancamentos() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Tipo</th>
-                  <th>Descrição</th>
-                  <th>Valor</th>
-                  <th>Familiar</th>
-                  <th>Data Prevista</th>
-                  <th>Data Real</th>
-                  <th>Status</th>
+                  <th><button className="sort-button" onClick={() => requestSort('tipo')}>
+                    Tipo {getSortIndicator('tipo')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('categoria')}>
+                    Descrição {getSortIndicator('categoria')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('valor')}>
+                    Valor {getSortIndicator('valor')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('familiar')}>
+                    Familiar {getSortIndicator('familiar')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('data_prevista')}>
+                    Data Prevista {getSortIndicator('data_prevista')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('data_real')}>
+                    Data Real {getSortIndicator('data_real')}
+                  </button></th>
+                  <th><button className="sort-button" onClick={() => requestSort('status')}>
+                    Status {getSortIndicator('status')}
+                  </button></th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {!loading && lancamentos.length === 0 ? (
+                {!loading && sortedLancamentos.length === 0 ? (
                   <tr>
                     <td colSpan="8" className="empty-state">
                       Nenhum lançamento encontrado para os filtros aplicados.
                     </td>
                   </tr>
                 ) : (
-                  lancamentos.map((item) => (
+                  sortedLancamentos.map((item) => (
                     <tr key={`${item.tipo}-${item.id}`} className={getRowClass(item.status)}>
                       <td>
                         <span className={`tipo-badge ${item.tipo}`}>
@@ -838,7 +902,8 @@ export default function Lancamentos() {
                         </div>
                       </td>
                     </tr>
-                  )))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
