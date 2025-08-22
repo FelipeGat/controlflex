@@ -309,6 +309,27 @@ const LatestTransactionsCard = ({ latestTransactions }) => {
     );
 };
 
+const SaldoCard = ({ title, value, percentage, showValues }) => {
+    const positive = value >= 0;
+    return (
+        <div className={`kpi-card saldo ${positive ? 'positivo' : 'negativo'}`}>
+            <span className="kpi-title">{title}</span>
+            <span className={`kpi-value ${positive ? 'kpi-value-positive' : 'kpi-value-negative'}`}>
+                {showValues ? formatCurrency(value) : 'R$ ****'}
+            </span>
+            {percentage !== null && (
+                <div className="kpi-footer">
+                    <span className={`kpi-percent ${positive ? 'kpi-percent-positive' : 'kpi-percent-negative'}`}>
+                        {showValues ? `${percentage}%` : '**%'}
+                    </span>
+                    <span className="kpi-footer-text">do previsto</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 // =================================================================
 // Componente Principal do Dashboard
 // =================================================================
@@ -357,17 +378,26 @@ export default function Dashboard() {
         const percentualDespesa = despesaPrevista > 0 ? ((despesaRealizada / despesaPrevista) * 100).toFixed(1) : "0.0";
         const saldosContas = saldos?.bancarios?.map(b => ({ ...b, nome: `🏦 ${b.nome}` })) || [];
         const saldosCartoes = saldos?.cartoes?.map(c => ({ ...c, nome: `💳 ${c.nome}`, saldo: parseFloat(c.limite_credito) - parseFloat(c.credito_utilizado) })) || [];
+        const saldoPrevisto = receitaPrevista - despesaPrevista;
+        const saldoRealizado = receitaRealizada - despesaRealizada;
+        const percentualSaldoPrevisto = receitaPrevista > 0
+            ? ((saldoPrevisto / receitaPrevista) * 100).toFixed(1)
+            : "0.0";
+
+        const percentualSaldoRealizado = receitaRealizada > 0
+            ? ((saldoRealizado / receitaRealizada) * 100).toFixed(1)
+            : "0.0";
 
         return {
             receitaPrevista, receitaRealizada, despesaPrevista, despesaRealizada,
             percentualReceita, percentualDespesa,
+            saldoPrevisto, saldoRealizado,
+            percentualSaldoPrevisto, percentualSaldoRealizado,
             allSaldos: [...saldosContas, ...saldosCartoes],
-            // CORREÇÃO: Último mês deve mostrar valores EFETIVADOS (realizados)
-            pagoUltimoMes: parseFloat(lastMonth?.despesas_realizadas) || 0,
-            recebidoUltimoMes: parseFloat(lastMonth?.receitas_realizadas) || 0,
-            // CORREÇÃO: Próximo mês deve mostrar valores PREVISTOS (total)
-            aPagarProximoMes: parseFloat(nextMonth?.total_despesas) || 0,
-            aReceberProximoMes: parseFloat(nextMonth?.total_receitas) || 0,
+            pagoUltimoMes: parseFloat(lastMonth?.pago) || 0,
+            recebidoUltimoMes: parseFloat(lastMonth?.recebido) || 0,
+            aPagarProximoMes: parseFloat(nextMonth?.previsto_despesas) || 0,
+            aReceberProximoMes: parseFloat(nextMonth?.previsto_receitas) || 0,
             latestTransactions: latestTransactions || [],
             charts: charts || {}
         };
@@ -458,8 +488,10 @@ export default function Dashboard() {
             <div className="kpi-grid">
                 <KpiCard title="Receita Prevista" value={processedData.receitaPrevista} theme="receita" showValues={showValues} percentage={null} />
                 <KpiCard title="Despesa Prevista" value={processedData.despesaPrevista} theme="despesa" showValues={showValues} percentage={null} />
-                <KpiCard title="Receita Realizada" value={processedData.receitaRealizada} theme="receita" showValues={showValues} percentage={processedData.percentualReceita} />
-                <KpiCard title="Despesa Realizada" value={processedData.despesaRealizada} theme="despesa" showValues={showValues} percentage={processedData.percentualDespesa} />
+                <SaldoCard title="Saldo Previsto" value={processedData.saldoPrevisto} percentage={processedData.percentualSaldoPrevisto} showValues={showValues} />
+                <KpiCard title="Receita Realizada" value={processedData.receitaRealizada} theme="receita" showValues={showValues} percentage={null} />
+                <KpiCard title="Despesa Realizada" value={processedData.despesaRealizada} theme="despesa" showValues={showValues} percentage={null} />
+                <SaldoCard title="Saldo Realizado" value={processedData.saldoRealizado} percentage={processedData.percentualSaldoRealizado} showValues={showValues} />
             </div>
             <SaldosChart data={processedData.allSaldos} showValues={showValues} />
             <div className="info-grid">

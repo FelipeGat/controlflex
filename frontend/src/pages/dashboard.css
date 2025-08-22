@@ -96,8 +96,9 @@ body {
 .kpi-grid,
 .info-grid {
     display: grid;
-    gap: 1.5rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
 }
 
 @media (min-width: 769px) {
@@ -109,10 +110,12 @@ body {
 }
 
 @media (min-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
 
-    .kpi-grid,
     .info-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -429,4 +432,29 @@ body {
 .info-card.despesa {
     border-left: 5px solid #ea4335;
     /* Borda lateral vermelha */
+}
+
+/* Estilo diferenciado para os KPIs de Saldo */
+.kpi-card.saldo.positivo {
+    background-color: rgba(52, 168, 83, 0.15);
+    /* Verde claro */
+    border-left-color: #34a853;
+    /* Verde escuro */
+    color: #1e4620;
+    /* Texto em tom escuro para contraste */
+}
+
+.kpi-card.saldo.negativo {
+    background-color: rgba(234, 67, 53, 0.15);
+    /* Vermelho claro */
+    border-left-color: #ea4335;
+    /* Vermelho forte */
+    color: #5a1a15;
+    /* Texto em tom escuro para contraste */
+}
+
+/* Ajuste do valor dentro do card para não herdar branco */
+.kpi-card.saldo .kpi-value {
+    color: inherit;
+    /* Usa a cor definida no card */
 }
