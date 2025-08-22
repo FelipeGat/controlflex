@@ -83,83 +83,83 @@ class LancamentosAPI {
     /**
      * Lista lançamentos com filtros e paginação
      */
-    /**
- * Lista lançamentos com filtros e paginação
- */
-public function listar($params) {
-    $this->setUsuario($params['usuario_id'] ?? null);
+    public function listar($params) {
+        $this->setUsuario($params['usuario_id'] ?? null);
 
-    // Parâmetros de paginação
-    $pagina = max(1, intval($params['pagina'] ?? 1));
-    $por_pagina = min(100, max(10, intval($params['por_pagina'] ?? 20)));
-    $offset = ($pagina - 1) * $por_pagina;
+        // Parâmetros de paginação
+        $pagina = max(1, intval($params['pagina'] ?? 1));
+        $por_pagina = min(100, max(10, intval($params['por_pagina'] ?? 20)));
+        $offset = ($pagina - 1) * $por_pagina;
 
-    // Construir filtros
-    $filtros = $this->construirFiltros($params);
-    $where_despesas = $filtros['where_despesas'];
-    $where_receitas = $filtros['where_receitas'];
-    $bind_params = $filtros['bind_params'];
+        // Construir filtros
+        $filtros = $this->construirFiltros($params);
+        $where_despesas = $filtros['where_despesas'];
+        $where_receitas = $filtros['where_receitas'];
+        $bind_params = $filtros['bind_params'];
 
-    // Query principal com JOIN para nomes dos familiares e bancos
-    $sql = "
-        SELECT 
-            id,
-            tipo,
-            descricao,
-            valor,
-            data_prevista,
-            data_real,
-            familiar,
-            categoria,
-            banco_nome,
-            banco_tipo_conta,
-            observacoes,
-            banco_id
-        FROM (
+        // Query principal com JOIN para nomes dos familiares e bancos
+        $sql = "
             SELECT 
-                d.id,
-                'despesa' AS tipo,
-                COALESCE(fo.nome, 'Fornecedor não informado') AS descricao,
-                d.valor,
-                d.data_compra AS data_prevista,
-                d.data_pagamento AS data_real,
-                f1.nome AS familiar,
-                c1.nome AS categoria,
-                b1.nome AS banco_nome,
-                b1.tipo_conta AS banco_tipo_conta,
-                d.observacoes,
-                d.conta_id AS banco_id  -- Renomeado para 'banco_id' para unificar
-            FROM despesas d
-            LEFT JOIN familiares f1 ON d.quem_comprou = f1.id
-            LEFT JOIN categorias c1 ON d.categoria_id = c1.id
-            LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
-            LEFT JOIN bancos b1 ON d.conta_id = b1.id  -- Corrigido para 'd.conta_id'
-            WHERE d.usuario_id = :usuario_id1 {$where_despesas}
+                id,
+                tipo,
+                descricao,
+                valor,
+                data_prevista,
+                data_real,
+                familiar,
+                categoria,
+                banco_nome,
+                banco_tipo_conta,
+                observacoes,
+                banco_id,
+                tipo_pagamento
+            FROM (
+                SELECT 
+                    d.id,
+                    'despesa' AS tipo,
+                    COALESCE(fo.nome, 'Fornecedor não informado') AS descricao,
+                    d.valor,
+                    d.data_compra AS data_prevista,
+                    d.data_pagamento AS data_real,
+                    f1.nome AS familiar,
+                    c1.nome AS categoria,
+                    b1.nome AS banco_nome,
+                    b1.tipo_conta AS banco_tipo_conta,
+                    d.observacoes,
+                    d.banco_id,
+                    d.tipo_pagamento
+                FROM despesas d
+                LEFT JOIN familiares f1 ON d.quem_comprou = f1.id
+                LEFT JOIN categorias c1 ON d.categoria_id = c1.id
+                LEFT JOIN fornecedores fo ON d.onde_comprou = fo.id
+                LEFT JOIN bancos b1 ON d.banco_id = b1.id
+                WHERE d.usuario_id = :usuario_id1 {$where_despesas}
 
-            UNION ALL
+                UNION ALL
 
-            SELECT 
-                r.id,
-                'receita' AS tipo,
-                COALESCE(r.origem_receita, 'Origem não informada') AS descricao,
-                r.valor,
-                r.data_prevista_recebimento AS data_prevista,
-                r.data_recebimento AS data_real,
-                f2.nome AS familiar,
-                c2.nome AS categoria,
-                b2.nome AS banco_nome,
-                b2.tipo_conta AS banco_tipo_conta,
-                r.observacoes,
-                r.conta_id AS banco_id  -- Renomeado para 'banco_id' para unificar
-            FROM receitas r
-            LEFT JOIN familiares f2 ON r.quem_recebeu = f2.id
-            LEFT JOIN categorias c2 ON r.categoria_id = c2.id
-            LEFT JOIN bancos b2 ON r.conta_id = b2.id  -- Corrigido para 'r.conta_id'
-            WHERE r.usuario_id = :usuario_id2 {$where_receitas}
-        ) AS combined
-        ORDER BY data_prevista DESC, tipo, id DESC
-        LIMIT :limit OFFSET :offset
-    ";
+                SELECT 
+                    r.id,
+                    'receita' AS tipo,
+                    COALESCE(r.origem_receita, 'Origem não informada') AS descricao,
+                    r.valor,
+                    r.data_prevista_recebimento AS data_prevista,
+                    r.data_recebimento AS data_real,
+                    f2.nome AS familiar,
+                    c2.nome AS categoria,
+                    b2.nome AS banco_nome,
+                    b2.tipo_conta AS banco_tipo_conta,
+                    r.observacoes,
+                    r.banco_id,
+                    r.tipo_pagamento
+                FROM receitas r
+                LEFT JOIN familiares f2 ON r.quem_recebeu = f2.id
+                LEFT JOIN categorias c2 ON r.categoria_id = c2.id
+                LEFT JOIN bancos b2 ON r.banco_id = b2.id
+                WHERE r.usuario_id = :usuario_id2 {$where_receitas}
+            ) AS combined
+            ORDER BY data_prevista DESC, tipo, id DESC
+            LIMIT :limit OFFSET :offset
+        ";
         
         // Preparar parâmetros
         $bind_params[':usuario_id1'] = $this->usuario_id;
@@ -336,12 +336,22 @@ public function listar($params) {
         $id = filter_var($params['id'] ?? null, FILTER_VALIDATE_INT);
         $tipo = $params['tipo'] ?? '';
         $data_real = $params['data_real'] ?? date('Y-m-d');
-        $banco_id = filter_var($params['banco_id'] ?? null, FILTER_VALIDATE_INT);
         
+        $conta_value = $params['conta_value'] ?? null;
+        if (!is_string($conta_value)) {
+             throw new Exception('Valor da conta inválido', 400);
+        }
+        
+        $conta_info = json_decode($conta_value, true);
+        
+        $banco_id = filter_var($conta_info['id'] ?? null, FILTER_VALIDATE_INT);
+        $tipo_pagamento = $conta_info['tipo'] ?? null;
+
         if (!$id || !in_array($tipo, ['despesa', 'receita'])) {
             throw new Exception('Parâmetros inválidos (id ou tipo)', 400);
         }
-        if (!$banco_id) {
+        
+        if (!$banco_id || !$tipo_pagamento) {
             throw new Exception('Banco de pagamento/recebimento é obrigatório', 400);
         }
 
@@ -363,16 +373,16 @@ public function listar($params) {
             $valor_lancamento = floatval($lancamento['valor']);
 
             // 2. Atualizar o saldo/limite do banco
-            $this->atualizarSaldoBanco($banco_id, $valor_lancamento, $tipo);
+            $this->atualizarSaldoBanco($banco_id, $valor_lancamento, $tipo, $tipo_pagamento);
 
             // 3. Quitar o lançamento
             if ($tipo === 'despesa') {
-                $update_sql = "UPDATE despesas SET data_pagamento = ?, banco_id = ? WHERE id = ? AND usuario_id = ?";
+                $update_sql = "UPDATE despesas SET data_pagamento = ?, banco_id = ?, tipo_pagamento = ? WHERE id = ? AND usuario_id = ?";
             } else {
-                $update_sql = "UPDATE receitas SET data_recebimento = ?, banco_id = ? WHERE id = ? AND usuario_id = ?";
+                $update_sql = "UPDATE receitas SET data_recebimento = ?, banco_id = ?, tipo_pagamento = ? WHERE id = ? AND usuario_id = ?";
             }
             $stmt = $this->pdo->prepare($update_sql);
-            $stmt->execute([$data_real, $banco_id, $id, $this->usuario_id]);
+            $stmt->execute([$data_real, $banco_id, $tipo_pagamento, $id, $this->usuario_id]);
 
             if ($stmt->rowCount() === 0) {
                 throw new Exception('Erro ao quitar lançamento', 500);
@@ -405,11 +415,11 @@ public function listar($params) {
         $this->pdo->beginTransaction();
 
         try {
-            // 1. Obter o valor do lançamento e o banco
+            // 1. Obter o valor do lançamento, banco e tipo de pagamento
             if ($tipo === 'despesa') {
-                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento, tipo_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
             } else {
-                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento FROM receitas WHERE id = ? AND usuario_id = ?");
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento, tipo_pagamento FROM receitas WHERE id = ? AND usuario_id = ?");
             }
             $stmt->execute([$id, $this->usuario_id]);
             $lancamento = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -420,15 +430,16 @@ public function listar($params) {
             
             $valor_lancamento = floatval($lancamento['valor']);
             $banco_id = $lancamento['banco_id'];
+            $tipo_pagamento = $lancamento['tipo_pagamento'];
 
             // 2. Reverter a atualização do saldo/limite
-            $this->reverterSaldoBanco($banco_id, $valor_lancamento, $tipo);
+            $this->reverterSaldoBanco($banco_id, $valor_lancamento, $tipo, $tipo_pagamento);
 
             // 3. Desquitar o lançamento
             if ($tipo === 'despesa') {
-                $update_sql = "UPDATE despesas SET data_pagamento = NULL, banco_id = NULL WHERE id = ? AND usuario_id = ?";
+                $update_sql = "UPDATE despesas SET data_pagamento = NULL, banco_id = NULL, tipo_pagamento = NULL WHERE id = ? AND usuario_id = ?";
             } else {
-                $update_sql = "UPDATE receitas SET data_recebimento = NULL, banco_id = NULL WHERE id = ? AND usuario_id = ?";
+                $update_sql = "UPDATE receitas SET data_recebimento = NULL, banco_id = NULL, tipo_pagamento = NULL WHERE id = ? AND usuario_id = ?";
             }
             $stmt = $this->pdo->prepare($update_sql);
             $stmt->execute([$id, $this->usuario_id]);
@@ -451,7 +462,7 @@ public function listar($params) {
     /**
      * Método interno para atualizar o saldo/limite do banco
      */
-    private function atualizarSaldoBanco($banco_id, $valor, $tipo_lancamento) {
+    private function atualizarSaldoBanco($banco_id, $valor, $tipo_lancamento, $tipo_pagamento) {
         $stmt = $this->pdo->prepare("SELECT * FROM bancos WHERE id = ? AND usuario_id = ? FOR UPDATE");
         $stmt->execute([$banco_id, $this->usuario_id]);
         $banco = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -459,17 +470,15 @@ public function listar($params) {
         if (!$banco) {
             throw new Exception("Banco de ID {$banco_id} não encontrado ou não pertence a este usuário.", 404);
         }
-
+        
         $novo_saldo = floatval($banco['saldo']);
         $novo_limite_cartao = floatval($banco['limite_cartao']);
         $novo_cheque_especial = floatval($banco['cheque_especial']);
-        $tipo_conta = $banco['tipo_conta'];
-
-        // Lógica de despesa
+        
         if ($tipo_lancamento === 'despesa') {
-            if ($tipo_conta === 'Cartão de Crédito') {
+            if ($tipo_pagamento === 'Crédito') {
                 $novo_limite_cartao -= $valor;
-            } else { // Conta Corrente, Dinheiro, etc.
+            } else { // Débito ou Dinheiro
                 if ($novo_saldo >= $valor) {
                     $novo_saldo -= $valor;
                 } else {
@@ -479,22 +488,9 @@ public function listar($params) {
                 }
             }
         }
-        // Lógica de receita
         else if ($tipo_lancamento === 'receita') {
-              // Conta Corrente, Dinheiro, etc.
-            if ($tipo_conta !== 'Cartão de Crédito') {
-                if ($novo_saldo < 0) { // Se o saldo estiver negativo (usando cheque especial)
-                    $debito_cheque_especial = abs($novo_saldo);
-                    $valor_para_cheque = min($valor, $debito_cheque_especial);
-                    $novo_cheque_especial += $valor_para_cheque;
-                    $novo_saldo += $valor_para_cheque; // Adiciona o valor para zerar o débito
-                    $valor_restante = $valor - $valor_para_cheque;
-                    $novo_saldo += $valor_restante;
-                } else {
-                    $novo_saldo += $valor;
-                }
-            } else { // Cartão de Crédito (caso de estorno/reembolso)
-                $novo_limite_cartao += $valor;
+            if ($tipo_pagamento === 'Débito' || $tipo_pagamento === 'Dinheiro') {
+                $novo_saldo += $valor;
             }
         }
 
@@ -521,7 +517,7 @@ public function listar($params) {
     /**
      * Método interno para reverter o saldo/limite do banco
      */
-    private function reverterSaldoBanco($banco_id, $valor, $tipo_lancamento) {
+    private function reverterSaldoBanco($banco_id, $valor, $tipo_lancamento, $tipo_pagamento) {
         $stmt = $this->pdo->prepare("SELECT * FROM bancos WHERE id = ? AND usuario_id = ? FOR UPDATE");
         $stmt->execute([$banco_id, $this->usuario_id]);
         $banco = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -533,25 +529,17 @@ public function listar($params) {
         $novo_saldo = floatval($banco['saldo']);
         $novo_limite_cartao = floatval($banco['limite_cartao']);
         $novo_cheque_especial = floatval($banco['cheque_especial']);
-        $tipo_conta = $banco['tipo_conta'];
-
-        // Lógica de despesa (reverter)
+        
         if ($tipo_lancamento === 'despesa') {
-            if ($tipo_conta === 'Cartão de Crédito') {
+            if ($tipo_pagamento === 'Crédito') {
                 $novo_limite_cartao += $valor;
-            } else { // Conta Corrente, Dinheiro, etc.
-                // A lógica de reversão é simplesmente somar o valor
+            } else { // Débito ou Dinheiro
                 $novo_saldo += $valor;
             }
         }
-        // Lógica de receita (reverter)
         else if ($tipo_lancamento === 'receita') {
-            // Conta Corrente, Dinheiro, etc.
-            if ($tipo_conta !== 'Cartão de Crédito') {
-                // A lógica de reversão é simplesmente subtrair o valor
+            if ($tipo_pagamento === 'Débito' || $tipo_pagamento === 'Dinheiro') {
                 $novo_saldo -= $valor;
-            } else { // Cartão de Crédito (caso de estorno/reembolso)
-                $novo_limite_cartao -= $valor;
             }
         }
 
@@ -655,10 +643,10 @@ public function listar($params) {
         try {
             // Verificar se o lançamento está quitado para reverter o saldo
             if ($tipo === 'despesa') {
-                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_pagamento, tipo_pagamento FROM despesas WHERE id = ? AND usuario_id = ?");
                 $delete_sql = "DELETE FROM despesas WHERE id = ? AND usuario_id = ?";
             } else {
-                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento FROM receitas WHERE id = ? AND usuario_id = ?");
+                $stmt = $this->pdo->prepare("SELECT valor, banco_id, data_recebimento, tipo_pagamento FROM receitas WHERE id = ? AND usuario_id = ?");
                 $delete_sql = "DELETE FROM receitas WHERE id = ? AND usuario_id = ?";
             }
             $stmt->execute([$id, $this->usuario_id]);
@@ -669,7 +657,7 @@ public function listar($params) {
             }
 
             if ($lancamento[($tipo === 'despesa' ? 'data_pagamento' : 'data_recebimento')] !== null) {
-                $this->reverterSaldoBanco($lancamento['banco_id'], floatval($lancamento['valor']), $tipo);
+                $this->reverterSaldoBanco($lancamento['banco_id'], floatval($lancamento['valor']), $tipo, $lancamento['tipo_pagamento']);
             }
             
             // Excluir o registro

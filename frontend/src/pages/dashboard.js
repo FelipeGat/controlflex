@@ -1,17 +1,39 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    PointElement,
+    LineElement
+} from 'chart.js';
 import './dashboard.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
 
-// =================================================================
-// Funções Auxiliares
-// =================================================================
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement,
+    PointElement,
+    LineElement
+);
 
 const formatCurrency = (value) => {
-    return `R$ ${parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return 'R$ 0,00';
+    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const getPeriodDates = (period) => {
@@ -81,8 +103,64 @@ const getPeriodDates = (period) => {
 };
 
 // =================================================================
-// Componentes Reutilizáveis
+// Componentes Reutilizáveis (sem alterações no corpo)
 // =================================================================
+const KpiCard = ({ title, value, percentage, theme, showValues }) => {
+    const valueColor = theme === 'receita' ? 'kpi-value-positive' : 'kpi-value-negative';
+    const percentageColor = parseFloat(percentage) >= 100 ? 'kpi-percent-positive' : 'kpi-percent-negative';
+    return (
+        <div className={`kpi-card ${theme}`}>
+            <span className="kpi-title">{title}</span>
+            <span className={`kpi-value ${valueColor}`}>{showValues ? formatCurrency(value) : 'R$ ****'}</span>
+            {percentage !== null && (
+                <div className="kpi-footer">
+                    <span className={`kpi-percent ${percentageColor}`}>{showValues ? `${percentage}%` : '**%'}</span>
+                    <span className="kpi-footer-text">do previsto</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const SaldosChart = ({ data, showValues }) => {
+    const chartData = useMemo(() => ({
+        labels: data.map(item => item.nome),
+        datasets: [{
+            label: 'Saldo Disponível',
+            data: data.map(item => showValues ? parseFloat(item.saldo) : 0),
+            backgroundColor: data.map(item => parseFloat(item.saldo) >= 0 ? 'rgba(52, 168, 83, 0.7)' : 'rgba(234, 67, 53, 0.7)'),
+            borderColor: data.map(item => parseFloat(item.saldo) >= 0 ? 'rgba(52, 168, 83, 1)' : 'rgba(234, 67, 53, 1)'),
+            borderWidth: 1,
+        }],
+    }), [data, showValues]);
+    const options = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Saldos em Contas e Cartões', font: { size: 16 }, color: '#333' },
+            tooltip: { callbacks: { label: (context) => `Saldo: ${formatCurrency(context.parsed.y)}` } }
+        },
+        scales: { y: { beginAtZero: true, ticks: { callback: (value) => formatCurrency(value) } } }
+    };
+    return (
+        <div className="main-chart-container">
+            {data && data.length > 0 ? (
+                <div className="chart-container-refactored">
+                    <Bar data={chartData} options={options} />
+                </div>
+            ) : (
+                <div className="empty-chart">Nenhum dado de saldo para exibir.</div>
+            )}
+        </div>
+    );
+};
+
+const InfoCard = ({ title, value, showValues, theme }) => (
+    <div className={`info-card ${theme}`}>
+        <span className="info-card-title">{title}</span>
+        <span className="info-card-value">{showValues ? formatCurrency(value) : 'R$ ****'}</span>
+    </div>
+);
 
 const DoughnutChartCard = ({ title, chartData }) => {
     const data = useMemo(() => {
@@ -131,40 +209,6 @@ const DoughnutChartCard = ({ title, chartData }) => {
             ) : (
                 <div className="empty-chart">Nenhum dado para exibir no período.</div>
             )}
-        </div>
-    );
-};
-
-// Componente KpiCard com lógica para esconder valores
-const KpiCard = ({ title, value, theme, icon, variation, kpiRealizado, previsto, showValues }) => {
-    const percentualRealizado = useMemo(() => {
-        const pValue = parseFloat(previsto);
-        const rValue = parseFloat(kpiRealizado);
-        if (isNaN(pValue) || pValue === 0 || isNaN(rValue)) {
-            return '0.00';
-        }
-        return ((rValue / pValue) * 100).toFixed(2);
-    }, [kpiRealizado, previsto]);
-
-    return (
-        <div className={`kpi-card ${theme}`}>
-            <div className="kpi-content">
-                <span className="kpi-title">{title}</span>
-                <span className="kpi-value">
-                    {showValues ? formatCurrency(value) : '***'}
-                </span>
-                {variation !== undefined && showValues && (
-                    <span className={`kpi-variation ${variation >= 0 ? 'positive' : 'negative'}`}>
-                        {variation >= 0 ? '▲' : '▼'} {variation.toFixed(2)}%
-                    </span>
-                )}
-                {kpiRealizado !== undefined && title !== 'Total Investido' && showValues && (
-                    <span className="kpi-realizado-percentual">
-                        {percentualRealizado}% realizado
-                    </span>
-                )}
-            </div>
-            <div className="kpi-icon">{icon}</div>
         </div>
     );
 };
@@ -248,26 +292,23 @@ const LatestTransactionsCard = ({ latestTransactions }) => {
 // =================================================================
 // Componente Principal do Dashboard
 // =================================================================
-
 export default function Dashboard() {
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [period, setPeriod] = useState('this_month');
-    const [showPrevistos, setShowPrevistos] = useState(true);
-    const [showRealizados, setShowRealizados] = useState(true);
-    const [showBank, setShowBank] = useState(true);
-    const [showCreditCard, setShowCreditCard] = useState(true);
     const [showValues, setShowValues] = useState(true);
+    const [period, setPeriod] = useState('this_month');
 
-    const fetchDashboardData = useCallback(async (selectedPeriod) => {
-        if (!usuario) return;
+    const fetchDashboardData = useCallback(async (currentPeriod) => {
+        const user = JSON.parse(localStorage.getItem('usuarioLogado'));
+        if (!user) { navigate('/'); return; }
+        setUsuario(user);
         setIsLoading(true);
-        const { inicio, fim } = getPeriodDates(selectedPeriod);
+        const { inicio, fim } = getPeriodDates(currentPeriod);
         try {
             const response = await axios.get(`${API_BASE_URL}/dashboard.php`, {
-                params: { usuario_id: usuario.id, inicio, fim }
+                params: { usuario_id: user.id, inicio, fim }
             });
             setDashboardData(response.data);
         } catch (error) {
@@ -275,219 +316,137 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }, [usuario]);
-
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('usuarioLogado'));
-        if (!user) navigate('/');
-        else setUsuario(user);
     }, [navigate]);
 
     useEffect(() => {
-        if (usuario) {
-            fetchDashboardData(period);
-        }
-    }, [usuario, period, fetchDashboardData]);
+        fetchDashboardData(period);
+    }, [fetchDashboardData, period]);
 
-    const handlePeriodChange = (e) => setPeriod(e.target.value);
     const toggleShowValues = () => setShowValues(!showValues);
+    const handlePeriodChange = (e) => setPeriod(e.target.value);
 
-    const chartData = useMemo(() => {
-        if (!dashboardData) return { annualChart: {}, investmentChart: {} };
+    const processedData = useMemo(() => {
+        if (!dashboardData) return null;
+        const { kpi, realizados, saldos, lastMonth, nextMonth, latestTransactions, ...charts } = dashboardData;
+        const receitaPrevista = parseFloat(kpi?.total_receitas) || 0;
+        const receitaRealizada = parseFloat(realizados?.receitas_realizadas) || 0;
+        const despesaPrevista = parseFloat(kpi?.total_despesas) || 0;
+        const despesaRealizada = parseFloat(realizados?.despesas_realizadas) || 0;
+        const percentualReceita = receitaPrevista > 0 ? ((receitaRealizada / receitaPrevista) * 100).toFixed(1) : "0.0";
+        const percentualDespesa = despesaPrevista > 0 ? ((despesaRealizada / despesaPrevista) * 100).toFixed(1) : "0.0";
+        const saldosContas = saldos?.bancarios?.map(b => ({ ...b, nome: `🏦 ${b.nome}` })) || [];
+        const saldosCartoes = saldos?.cartoes?.map(c => ({ ...c, nome: `💳 ${c.nome}`, saldo: parseFloat(c.limite_credito) - parseFloat(c.credito_utilizado) })) || [];
         return {
-            annualChart: {
-                labels: dashboardData.annualChart?.labels || [],
-                datasets: [
-                    { label: 'Receitas', data: dashboardData.annualChart?.receitas || [], backgroundColor: 'rgba(40, 167, 69, 0.7)' },
-                    { label: 'Despesas', data: dashboardData.annualChart?.despesas || [], backgroundColor: 'rgba(220, 53, 69, 0.7)' },
-                ],
-            },
-            investmentChart: {
-                labels: dashboardData.investmentChart?.labels || [],
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Rendimento Mensal',
-                        data: dashboardData.investmentChart?.rendimentos || [],
-                        backgroundColor: 'rgba(255, 193, 7, 0.7)',
-                        yAxisID: 'y',
-                    },
-                    {
-                        type: 'line',
-                        label: 'Patrimônio Acumulado',
-                        data: dashboardData.investmentChart?.patrimonio || [],
-                        borderColor: 'rgba(0, 123, 255, 1)',
-                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                        fill: true,
-                        tension: 0.1,
-                        yAxisID: 'y',
-                    },
-                ],
-            },
+            receitaPrevista, receitaRealizada, despesaPrevista, despesaRealizada,
+            percentualReceita, percentualDespesa,
+            allSaldos: [...saldosContas, ...saldosCartoes],
+            pagoUltimoMes: parseFloat(lastMonth?.despesas_realizadas) || 0,
+            recebidoUltimoMes: parseFloat(lastMonth?.receitas_realizadas) || 0,
+            aPagarProximoMes: parseFloat(nextMonth?.total_despesas) || 0,
+            aReceberProximoMes: parseFloat(nextMonth?.total_receitas) || 0,
+            latestTransactions: latestTransactions || [],
+            charts: charts || {}
         };
     }, [dashboardData]);
 
-    const annualChartOptions = useMemo(() => ({
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: 'Fluxo de Caixa Anual' },
-            tooltip: {
-                callbacks: {
-                    label: (context) => {
-                        const label = context.dataset.label || '';
-                        const value = context.parsed.y;
-                        return `${label}: ${formatCurrency(value)}`;
-                    }
-                }
-            }
-        },
-    }), []);
 
-    const investmentChartOptions = useMemo(() => ({
-        responsive: true,
-        maintainAspectRatio: false,
+    const investmentChartData = useMemo(() => {
+        if (!dashboardData) return { labels: [], datasets: [] };
+        return {
+            labels: dashboardData.investmentChart?.labels || [],
+            datasets: [
+                { type: 'bar', label: 'Rendimento Mensal', data: dashboardData.investmentChart?.rendimentos || [], backgroundColor: 'rgba(255, 193, 7, 0.7)' },
+                { type: 'line', label: 'Patrimônio Acumulado', data: dashboardData.investmentChart?.patrimonio || [], borderColor: 'rgba(0, 123, 255, 1)', backgroundColor: 'rgba(0, 123, 255, 0.2)', fill: true, tension: 0.1 },
+            ],
+        };
+    }, [dashboardData]);
+
+    const annualChartData = useMemo(() => {
+        if (!dashboardData || !dashboardData.annualChart) return { labels: [], datasets: [] };
+        return {
+            labels: dashboardData.annualChart?.labels || [],
+            datasets: [
+                { label: 'Receitas', data: dashboardData.annualChart?.receitas || [], backgroundColor: 'rgba(52, 168, 83, 0.8)' },
+                { label: 'Despesas', data: dashboardData.annualChart?.despesas || [], backgroundColor: 'rgba(234, 67, 53, 0.8)' }
+            ],
+        };
+    }, [dashboardData]);
+
+    const chartOptions = (title) => ({
+        responsive: true, maintainAspectRatio: false,
         plugins: {
             legend: { position: 'top' },
-            title: { display: true, text: 'Evolução Patrimonial (Anual)' },
-            tooltip: {
-                callbacks: {
-                    label: (context) => {
-                        const label = context.dataset.label || '';
-                        const value = context.parsed.y;
-                        return `${label}: ${formatCurrency(value)}`;
-                    }
-                }
-            }
+            title: { display: true, text: title, font: { size: 16 } },
+            tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${formatCurrency(context.parsed.y)}` } }
         },
         scales: { y: { beginAtZero: true } }
-    }), []);
+    });
 
-    if (isLoading) {
-        return <div className="page-container"><Spinner /></div>;
-    }
 
-    if (!dashboardData) {
-        return <div className="page-container">Não foi possível carregar os dados.</div>;
-    }
+    if (isLoading) return <div className="page-container"><Spinner /></div>;
+    if (!processedData) return <div className="page-container">Não foi possível carregar os dados.</div>;
 
-    const { kpi, realizados, latestTransactions, saldos, ...charts } = dashboardData;
-
-    // Lógica para determinar a classe de tema para os cards de saldo
-    const getBalanceTheme = (value) => {
-        const valueNum = parseFloat(value);
-        if (valueNum > 0) return 'positive';
-        if (valueNum < 0) return 'negative';
-        return 'neutral';
-    };
+    const { charts } = processedData;
 
     return (
         <div className="page-container dashboard-container">
             <div className="dashboard-header">
-                <div className="period-filter">
-                    <label htmlFor="period">Mostrar período:</label>
-                    <select id="period" value={period} onChange={handlePeriodChange} className="form-control">
-                        <option value="today">Hoje</option>
-                        <option value="yesterday">Ontem</option>
-                        <option value="tomorrow">Amanhã</option>
-                        <option value="this_week">Esta Semana</option>
-                        <option value="last_week">Última Semana</option>
-                        <option value="this_month">Este Mês</option>
-                        <option value="last_month">Último Mês</option>
-                        <option value="next_month">Próximo Mês</option>
-                        <option value="this_year">Este Ano</option>
-                        <option value="last_year">Último Ano</option>
-                        <option value="next_year">Próximo Ano</option>
-                    </select>
-                    <button className="toggle-values-button" onClick={toggleShowValues}>
-                        {showValues ? 'Ocultar valores' : 'Mostrar valores'}
-                    </button>
+                <h1>Dashboard Financeiro</h1>
+                <div className="header-controls">
+                    <div className="period-filter">
+                        <label htmlFor="period">Período:</label>
+                        <select id="period" value={period} onChange={handlePeriodChange}>
+                            <option value="today">Hoje</option>
+                            <option value="yesterday">Ontem</option>
+                            <option value="tomorrow">Amanhã</option>
+                            <option value="this_week">Esta Semana</option>
+                            <option value="last_week">Última Semana</option>
+                            <option value="this_month">Este Mês</option>
+                            <option value="last_month">Último Mês</option>
+                            <option value="next_month">Próximo Mês</option>
+                            <option value="this_year">Este Ano</option>
+                            <option value="last_year">Último Ano</option>
+                            <option value="next_year">Próximo Ano</option>
+
+                        </select>
+                        <button className="toggle-values-button" onClick={toggleShowValues}>
+                            {showValues ? 'Ocultar Valores' : 'Mostrar Valores'}
+                        </button>
+                    </div>
+
                 </div>
             </div>
 
-            <div className="dashboard-section">
-                <h3 className="section-title" onClick={() => setShowPrevistos(!showPrevistos)}>
-                    Previstos <span className={`toggle-icon ${showPrevistos ? 'up' : 'down'}`}>▼</span>
-                </h3>
-                <div className={`kpi-grid ${showPrevistos ? '' : 'collapsed'}`}>
-                    <KpiCard title="Saldo do Período" value={kpi?.saldo || 0} theme="primary" icon="⚖️" variation={kpi?.variacao_saldo} showValues={showValues} />
-                    <KpiCard title="Receitas" value={kpi?.total_receitas || 0} theme="success" icon="💰" variation={kpi?.variacao_receitas} showValues={showValues} />
-                    <KpiCard title="Despesas" value={kpi?.total_despesas || 0} theme="danger" icon="💸" variation={kpi?.variacao_despesas} showValues={showValues} />
-                    <KpiCard title="Total Investido" value={dashboardData.investments?.total_investido || 0} theme="warning" icon="📈" showValues={showValues} />
-                </div>
+            {/* Seção Superior (KPIs e Saldos) */}
+            <div className="kpi-grid">
+                <KpiCard title="Receita Prevista" value={processedData.receitaPrevista} theme="receita" showValues={showValues} percentage={null} />
+                <KpiCard title="Despesa Prevista" value={processedData.despesaPrevista} theme="despesa" showValues={showValues} percentage={null} />
+                <KpiCard title="Receita Realizada" value={processedData.receitaRealizada} theme="receita" showValues={showValues} percentage={processedData.percentualReceita} />
+                <KpiCard title="Despesa Realizada" value={processedData.despesaRealizada} theme="despesa" showValues={showValues} percentage={processedData.percentualDespesa} />
+            </div>
+            <SaldosChart data={processedData.allSaldos} showValues={showValues} />
+            <div className="info-grid">
+                <InfoCard title="Valor Pago (Último Mês)" value={processedData.pagoUltimoMes} showValues={showValues} theme="despesa" />
+                <InfoCard title="Valor Recebido (Último Mês)" value={processedData.recebidoUltimoMes} showValues={showValues} theme="receita" />
+                <InfoCard title="A Pagar (Próximo Mês)" value={processedData.aPagarProximoMes} showValues={showValues} theme="despesa" />
+                <InfoCard title="A Receber (Próximo Mês)" value={processedData.aReceberProximoMes} showValues={showValues} theme="receita" />
             </div>
 
-            <div className="dashboard-section">
-                <h3 className="section-title" onClick={() => setShowRealizados(!showRealizados)}>
-                    Realizados <span className={`toggle-icon ${showRealizados ? 'up' : 'down'}`}>▼</span>
-                </h3>
-                <div className={`kpi-grid ${showRealizados ? '' : 'collapsed'}`}>
-                    <KpiCard title="Saldo Realizado" value={realizados?.saldo_realizado || 0} theme="primary" icon="💼" kpiRealizado={realizados?.saldo_realizado} previsto={kpi?.saldo} showValues={showValues} />
-                    <KpiCard title="Receitas Realizadas" value={realizados?.receitas_realizadas || 0} theme="success" icon="✅" kpiRealizado={realizados?.receitas_realizadas} previsto={kpi?.total_receitas} showValues={showValues} />
-                    <KpiCard title="Despesas Pagas" value={realizados?.despesas_realizadas || 0} theme="danger" icon="📄" kpiRealizado={realizados?.despesas_realizadas} previsto={kpi?.total_despesas} showValues={showValues} />
-                </div>
-            </div>
-
-            <div className="dashboard-section">
-                <h3 className="section-title" onClick={() => setShowBank(!showBank)}>
-                    Saldos Bancários <span className={`toggle-icon ${showBank ? 'up' : 'down'}`}>▼</span>
-                </h3>
-                <div className={`kpi-grid ${showBank ? '' : 'collapsed'}`}>
-                    {saldos?.bancarios?.map(banco => (
-                        <KpiCard
-                            key={banco.id}
-                            title={banco.nome}
-                            value={banco.saldo}
-                            icon="🏦"
-                            showValues={showValues}
-                            theme={getBalanceTheme(banco.saldo)}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            <div className="dashboard-section">
-                <h3 className="section-title" onClick={() => setShowCreditCard(!showCreditCard)}>
-                    Saldos Cartões <span className={`toggle-icon ${showCreditCard ? 'up' : 'down'}`}>▼</span>
-                </h3>
-                <div className={`kpi-grid ${showCreditCard ? '' : 'collapsed'}`}>
-                    {saldos?.cartoes?.map(cartao => {
-                        const saldoCartao = parseFloat(cartao.limite_credito) - parseFloat(cartao.credito_utilizado);
-                        return (
-                            <KpiCard
-                                key={cartao.id}
-                                title={cartao.nome}
-                                value={saldoCartao}
-                                icon="💳"
-                                showValues={showValues}
-                                theme={getBalanceTheme(saldoCartao)}
-                            >
-                                <div className="credit-info-container">
-                                    <span className="credit-info-item">
-                                        {showValues ? `Limite: ${formatCurrency(cartao.limite_credito)}` : 'Limite: ***'}
-                                    </span>
-                                    <span className="credit-info-item">
-                                        {showValues ? `Utilizado: ${formatCurrency(cartao.credito_utilizado)}` : 'Utilizado: ***'}
-                                    </span>
-                                </div>
-                            </KpiCard>
-                        );
-                    })}
-                </div>
-            </div>
-
+            {/* SEÇÃO INFERIOR CORRIGIDA */}
             <div className="main-content-grid">
+
+                {/* Painel Principal (Esquerda) */}
                 <div className="main-panel">
-                    <div className="chart-card chart-large">
-                        <Bar options={annualChartOptions} data={chartData.annualChart} />
+                    <div className="chart-card annual-chart-card">
+                        <Bar options={chartOptions('Fluxo de Caixa Anual')} data={annualChartData} />
                     </div>
-                    <LatestTransactionsCard latestTransactions={latestTransactions} />
-                    <div className="chart-card chart-large">
-                        <Bar data={chartData.investmentChart} options={investmentChartOptions} />
+                    <div className="chart-card annual-chart-card">
+                        <Bar options={chartOptions('Evolução Patrimonial (Anual)')} data={investmentChartData} />
                     </div>
+                    <LatestTransactionsCard latestTransactions={processedData.latestTransactions} />
                 </div>
 
+                {/* Painel Lateral (Direita) */}
                 <div className="side-panel">
                     <DoughnutChartCard title="Despesas por Categoria" chartData={charts.expensesByCategory || []} />
                     <DoughnutChartCard title="Receitas por Categoria" chartData={charts.incomesByCategory || []} />

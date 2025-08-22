@@ -47,6 +47,8 @@ const ConfirmDialog = ({
 
   if (!isOpen) return null;
 
+  const isConfirmDisabled = showContaInput && !contaValue;
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -111,7 +113,7 @@ const ConfirmDialog = ({
           </div>
         )}
         <div className="modal-buttons">
-          <button className="btn btn-danger" onClick={onConfirm}>
+          <button className="btn btn-danger" onClick={onConfirm} disabled={isConfirmDisabled}>
             Confirmar
           </button>
           <button className="btn btn-secondary" onClick={onCancel}>
@@ -249,7 +251,7 @@ export default function Lancamentos() {
     item: null,
     data: '',
     contaId: '',
-    contasDisponiveis: [] // Novo estado para as contas já validadas
+    contasDisponiveis: []
   });
 
   const [filtros, setFiltros] = useState({
@@ -474,17 +476,10 @@ export default function Lancamentos() {
     }
   }, [usuario]);
 
+  // FUNÇÃO CORRIGIDA AQUI
   const quitarLancamento = useCallback(async (id, tipo, dataReal, contaValue) => {
     if (!contaValue) {
-      showNotification('Por favor, selecione uma conta.', 'error');
-      return;
-    }
-
-    let contaSelecionada;
-    try {
-      contaSelecionada = JSON.parse(contaValue);
-    } catch (e) {
-      showNotification('Erro ao processar a conta selecionada. Tente novamente.', 'error');
+      showNotification('A conta de pagamento é obrigatória.', 'error');
       return;
     }
 
@@ -495,8 +490,7 @@ export default function Lancamentos() {
         tipo,
         usuario_id: usuario.id,
         data_real: dataReal,
-        conta_id: contaSelecionada.id,
-        tipo_pagamento: contaSelecionada.tipo
+        conta_value: contaValue // ALTERAÇÃO: ENVIA A STRING JSON COMPLETA
       });
 
       if (response.data.success) {
@@ -602,7 +596,7 @@ export default function Lancamentos() {
     showNotification('Funcionalidade de exportação em desenvolvimento', 'info');
   }, [showNotification]);
 
-  // ** FUNÇÃO PARA INICIAR O DIÁLOGO DE QUITAÇÃO COM AS VALIDAÇÕES **
+  // FUNÇÃO PARA INICIAR O DIÁLOGO DE QUITAÇÃO COM AS VALIDAÇÕES
   const handleStatusClick = useCallback((item) => {
     if (item.data_real) {
       setConfirmDialog({
@@ -618,14 +612,12 @@ export default function Lancamentos() {
     } else {
       const valorLancamento = parseFloat(item.valor);
 
-      // Filtra as contas de débito (Dinheiro e Conta Corrente) que têm saldo total suficiente
       const contasDebitoValidas = contasBancarias.filter(
         (conta) =>
           (conta.tipo_conta === 'Dinheiro' || conta.tipo_conta === 'Conta Corrente') &&
           conta.saldo_total_disponivel >= valorLancamento
       );
 
-      // Filtra as contas de crédito que têm limite suficiente (apenas para despesas)
       const contasCreditoValidas = item.tipo === 'despesa'
         ? contasBancarias.filter(
           (conta) =>
@@ -634,7 +626,6 @@ export default function Lancamentos() {
         )
         : [];
 
-      // Une as listas de contas válidas
       const contasDisponiveis = [...contasDebitoValidas, ...contasCreditoValidas];
 
       if (contasDisponiveis.length === 0) {
@@ -782,7 +773,9 @@ export default function Lancamentos() {
                           {item.tipo === 'receita' ? '💰 Receita' : '💸 Despesa'}
                         </span>
                       </td>
-                      <td className="descricao-cell">{item.descricao}</td>
+                      <td className="descricao-cell">
+                        {item.categoria}
+                      </td>
                       <td className={`valor-cell ${item.tipo}`}>
                         {formatarMoeda(item.valor)}
                       </td>

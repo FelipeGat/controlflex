@@ -53,7 +53,7 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                     <label htmlFor="forma_recebimento">Forma de Recebimento *</label>
                     <select id="forma_recebimento" name="forma_recebimento" value={form.forma_recebimento} onChange={handleChange} className="form-control" required>
                         <option value="">Selecione...</option>
-                        {selectsData.bancos.map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
+                        {Array.isArray(selectsData.bancos) && selectsData.bancos.map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
                     </select>
                 </div>
                 <div className="form-group">
@@ -74,7 +74,7 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                     <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
                 </div>
                 <div className="form-group form-group-full-width">
-                    <ToggleSwitch 
+                    <ToggleSwitch
                         label="É uma receita recorrente?"
                         checked={form.recorrente}
                         onChange={handleToggleChange}
@@ -96,13 +96,13 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                         </div>
                         <div className="form-group">
                             <label htmlFor="parcelas">Repetir por (vezes)</label>
-                            <input 
-                                id="parcelas" 
-                                name="parcelas" 
-                                type="number" 
+                            <input
+                                id="parcelas"
+                                name="parcelas"
+                                type="number"
                                 min="0"
-                                value={form.parcelas} 
-                                onChange={handleChange} 
+                                value={form.parcelas}
+                                onChange={handleChange}
                                 className="form-control"
                                 title="Use 0 para recorrência 'infinita'"
                             />
@@ -143,15 +143,15 @@ export default function Receitas() {
     const [editingReceita, setEditingReceita] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [notification, setNotification] = useState({ message: '', type: '' });
-    
+
     const [selectsData, setSelectsData] = useState({ familiares: [], categorias: [], bancos: [] });
-    
+
     const [filtroData, setFiltroData] = useState({ inicio: '', fim: '' });
     const [limit, setLimit] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: 'data_prevista_recebimento', direction: 'desc' });
 
-    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
-    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: 'Confirmar', cancelText: 'Cancelar' });
 
     const RECEITAS_API_URL = `${API_BASE_URL}/receitas.php`;
 
@@ -171,8 +171,8 @@ export default function Receitas() {
         if (!usuario) return;
         setIsLoading(true);
         try {
-            const params = { 
-                usuario_id: usuario.id, 
+            const params = {
+                usuario_id: usuario.id,
                 ...filtroData,
                 limit: limit,
                 sortBy: sortConfig.key,
@@ -198,7 +198,7 @@ export default function Receitas() {
             setSelectsData({
                 familiares: respFamiliares.data || [],
                 categorias: respCategorias.data || [],
-                bancos: respBancos.data || []
+                bancos: respBancos.data.data || [] // CORREÇÃO AQUI
             });
         } catch (error) {
             showNotification('Erro ao carregar dados de suporte.', 'error');
@@ -230,7 +230,7 @@ export default function Receitas() {
             grupo_recorrencia_id: editingReceita?.grupo_recorrencia_id, // Adiciona o grupo da recorrencia para o back end
             ...form
         };
-        
+
         if (!form.recorrente) {
             delete payload.parcelas;
             delete payload.frequencia;
@@ -349,7 +349,7 @@ export default function Receitas() {
     // Função para determinar o status da receita
     const getStatusReceita = (dataPrevista, dataReal) => {
         if (dataReal) return 'recebido';
-        
+
         const hoje = new Date().toISOString().split('T')[0];
         if (dataPrevista < hoje) return 'atrasado';
         if (dataPrevista === hoje) return 'hoje';
@@ -365,7 +365,7 @@ export default function Receitas() {
     return (
         <div className="page-container">
             {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
-            
+
             <ModalConfirmacao
                 isOpen={modalState.isOpen}
                 title={modalState.title}
@@ -391,18 +391,18 @@ export default function Receitas() {
             </ModalConfirmacao>
 
             <div className="content-card">
-                <ReceitaForm 
-                    onSave={handleSave} 
-                    onCancel={handleCancel} 
-                    editingReceita={editingReceita} 
-                    initialFormState={initialFormState} 
-                    selectsData={selectsData} 
+                <ReceitaForm
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    editingReceita={editingReceita}
+                    initialFormState={initialFormState}
+                    selectsData={selectsData}
                 />
             </div>
 
             <div className="content-card">
                 <h3 className="table-title">Últimas Receitas</h3>
-                
+
                 <div className="table-filters">
                     <div className="filter-group">
                         <label htmlFor="inicio">Data Início</label>
@@ -456,9 +456,9 @@ export default function Receitas() {
                                                 <td>{formatarData(receita.data_recebimento)}</td>
                                                 <td>
                                                     <span className={`status-badge ${status}`}>
-                                                        {status === 'recebido' ? 'RECEBIDO' : 
-                                                         status === 'atrasado' ? 'ATRASADO' :
-                                                         status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
+                                                        {status === 'recebido' ? 'RECEBIDO' :
+                                                            status === 'atrasado' ? 'ATRASADO' :
+                                                                status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
                                                     </span>
                                                 </td>
                                                 <td className="table-buttons">
