@@ -45,9 +45,9 @@ function Header() {
       </div>
 
       <div className="navbar-center">
-        <button className="nav-item" onClick={() => navigate('/home')}>
+        {/* <button className="nav-item" onClick={() => navigate('/home')}>
           🏠 Home
-        </button>
+        </button> */}
 
         <button className="nav-item" onClick={() => navigate('/dashboard')}>
           📊 Dashboard

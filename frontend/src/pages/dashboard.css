@@ -27,7 +27,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    /* Espaçamento vertical entre as seções (KPIs, Saldos, Gráficos, etc.) */
     padding: 2rem;
 }
 
@@ -96,28 +95,49 @@ body {
 .kpi-grid,
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 1rem;
+    /* Reduzido para melhor encaixe em telas menores */
     margin-top: 20px;
 }
 
-@media (min-width: 769px) {
+/* --- ALTERAÇÃO #1 INICIA AQUI --- */
 
-    .kpi-grid,
+/* Padrão para Celular: 2 colunas para KPIs, 1 para Infos */
+.kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.info-grid {
+    grid-template-columns: 1fr;
+}
+
+/* Tablet (768px para cima): 3 colunas para KPIs, 2 para Infos */
+@media (min-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 colunas, quebrando em 2 linhas */
+    }
+
     .info-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
+/* Desktop (1200px para cima): 6 colunas para KPIs, 4 para Infos */
 @media (min-width: 1200px) {
     .kpi-grid {
         grid-template-columns: repeat(6, 1fr);
+        /* 6 colunas em uma linha */
     }
 
     .info-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
+        /* 4 colunas em uma linha */
     }
 }
+
+/* --- ALTERAÇÃO #1 TERMINA AQUI --- */
+
 
 .kpi-card {
     background-color: var(--card-background);
@@ -216,25 +236,21 @@ body {
 }
 
 /* =================================================================
-   4. GRIDS DE CONTEÚDO E GRÁFICOS
-   ================================================================= */
+   4. GRIDS DE CONTEÚDO E GRÁFICOS
+   ================================================================= */
 
-/* Container geral para os cards de saldo e gráficos */
 .chart-and-info-grid {
     display: grid;
     gap: 1.5rem;
     grid-template-columns: 1fr;
-    /* Padrão para mobile */
 }
 
-/* A partir de 769px, 2 colunas */
 @media (min-width: 769px) {
     .chart-and-info-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* Gráfico principal de saldos */
 .main-chart-container {
     background-color: var(--card-background);
     padding: 1.5rem;
@@ -267,7 +283,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    /* Este é o gap responsável pela distância vertical entre os cards. */
 }
 
 .side-panel {
@@ -281,14 +296,11 @@ body {
     padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
-    /* Adicionando uma altura base, se necessário, ou ajustando a altura dos gráficos internos */
     height: auto;
 }
 
-/* Nova classe para os cards que precisam de altura dupla */
 .annual-chart-card {
     height: 600px;
-    /* Dobro da altura padrão, assumindo que era de 300px */
 }
 
 .chart-card .chart-title {
@@ -410,7 +422,7 @@ body {
 }
 
 /* =================================================================
-   6. RESPONSIVIDADE
+   6. RESPONSIVIDADE ADICIONAL
    ================================================================= */
 @media (max-width: 1200px) {
     .main-content-grid {
@@ -418,43 +430,26 @@ body {
     }
 }
 
-@media (max-width: 992px) {
-    .main-content-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 .info-card.receita {
     border-left: 5px solid #34a853;
-    /* Borda lateral verde */
 }
 
 .info-card.despesa {
     border-left: 5px solid #ea4335;
-    /* Borda lateral vermelha */
 }
 
-/* Estilo diferenciado para os KPIs de Saldo */
 .kpi-card.saldo.positivo {
     background-color: rgba(52, 168, 83, 0.15);
-    /* Verde claro */
     border-left-color: #34a853;
-    /* Verde escuro */
     color: #1e4620;
-    /* Texto em tom escuro para contraste */
 }
 
 .kpi-card.saldo.negativo {
     background-color: rgba(234, 67, 53, 0.15);
-    /* Vermelho claro */
     border-left-color: #ea4335;
-    /* Vermelho forte */
     color: #5a1a15;
-    /* Texto em tom escuro para contraste */
 }
 
-/* Ajuste do valor dentro do card para não herdar branco */
 .kpi-card.saldo .kpi-value {
     color: inherit;
-    /* Usa a cor definida no card */
 }

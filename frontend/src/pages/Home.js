@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FaMoneyBillWave, FaReceipt, FaClipboardList, FaUsers, FaUniversity, 
+import {
+  FaMoneyBillWave, FaReceipt, FaClipboardList, FaUsers, FaUniversity,
   FaChartBar, FaStore, FaChartLine, FaCog, FaExclamationTriangle,
   FaClock, FaCalendarAlt, FaCloudSun, FaDollarSign, FaBell,
   FaArrowUp, FaArrowDown, FaEquals, FaEye, FaCheckCircle
@@ -20,10 +20,10 @@ const SaudacaoPersonalizada = ({ usuario }) => {
     const atualizarSaudacao = () => {
       const agora = new Date();
       const hora = agora.getHours();
-      
+
       let mensagem = '';
       let emoji = '';
-      
+
       if (hora >= 5 && hora < 12) {
         mensagem = 'Bom dia';
         emoji = '🌅';
@@ -34,14 +34,14 @@ const SaudacaoPersonalizada = ({ usuario }) => {
         mensagem = 'Boa noite';
         emoji = '🌙';
       }
-      
+
       setSaudacao(`${emoji} ${mensagem}, ${usuario?.nome || 'Usuário'}!`);
       setDataHora(agora);
     };
 
     atualizarSaudacao();
     const interval = setInterval(atualizarSaudacao, 60000);
-    
+
     return () => clearInterval(interval);
   }, [usuario]);
 
@@ -49,14 +49,14 @@ const SaudacaoPersonalizada = ({ usuario }) => {
     <div className="saudacao-container">
       <h1 className="saudacao-titulo">{saudacao}</h1>
       <p className="saudacao-data">
-        {dataHora.toLocaleDateString('pt-BR', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })} • {dataHora.toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        {dataHora.toLocaleDateString('pt-BR', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })} • {dataHora.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
         })}
       </p>
     </div>
@@ -69,25 +69,27 @@ const InformacoesExternas = () => {
   const [cotacao, setCotacao] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const carregarInformacoes = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/home.php?action=external_info`);
-        if (response.data.success) {
-          setClima(response.data.clima);
-          setCotacao(response.data.cotacao);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar informações externas:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Função para determinar a classe e o ícone com base na descrição do clima
+  const getClimaClass = (descricao) => {
+    if (!descricao) return 'clima-card';
+    const desc = descricao.toLowerCase();
 
-    carregarInformacoes();
-    const interval = setInterval(carregarInformacoes, 30 * 60 * 1000);
-    
-    return () => clearInterval(interval);
+    if (desc.includes('sol') || desc.includes('céu limpo')) {
+      return { className: 'clima-card clima-sol', icon: '☀️' };
+    } else if (desc.includes('nuvens') || desc.includes('nublado')) {
+      return { className: 'clima-card clima-nuvens', icon: '☁️' };
+    } else if (desc.includes('chuva') || desc.includes('garoa')) {
+      return { className: 'clima-card clima-chuva', icon: '🌧️' };
+    } else if (desc.includes('tempestade') || desc.includes('trovoada')) {
+      return { className: 'clima-card clima-tempestade', icon: '⛈️' };
+    } else if (desc.includes('neve')) {
+      return { className: 'clima-card clima-neve', icon: '❄️' };
+    } else {
+      return { className: 'clima-card', icon: '🌡️' };
+    }
+  };
+
+  useEffect(() => {
   }, []);
 
   if (loading) {
@@ -98,12 +100,14 @@ const InformacoesExternas = () => {
     );
   }
 
+  const climaConfig = clima ? getClimaClass(clima.descricao) : null;
+
   return (
     <div className="informacoes-externas">
       {clima && (
-        <div className="info-card clima-card">
+        <div className={climaConfig.className}>
           <div className="info-header">
-            <FaCloudSun className="info-icon" />
+            <span className="info-icon">{climaConfig.icon}</span>
             <span>Clima</span>
           </div>
           <div className="info-content">
@@ -113,7 +117,7 @@ const InformacoesExternas = () => {
           </div>
         </div>
       )}
-      
+
       {cotacao && (
         <div className="info-card cotacao-card">
           <div className="info-header">
@@ -178,12 +182,12 @@ const AlertasFinanceiros = ({ alertas }) => {
         <FaBell className="secao-icon" />
         Alertas Financeiros
       </h2>
-      
+
       <div className="alertas-grid">
         {Object.entries(alertas).map(([tipo, dados]) => {
           const config = getAlertaConfig(tipo);
           const Icon = config.icon;
-          
+
           return (
             <div key={tipo} className={`alerta-card ${config.className}`}>
               <div className="alerta-header">
@@ -191,11 +195,11 @@ const AlertasFinanceiros = ({ alertas }) => {
                 <h3>{config.titulo}</h3>
                 <span className="alerta-badge">{dados.total}</span>
               </div>
-              
+
               <div className="alerta-valor">
                 {formatarMoeda(dados.valor_total)}
               </div>
-              
+
               {dados.items.length > 0 && (
                 <div className="alerta-lista">
                   {dados.items.slice(0, 3).map((item, index) => (
@@ -211,7 +215,7 @@ const AlertasFinanceiros = ({ alertas }) => {
                       </div>
                     </div>
                   ))}
-                  
+
                   {dados.items.length > 3 && (
                     <div className="ver-mais" onClick={() => navigate('/lancamentos')}>
                       +{dados.items.length - 3} mais...
@@ -219,7 +223,7 @@ const AlertasFinanceiros = ({ alertas }) => {
                   )}
                 </div>
               )}
-              
+
               {dados.items.length === 0 && (
                 <div className="alerta-vazio">
                   <FaCheckCircle className="check-icon" />
@@ -255,7 +259,7 @@ const ResumoFinanceiro = ({ resumo }) => {
         <FaChartBar className="secao-icon" />
         Resumo do Mês
       </h2>
-      
+
       <div className="resumo-cards">
         <div className="resumo-card receitas">
           <div className="card-header">
@@ -267,7 +271,7 @@ const ResumoFinanceiro = ({ resumo }) => {
             Meta: {formatarMoeda(resumo.meta_receitas || 0)}
           </div>
         </div>
-        
+
         <div className="resumo-card despesas">
           <div className="card-header">
             <FaArrowDown className="card-icon" />
@@ -278,7 +282,7 @@ const ResumoFinanceiro = ({ resumo }) => {
             Meta: {formatarMoeda(resumo.meta_despesas || 0)}
           </div>
         </div>
-        
+
         <div className={`resumo-card saldo ${getSaldoClass(resumo.saldo)}`}>
           <div className="card-header">
             <FaEquals className="card-icon" />
@@ -299,66 +303,66 @@ const NavegacaoRapida = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { 
-      path: '/receitas', 
-      icon: FaMoneyBillWave, 
-      label: 'Receitas', 
+    {
+      path: '/receitas',
+      icon: FaMoneyBillWave,
+      label: 'Receitas',
       color: '#34a853',
       description: 'Gerenciar receitas'
     },
-    { 
-      path: '/despesas', 
-      icon: FaReceipt, 
-      label: 'Despesas', 
+    {
+      path: '/despesas',
+      icon: FaReceipt,
+      label: 'Despesas',
       color: '#ea4335',
       description: 'Controlar gastos'
     },
-    { 
-      path: '/lancamentos', 
-      icon: FaClipboardList, 
-      label: 'Lançamentos', 
+    {
+      path: '/lancamentos',
+      icon: FaClipboardList,
+      label: 'Lançamentos',
       color: '#1a73e8',
       description: 'Todos os lançamentos'
     },
-    { 
-      path: '/familiares', 
-      icon: FaUsers, 
-      label: 'Familiares', 
+    {
+      path: '/familiares',
+      icon: FaUsers,
+      label: 'Familiares',
       color: '#4285f4',
       description: 'Membros da família'
     },
-    { 
-      path: '/bancos', 
-      icon: FaUniversity, 
-      label: 'Bancos', 
+    {
+      path: '/bancos',
+      icon: FaUniversity,
+      label: 'Bancos',
       color: '#1a73e8',
       description: 'Contas bancárias'
     },
-    { 
-      path: '/dashboard', 
-      icon: FaChartBar, 
-      label: 'Dashboard', 
+    {
+      path: '/dashboard',
+      icon: FaChartBar,
+      label: 'Dashboard',
       color: '#34a853',
       description: 'Relatórios e gráficos'
     },
-    { 
-      path: '/fornecedores', 
-      icon: FaStore, 
-      label: 'Fornecedores', 
+    {
+      path: '/fornecedores',
+      icon: FaStore,
+      label: 'Fornecedores',
       color: '#ff9800',
       description: 'Cadastro de fornecedores'
     },
-    { 
-      path: '/investimentos', 
-      icon: FaChartLine, 
-      label: 'Investimentos', 
+    {
+      path: '/investimentos',
+      icon: FaChartLine,
+      label: 'Investimentos',
       color: '#fbbc05',
       description: 'Carteira de investimentos'
     },
-    { 
-      path: '/categorias', 
-      icon: FaCog, 
-      label: 'Categorias', 
+    {
+      path: '/categorias',
+      icon: FaCog,
+      label: 'Categorias',
       color: '#5f6368',
       description: 'Categorias do sistema'
     }
@@ -370,7 +374,7 @@ const NavegacaoRapida = () => {
         <FaClipboardList className="secao-icon" />
         Navegação Rápida
       </h2>
-      
+
       <div className="menu-grid">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -442,7 +446,7 @@ export default function Home() {
   useEffect(() => {
     if (usuario) {
       carregarDadosHome();
-      
+
       // Atualizar dados a cada 5 minutos
       const interval = setInterval(carregarDadosHome, 5 * 60 * 1000);
       return () => clearInterval(interval);
@@ -485,7 +489,7 @@ export default function Home() {
       {/* Footer */}
       <div className="home-footer">
         <p>
-          Última atualização: {new Date().toLocaleTimeString('pt-BR')} • 
+          Última atualização: {new Date().toLocaleTimeString('pt-BR')} •
           <span className="refresh-link" onClick={carregarDadosHome}>
             <FaEye /> Atualizar dados
           </span>

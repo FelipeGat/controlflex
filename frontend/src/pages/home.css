@@ -1,6 +1,3 @@
-/* ===== TELA HOME - SEGUINDO PADRÃO DO SISTEMA ===== */
-
-/* Usando as mesmas variáveis CSS do sistema */
 :root {
   --primary-color: #1a73e8;
   --success-color: #34a853;
@@ -14,7 +11,7 @@
   --border-color: #dadce0;
   --hover-color: #f8f9fa;
   --border-radius: 8px;
-  --card-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+  --card-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
   --transition: all 0.2s ease-in-out;
 }
 
@@ -102,7 +99,7 @@
 
 .info-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .info-header {
@@ -218,14 +215,15 @@
   box-shadow: var(--card-shadow);
   transition: var(--transition);
   border-left: 4px solid;
-  min-height: 300px; /* Altura mínima para uniformidade */
+  min-height: 300px;
+  /* Altura mínima para uniformidade */
   display: flex;
   flex-direction: column;
 }
 
 .alerta-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .alerta-critico {
@@ -279,7 +277,8 @@
 }
 
 .alerta-lista {
-  flex: 1; /* Ocupa o espaço restante */
+  flex: 1;
+  /* Ocupa o espaço restante */
   max-height: 180px;
   overflow-y: auto;
 }
@@ -326,7 +325,8 @@
   cursor: pointer;
   border-radius: var(--border-radius);
   transition: var(--transition);
-  margin-top: auto; /* Empurra para o final do card */
+  margin-top: auto;
+  /* Empurra para o final do card */
 }
 
 .ver-mais:hover {
@@ -386,7 +386,7 @@
 
 .resumo-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .resumo-card.receitas {
@@ -475,7 +475,7 @@
 
 .menu-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .menu-icon-container {
@@ -486,7 +486,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .menu-icon {
@@ -562,73 +562,78 @@
     text-align: center;
     padding: 1.5rem;
   }
-  
+
   .saudacao-titulo {
     font-size: 2rem;
   }
-  
+
   .home-content {
     padding: 0 1rem;
   }
-  
+
   .menu-item {
     padding: 1rem;
   }
-  
+
   .menu-icon-container {
     width: 40px;
     height: 40px;
   }
-  
+
   .menu-icon {
     font-size: 1.2rem;
   }
-  
+
   .informacoes-externas {
     justify-content: center;
     width: 100%;
   }
-  
+
   .info-card {
     min-width: 120px;
   }
+}
+
+.clima-card .info-header,
+.clima-card .info-content {
+  color: var(--text-color);
 }
 
 @media (max-width: 480px) {
   .home-header {
     padding: 1rem;
   }
-  
+
   .saudacao-titulo {
     font-size: 1.8rem;
   }
-  
+
   .saudacao-data {
     font-size: 1rem;
   }
-  
+
   .secao-titulo {
     font-size: 1.3rem;
   }
-  
+
   .alerta-valor {
     font-size: 1.5rem;
   }
-  
+
   .card-valor {
     font-size: 1.8rem;
   }
-  
+
   .menu-item {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .menu-arrow {
     display: none;
   }
-  
+
   .alerta-card {
     min-height: auto;
   }
@@ -640,6 +645,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -652,23 +658,65 @@
   animation: fadeInUp 0.4s ease forwards;
 }
 
-.alerta-card:nth-child(1) { animation-delay: 0.1s; }
-.alerta-card:nth-child(2) { animation-delay: 0.2s; }
-.alerta-card:nth-child(3) { animation-delay: 0.3s; }
+.alerta-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
 
-.resumo-card:nth-child(1) { animation-delay: 0.1s; }
-.resumo-card:nth-child(2) { animation-delay: 0.2s; }
-.resumo-card:nth-child(3) { animation-delay: 0.3s; }
+.alerta-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
 
-.menu-item:nth-child(1) { animation-delay: 0.1s; }
-.menu-item:nth-child(2) { animation-delay: 0.15s; }
-.menu-item:nth-child(3) { animation-delay: 0.2s; }
-.menu-item:nth-child(4) { animation-delay: 0.25s; }
-.menu-item:nth-child(5) { animation-delay: 0.3s; }
-.menu-item:nth-child(6) { animation-delay: 0.35s; }
-.menu-item:nth-child(7) { animation-delay: 0.4s; }
-.menu-item:nth-child(8) { animation-delay: 0.45s; }
-.menu-item:nth-child(9) { animation-delay: 0.5s; }
+.alerta-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.resumo-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.resumo-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.resumo-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.menu-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.menu-item:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.menu-item:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.menu-item:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+.menu-item:nth-child(5) {
+  animation-delay: 0.3s;
+}
+
+.menu-item:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+.menu-item:nth-child(7) {
+  animation-delay: 0.4s;
+}
+
+.menu-item:nth-child(8) {
+  animation-delay: 0.45s;
+}
+
+.menu-item:nth-child(9) {
+  animation-delay: 0.5s;
+}
 
 /* ===== SCROLLBAR PERSONALIZADA ===== */
 .alerta-lista::-webkit-scrollbar {
@@ -709,17 +757,42 @@
   .home-container {
     background-color: white;
   }
-  
+
   .home-header,
   .alerta-card,
   .resumo-card {
     box-shadow: none;
     border: 1px solid #000;
   }
-  
+
   .menu-grid,
   .home-footer {
     display: none;
   }
 }
 
+/* ===== ESTILOS DINÂMICOS PARA O CARD DE CLIMA ===== */
+.clima-card.clima-sol {
+  background: linear-gradient(45deg, #fbbc05, #fdd835);
+}
+
+.clima-card.clima-nuvens {
+  background: linear-gradient(45deg, #757575, #9e9e9e);
+}
+
+.clima-card.clima-chuva {
+  background: linear-gradient(45deg, #2196f3, #42a5f5);
+}
+
+.clima-card.clima-tempestade {
+  background: linear-gradient(45deg, #37474f, #546e7a);
+}
+
+.clima-card.clima-neve {
+  background: linear-gradient(45deg, #e0e0e0, #f5f5f5);
+}
+
+.clima-card.clima-chuva,
+.clima-card.clima-tempestade {
+  color: white;
+}
