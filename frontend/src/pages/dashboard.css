@@ -26,8 +26,15 @@ body {
 .dashboard-container {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding: 2rem;
+    gap: 1.5rem;
+    padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .dashboard-container {
+        gap: 2rem;
+        padding: 2rem;
+    }
 }
 
 .dashboard-header {
@@ -40,10 +47,28 @@ body {
 }
 
 .dashboard-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 500;
     color: #343a40;
     margin: 0;
+}
+
+.header-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .header-controls {
+        flex-direction: row;
+        width: auto;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
 }
 
 .toggle-values-button {
@@ -90,19 +115,14 @@ body {
 }
 
 /* =================================================================
-   3. GRIDS DE KPI E INFORMAÇÕES (VERSÃO CORRIGIDA)
+   3. GRIDS DE KPI E INFORMAÇÕES
    ================================================================= */
 .kpi-grid,
 .info-grid {
     display: grid;
     gap: 1rem;
-    /* Reduzido para melhor encaixe em telas menores */
-    margin-top: 20px;
 }
 
-/* --- ALTERAÇÃO #1 INICIA AQUI --- */
-
-/* Padrão para Celular: 2 colunas para KPIs, 1 para Infos */
 .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
 }
@@ -111,11 +131,9 @@ body {
     grid-template-columns: 1fr;
 }
 
-/* Tablet (768px para cima): 3 colunas para KPIs, 2 para Infos */
 @media (min-width: 768px) {
     .kpi-grid {
         grid-template-columns: repeat(3, 1fr);
-        /* 3 colunas, quebrando em 2 linhas */
     }
 
     .info-grid {
@@ -123,25 +141,34 @@ body {
     }
 }
 
-/* Desktop (1200px para cima): 6 colunas para KPIs, 4 para Infos */
 @media (min-width: 1200px) {
     .kpi-grid {
         grid-template-columns: repeat(6, 1fr);
-        /* 6 colunas em uma linha */
     }
 
     .info-grid {
         grid-template-columns: repeat(4, 1fr);
-        /* 4 colunas em uma linha */
     }
 }
 
-/* --- ALTERAÇÃO #1 TERMINA AQUI --- */
+.dashboard-card {
+    background-color: var(--card-background);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    width: 100%;
+    box-sizing: border-box;
+}
 
+@media (min-width: 768px) {
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+}
 
 .kpi-card {
     background-color: var(--card-background);
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     border-left: 5px solid;
@@ -149,6 +176,12 @@ body {
     flex-direction: column;
     gap: 0.5rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 768px) {
+    .kpi-card {
+        padding: 1.5rem;
+    }
 }
 
 .kpi-card:hover {
@@ -165,14 +198,24 @@ body {
 }
 
 .kpi-title {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #6c757d;
 }
 
 .kpi-value {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
+}
+
+@media (min-width: 768px) {
+    .kpi-title {
+        font-size: 0.9rem;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+    }
 }
 
 .kpi-value-positive {
@@ -191,7 +234,7 @@ body {
 }
 
 .kpi-percent {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 6px;
@@ -213,10 +256,6 @@ body {
 }
 
 .info-card {
-    background-color: var(--card-background);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
     text-align: center;
 }
 
@@ -239,32 +278,126 @@ body {
    4. GRIDS DE CONTEÚDO E GRÁFICOS
    ================================================================= */
 
-.chart-and-info-grid {
+.saldos-container {
     display: grid;
-    gap: 1.5rem;
     grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+    /* Alinha os itens no topo */
 }
 
-@media (min-width: 769px) {
-    .chart-and-info-grid {
-        grid-template-columns: repeat(2, 1fr);
+@media (min-width: 992px) {
+    .saldos-container {
+        grid-template-columns: 4fr 6fr;
+        /* Define a proporção das colunas principais */
     }
 }
 
-.main-chart-container {
-    background-color: var(--card-background);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    height: 500px;
+.saldo-meters-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Garante que o primeiro item ocupe a linha toda */
+    gap: 1.5rem;
 }
 
-.chart-container-refactored {
+.card-meters-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Padrão de uma coluna para telas pequenas */
+    gap: 1.5rem;
+}
+
+@media (min-width: 576px) {
+    .card-meters-row {
+        grid-template-columns: repeat(2, 1fr);
+        /* Duas colunas para os gráficos de cartão */
+    }
+}
+
+.saldo-meter-card {
+    text-align: center;
+}
+
+.saldo-meter-interactive {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.saldo-meter-interactive:hover {
+    transform: scale(1.03);
+}
+
+.saldo-meter-chart-container {
+    position: relative;
+    height: 150px;
     width: 100%;
-    height: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.saldo-meter-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    width: 80%;
+    font-size: clamp(1rem, 10vw, 1.75rem);
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.saldo-meter-value.extra-small-text {
+    font-size: clamp(0.8rem, 8vw, 1.2rem);
+}
+
+.pagination-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    height: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ccc;
+    transition: background-color 0.3s ease;
+}
+
+.dot.active {
+    background-color: var(--primary-color);
+}
+
+.card-details-meter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 150px;
+    gap: 0.5rem;
+}
+
+.card-detail-row {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.card-detail-row .label {
+    color: var(--secondary-text-color);
+}
+
+.card-detail-row .value {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.saldos-bar-chart-container {
+    height: 320px;
+    width: 100%;
 }
 
 .main-content-grid {
@@ -279,68 +412,55 @@ body {
     }
 }
 
-.main-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
+.main-panel,
 .side-panel {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-.chart-card {
-    background-color: var(--card-background);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    height: auto;
-}
-
-.annual-chart-card {
-    height: 600px;
-}
-
-.chart-card .chart-title {
+.chart-title {
     font-size: 1.25rem;
     font-weight: 500;
     color: var(--text-color);
     margin-top: 0;
     margin-bottom: 1.5rem;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.annual-charts-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+.annual-chart-card {
+    height: 400px;
 }
 
 @media (min-width: 992px) {
-    .annual-charts-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .annual-chart-card {
+        height: 600px;
+    }
+}
+
+.doughnut-chart-container {
+    height: 300px;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .doughnut-chart-container {
+        height: 250px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .doughnut-chart-container {
+        height: 300px;
     }
 }
 
 /* =================================================================
    5. TABELA DE TRANSAÇÕES
    ================================================================= */
-.transactions-card {
-    background-color: var(--card-background);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-}
-
-.table-title {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: var(--text-color);
-    margin-top: 0;
-    margin-bottom: 1rem;
-}
-
 .table-wrapper {
     overflow-x: auto;
 }
@@ -422,14 +542,8 @@ body {
 }
 
 /* =================================================================
-   6. RESPONSIVIDADE ADICIONAL
+   6. RESPONSIVIDADE E ESTILOS ADICIONAIS
    ================================================================= */
-@media (max-width: 1200px) {
-    .main-content-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 .info-card.receita {
     border-left: 5px solid #34a853;
 }
@@ -452,4 +566,14 @@ body {
 
 .kpi-card.saldo .kpi-value {
     color: inherit;
+}
+
+.info-card.receita {
+    border-left: 5px solid var(--success-color);
+    /* Borda verde para receita */
+}
+
+.info-card.despesa {
+    border-left: 5px solid var(--danger-color);
+    /* Borda vermelha para despesa */
 }
