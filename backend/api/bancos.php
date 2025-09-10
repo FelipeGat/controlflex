@@ -45,6 +45,44 @@ try {
             break;
 
         case 'POST':
+             // Ajustar Saldo do Banco
+if (isset($_GET['action']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $bancoId = intval($data['banco_id'] ?? 0);
+    $usuarioId = intval($data['usuario_id'] ?? 0);
+
+    if ($_GET['action'] === 'ajustarSaldo') {
+        $novoSaldo = floatval($data['saldo'] ?? 0);
+        try {
+            $stmt = $pdo->prepare("UPDATE bancos SET saldo = :saldo WHERE id = :id AND usuario_id = :usuario_id");
+            $stmt->execute([
+                ':saldo' => $novoSaldo,
+                ':id' => $bancoId,
+                ':usuario_id' => $usuarioId
+            ]);
+            echo json_encode(['success' => true, 'message' => 'Saldo ajustado com sucesso']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Erro ao ajustar saldo', 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    if ($_GET['action'] === 'ajustarSaldoCartao') {
+        $novoSaldoCartao = floatval($data['saldo_cartao'] ?? 0);
+        try {
+            $stmt = $pdo->prepare("UPDATE bancos SET saldo_cartao = :saldo_cartao WHERE id = :id AND usuario_id = :usuario_id");
+            $stmt->execute([
+                ':saldo_cartao' => $novoSaldoCartao,
+                ':id' => $bancoId,
+                ':usuario_id' => $usuarioId
+            ]);
+            echo json_encode(['success' => true, 'message' => 'Saldo do cartão ajustado com sucesso']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Erro ao ajustar saldo do cartão', 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+}
             $data = json_decode(file_get_contents("php://input"), true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -63,6 +101,7 @@ try {
             $id = $data['id'] ?? null;
             $usuario_id = filter_var($data['usuario_id'], FILTER_VALIDATE_INT);
             $titular_id = filter_var($data['titular_id'], FILTER_VALIDATE_INT);
+
 
             // VERIFICAÇÃO ADICIONAL PARA EVITAR DUPLICAÇÃO DA CONTA "CARTEIRA"
             if ($data['nome'] === 'Carteira' && $id === null) {

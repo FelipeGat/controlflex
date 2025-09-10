@@ -9,8 +9,9 @@ import './ModalConfirmacao.css';
 import ToggleSwitch from '../components/ToggleSwitch';
 
 // --- COMPONENTE DO FORMULÁRIO DE RECEITA ---
-const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selectsData }) => {
+export const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selectsData }) => {
     const [form, setForm] = useState(initialFormState);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         setForm(editingReceita ? { ...editingReceita } : initialFormState);
@@ -26,10 +27,54 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
         setForm(prev => ({ ...prev, recorrente: e.target.checked }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave(form);
+    const validateForm = () => {
+        const requiredFields = ['quem_recebeu', 'categoria_id', 'forma_recebimento', 'valor', 'data_prevista_recebimento'];
+
+        for (let field of requiredFields) {
+            if (!form[field] || form[field] === '') {
+                return false;
+            }
+        }
+
+        if (parseFloat(form.valor) <= 0) {
+            return false;
+        }
+
+        return true;
     };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await onSave(form);
+        } catch (error) {
+            console.error('Erro ao salvar receita:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Verificar se os dados dos selects estão carregados
+    const isDataLoaded = selectsData &&
+        Array.isArray(selectsData.familiares) &&
+        Array.isArray(selectsData.categorias) &&
+        Array.isArray(selectsData.bancos);
+
+    if (!isDataLoaded) {
+        return (
+            <div className="form-loading">
+                <Spinner />
+                <p>Carregando dados do formulário...</p>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -37,54 +82,129 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
             <div className="form-grid">
                 <div className="form-group">
                     <label htmlFor="quem_recebeu">Quem Recebeu *</label>
-                    <select id="quem_recebeu" name="quem_recebeu" value={form.quem_recebeu} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="quem_recebeu"
+                        name="quem_recebeu"
+                        value={form.quem_recebeu}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {selectsData.familiares.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                        {selectsData.familiares.map(f => (
+                            <option key={f.id} value={f.id}>{f.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="categoria_id">Categoria *</label>
-                    <select id="categoria_id" name="categoria_id" value={form.categoria_id} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="categoria_id"
+                        name="categoria_id"
+                        value={form.categoria_id}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {selectsData.categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                        {selectsData.categorias.map(c => (
+                            <option key={c.id} value={c.id}>{c.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="forma_recebimento">Forma de Recebimento *</label>
-                    <select id="forma_recebimento" name="forma_recebimento" value={form.forma_recebimento} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="forma_recebimento"
+                        name="forma_recebimento"
+                        value={form.forma_recebimento}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {Array.isArray(selectsData.bancos) && selectsData.bancos.map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
+                        {selectsData.bancos.map(b => (
+                            <option key={b.id} value={b.id}>{b.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="valor">Valor (R$) *</label>
-                    <input id="valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} className="form-control" placeholder="0.00" required />
+                    <input
+                        id="valor"
+                        name="valor"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={form.valor}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="0.00"
+                        required
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="data_prevista_recebimento">Data Prevista do Recebimento *</label>
-                    <input id="data_prevista_recebimento" name="data_prevista_recebimento" type="date" value={form.data_prevista_recebimento} onChange={handleChange} className="form-control" required />
+                    <input
+                        id="data_prevista_recebimento"
+                        name="data_prevista_recebimento"
+                        type="date"
+                        value={form.data_prevista_recebimento}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="data_recebimento">Data Real do Recebimento</label>
-                    <input id="data_recebimento" name="data_recebimento" type="date" value={form.data_recebimento || ''} onChange={handleChange} className="form-control" />
+                    <input
+                        id="data_recebimento"
+                        name="data_recebimento"
+                        type="date"
+                        value={form.data_recebimento || ''}
+                        onChange={handleChange}
+                        className="form-control"
+                        disabled={isSubmitting}
+                    />
                     <small className="form-text">Deixe em branco se ainda não foi recebido</small>
                 </div>
                 <div className="form-group form-group-full-width">
                     <label htmlFor="observacoes">Observações</label>
-                    <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
+                    <textarea
+                        id="observacoes"
+                        name="observacoes"
+                        value={form.observacoes}
+                        onChange={handleChange}
+                        className="form-control"
+                        rows="3"
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group form-group-full-width">
                     <ToggleSwitch
                         label="É uma receita recorrente?"
                         checked={form.recorrente}
                         onChange={handleToggleChange}
+                        disabled={isSubmitting}
                     />
                 </div>
                 {form.recorrente && (
                     <div className="form-grid form-group-full-width">
                         <div className="form-group">
                             <label htmlFor="frequencia">Frequência</label>
-                            <select id="frequencia" name="frequencia" value={form.frequencia} onChange={handleChange} className="form-control">
+                            <select
+                                id="frequencia"
+                                name="frequencia"
+                                value={form.frequencia}
+                                onChange={handleChange}
+                                className="form-control"
+                                disabled={isSubmitting}
+                            >
                                 <option value="diaria">Diária</option>
                                 <option value="semanal">Semanal</option>
                                 <option value="quinzenal">Quinzenal</option>
@@ -105,14 +225,28 @@ const ReceitaForm = ({ onSave, onCancel, editingReceita, initialFormState, selec
                                 onChange={handleChange}
                                 className="form-control"
                                 title="Use 0 para recorrência 'infinita'"
+                                disabled={isSubmitting}
                             />
                         </div>
                     </div>
                 )}
             </div>
             <div className="form-buttons">
-                <button type="button" className="btn btn-cancel" onClick={onCancel}>{editingReceita ? 'Cancelar' : 'Limpar'}</button>
-                <button type="submit" className="btn btn-save">{editingReceita ? 'Salvar Alterações' : 'Adicionar Receita'}</button>
+                <button
+                    type="button"
+                    className="btn btn-cancel"
+                    onClick={onCancel}
+                    disabled={isSubmitting}
+                >
+                    {editingReceita ? 'Cancelar' : 'Limpar'}
+                </button>
+                <button
+                    type="submit"
+                    className="btn btn-save"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Salvando...' : (editingReceita ? 'Salvar Alterações' : 'Adicionar Receita')}
+                </button>
             </div>
         </form>
     );
@@ -196,11 +330,12 @@ export default function Receitas() {
                 axios.get(`${API_BASE_URL}/bancos.php?usuario_id=${usuario.id}`)
             ]);
             setSelectsData({
-                familiares: respFamiliares.data || [],
-                categorias: respCategorias.data || [],
-                bancos: respBancos.data.data || [] // CORREÇÃO AQUI
+                familiares: Array.isArray(respFamiliares.data) ? respFamiliares.data : [],
+                categorias: Array.isArray(respCategorias.data) ? respCategorias.data : [],
+                bancos: Array.isArray(respBancos.data?.data) ? respBancos.data.data : []
             });
         } catch (error) {
+            console.error('Erro ao carregar dados de suporte:', error);
             showNotification('Erro ao carregar dados de suporte.', 'error');
         }
     }, [usuario]);
@@ -215,7 +350,7 @@ export default function Receitas() {
         if (usuario) {
             fetchSelectsData();
         }
-    }, [usuario]);
+    }, [usuario, fetchSelectsData]);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -226,8 +361,8 @@ export default function Receitas() {
         const payload = {
             usuario_id: usuario.id,
             id: editingReceita ? editingReceita.id : undefined,
-            escopo: editingReceita?.escopo, // Envia o escopo de edição
-            grupo_recorrencia_id: editingReceita?.grupo_recorrencia_id, // Adiciona o grupo da recorrencia para o back end
+            escopo: editingReceita?.escopo,
+            grupo_recorrencia_id: editingReceita?.grupo_recorrencia_id,
             ...form
         };
 
@@ -244,6 +379,7 @@ export default function Receitas() {
         } catch (error) {
             const errorMsg = error.response?.data?.erro || 'Erro ao salvar a receita.';
             showNotification(errorMsg, 'error');
+            throw error; // Re-throw para que o formulário possa lidar com o erro
         }
     };
 
@@ -266,16 +402,23 @@ export default function Receitas() {
                 onClose: () => setModalState({ isOpen: false })
             });
         } else {
-            if (window.confirm('Tem certeza que deseja excluir esta receita?')) {
-                executeDelete(receita, 'apenas_esta');
-            }
+            setModalState({
+                isOpen: true,
+                title: 'Confirmar Exclusão',
+                message: `Tem certeza que deseja excluir a receita de ${receita.valor}?`,
+                onConfirm: () => {
+                    executeDelete(receita, 'unica');
+                    setModalState({ isOpen: false });
+                },
+                onCancel: () => setModalState({ isOpen: false })
+            });
         }
     };
 
     const executeDelete = async (receita, escopo) => {
         try {
-            await axios.delete(`${RECEITAS_API_URL}?id=${receita.id}&escopo=${escopo}`);
-            showNotification('Receita(s) excluída(s) com sucesso!', 'success');
+            await axios.delete(`${RECEITAS_API_URL}?id=${receita.id}&usuario_id=${usuario.id}&escopo=${escopo}&grupo_recorrencia_id=${receita.grupo_recorrencia_id || ''}`);
+            showNotification('Receita excluída com sucesso!', 'success');
             fetchReceitas();
         } catch (error) {
             const errorMsg = error.response?.data?.erro || 'Erro ao excluir a receita.';
@@ -283,59 +426,27 @@ export default function Receitas() {
         }
     };
 
-    const handleEdit = (receita) => {
-        if (receita.grupo_recorrencia_id) {
-            setModalEditState({
-                isOpen: true,
-                title: 'Editar Receita Recorrente',
-                message: 'Esta é uma receita recorrente. Como você deseja editá-la?',
-                onConfirm: () => {
-                    // Opção 1: Editar "esta e as futuras"
-                    setEditingReceita({
-                        ...receita,
-                        quem_recebeu: receita.quem_recebeu_id,
-                        forma_recebimento: receita.forma_recebimento_id,
-                        escopo: 'esta_e_futuras' // Adiciona o escopo
-                    });
-                    setModalEditState({ isOpen: false });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-                confirmText: 'Esta e as Futuras',
-                onCancel: () => {
-                    // Opção 2: Editar "apenas esta parcela"
-                    setEditingReceita({
-                        ...receita,
-                        quem_recebeu: receita.quem_recebeu_id,
-                        forma_recebimento: receita.forma_recebimento_id,
-                        escopo: 'apenas_esta' // Adiciona o escopo
-                    });
-                    setModalEditState({ isOpen: false });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-                cancelText: 'Apenas Esta Parcela',
-                onClose: () => setModalEditState({ isOpen: false })
-            });
-        } else {
-            // Fluxo original para receitas não recorrentes
-            setEditingReceita({
-                ...receita,
-                quem_recebeu: receita.quem_recebeu_id,
-                forma_recebimento: receita.forma_recebimento_id,
-            });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    const handleConfirmarRecebimento = async (id) => {
+        try {
+            await axios.post(`${RECEITAS_API_URL}?action=confirmar_recebimento`, { id, usuario_id: usuario.id });
+            showNotification('Recebimento confirmado com sucesso!', 'success');
+            fetchReceitas();
+        } catch (error) {
+            const errorMsg = error.response?.data?.erro || 'Erro ao confirmar recebimento.';
+            showNotification(errorMsg, 'error');
         }
     };
 
-    const handleCancel = () => setEditingReceita(null);
-    const handleFiltroChange = (e) => setFiltroData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleEdit = (receita) => {
+        setEditingReceita(receita);
+    };
 
-    const handleSort = (key) => {
-        setSortConfig(prevConfig => {
-            if (prevConfig.key === key && prevConfig.direction === 'asc') {
-                return { key, direction: 'desc' };
-            }
-            return { key, direction: 'asc' };
-        });
+    const handleCancel = () => {
+        setEditingReceita(null);
+    };
+
+    const handleFiltroChange = (e) => {
+        setFiltroData({ ...filtroData, [e.target.name]: e.target.value });
     };
 
     const handleLimitChange = (e) => {
@@ -346,9 +457,16 @@ export default function Receitas() {
         fetchReceitas();
     };
 
-    // Função para determinar o status da receita
-    const getStatusReceita = (dataPrevista, dataReal) => {
-        if (dataReal) return 'recebido';
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getStatusReceita = (dataPrevista, dataRecebimento) => {
+        if (dataRecebimento) return 'recebido';
 
         const hoje = new Date().toISOString().split('T')[0];
         if (dataPrevista < hoje) return 'atrasado';
@@ -356,7 +474,6 @@ export default function Receitas() {
         return 'pendente';
     };
 
-    // Função para formatar data
     const formatarData = (data) => {
         if (!data) return '-';
         return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
@@ -369,28 +486,30 @@ export default function Receitas() {
             <ModalConfirmacao
                 isOpen={modalState.isOpen}
                 title={modalState.title}
+                message={modalState.message}
                 onConfirm={modalState.onConfirm}
-                confirmText={modalState.confirmText}
                 onCancel={modalState.onCancel}
+                confirmText={modalState.confirmText}
                 cancelText={modalState.cancelText}
-                onClose={() => setModalState({ isOpen: false })}
-            >
-                <p>{modalState.message}</p>
-            </ModalConfirmacao>
+                onClose={modalState.onClose}
+            />
 
             <ModalConfirmacao
                 isOpen={modalEditState.isOpen}
                 title={modalEditState.title}
+                message={modalEditState.message}
                 onConfirm={modalEditState.onConfirm}
-                confirmText={modalEditState.confirmText}
                 onCancel={modalEditState.onCancel}
+                confirmText={modalEditState.confirmText}
                 cancelText={modalEditState.cancelText}
-                onClose={() => setModalEditState({ isOpen: false })}
-            >
-                <p>{modalEditState.message}</p>
-            </ModalConfirmacao>
+                onClose={modalEditState.onClose}
+            />
 
             <div className="content-card">
+                <div className="page-header">
+                    <h1 className="page-title">💰 Receitas</h1>
+                </div>
+
                 <ReceitaForm
                     onSave={handleSave}
                     onCancel={handleCancel}
@@ -401,70 +520,138 @@ export default function Receitas() {
             </div>
 
             <div className="content-card">
-                <h3 className="table-title">Últimas Receitas</h3>
-
+                <div className="table-title">Últimas Receitas</div>
                 <div className="table-filters">
                     <div className="filter-group">
-                        <label htmlFor="inicio">Data Início</label>
-                        <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
+                        <label>Data Início:</label>
+                        <input
+                            type="date"
+                            name="inicio"
+                            value={filtroData.inicio}
+                            onChange={handleFiltroChange}
+                            className="form-control"
+                        />
                     </div>
                     <div className="filter-group">
-                        <label htmlFor="fim">Data Fim</label>
-                        <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
+                        <label>Data Fim:</label>
+                        <input
+                            type="date"
+                            name="fim"
+                            value={filtroData.fim}
+                            onChange={handleFiltroChange}
+                            className="form-control"
+                        />
                     </div>
                     <div className="filter-group">
-                        <label htmlFor="limit">Mostrar</label>
-                        <select id="limit" name="limit" className="form-control" value={limit} onChange={handleLimitChange}>
-                            <option value={5}>5 linhas</option>
-                            <option value={10}>10 linhas</option>
-                            <option value={50}>50 linhas</option>
-                            <option value={100}>100 linhas</option>
+                        <label>Limite:</label>
+                        <select value={limit} onChange={handleLimitChange} className="form-control">
+                            <option value={10}>10</option>
+                            <option value={25}>25</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
                         </select>
                     </div>
-                    <div className="filter-group">
-                        <label>&nbsp;</label>
-                        <button className="btn btn-primary" onClick={handleFilterClick}>Filtrar</button>
+                    <div className="filter-actions">
+                        <button className="btn btn-primary" onClick={handleFilterClick}>
+                            Filtrar
+                        </button>
                     </div>
                 </div>
 
-                <div className="table-wrapper">
-                    {isLoading ? <Spinner /> : (
+                <div className="table-container">
+                    {isLoading ? (
+                        <div className="loading-container">
+                            <Spinner />
+                        </div>
+                    ) : (
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <SortableHeader name="quem_recebeu_nome" sortConfig={sortConfig} onSort={handleSort}>Quem Recebeu</SortableHeader>
-                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
-                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
-                                    <SortableHeader name="data_prevista_recebimento" sortConfig={sortConfig} onSort={handleSort}>Data Prevista</SortableHeader>
-                                    <th>Data Recebimento</th>
+                                    <SortableHeader name="quem_recebeu_nome" sortConfig={sortConfig} onSort={handleSort}>
+                                        Quem Recebeu
+                                    </SortableHeader>
+                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>
+                                        Categoria
+                                    </SortableHeader>
+                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>
+                                        Valor
+                                    </SortableHeader>
+                                    <SortableHeader name="data_prevista_recebimento" sortConfig={sortConfig} onSort={handleSort}>
+                                        Data Prevista
+                                    </SortableHeader>
+                                    <SortableHeader name="data_recebimento" sortConfig={sortConfig} onSort={handleSort}>
+                                        Data Recebimento
+                                    </SortableHeader>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {receitas.length === 0 ? (
-                                    <tr><td colSpan="7" className="empty-state">Nenhuma receita encontrada.</td></tr>
+                                    <tr>
+                                        <td colSpan="7" className="empty-state">
+                                            Nenhuma receita encontrada.
+                                        </td>
+                                    </tr>
                                 ) : (
-                                    receitas.map(receita => {
+                                    receitas.map((receita) => {
                                         const status = getStatusReceita(receita.data_prevista_recebimento, receita.data_recebimento);
                                         return (
-                                            <tr key={receita.id} className={`linha-${status}`}>
+                                            <tr key={receita.id} className={`status-${status}`}>
                                                 <td>{receita.quem_recebeu_nome}</td>
                                                 <td>{receita.categoria_nome}</td>
-                                                <td>R$ {parseFloat(receita.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                                <td>R$ {parseFloat(receita.valor).toFixed(2)}</td>
                                                 <td>{formatarData(receita.data_prevista_recebimento)}</td>
                                                 <td>{formatarData(receita.data_recebimento)}</td>
                                                 <td>
-                                                    <span className={`status-badge ${status}`}>
-                                                        {status === 'recebido' ? 'RECEBIDO' :
-                                                            status === 'atrasado' ? 'ATRASADO' :
-                                                                status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
+                                                    <span className={`status-badge status-${status}`}>
+                                                        {status === 'recebido' && 'Recebido'}
+                                                        {status === 'pendente' && 'Pendente'}
+                                                        {status === 'atrasado' && 'Atrasado'}
+                                                        {status === 'hoje' && 'Vence Hoje'}
                                                     </span>
                                                 </td>
-                                                <td className="table-buttons">
-                                                    <button className="btn-icon" onClick={() => handleEdit(receita)} title="Editar">✏️</button>
-                                                    <button className="btn-icon btn-delete" onClick={() => handleDelete(receita)} title="Excluir">🗑️</button>
-                                                    {receita.grupo_recorrencia_id && <span title="Receita Recorrente">🔄</span>}
+                                                <td>
+                                                    <div className="action-buttons">
+                                                        {receita.recorrente && (
+                                                            <span className="recorrente-icon" title="Receita Recorrente">🔄</span>
+                                                        )}
+                                                        <button
+                                                            className="btn-icon btn-success"
+                                                            onClick={() => {
+                                                                if (status === 'pendente' || status === 'atrasado' || status === 'hoje') {
+                                                                    setModalEditState({
+                                                                        isOpen: true,
+                                                                        title: 'Confirmar Recebimento',
+                                                                        message: `Deseja confirmar o recebimento desta receita?`,
+                                                                        onConfirm: () => {
+                                                                            handleConfirmarRecebimento(receita.id);
+                                                                            setModalEditState({ isOpen: false });
+                                                                        },
+                                                                        onCancel: () => setModalEditState({ isOpen: false })
+                                                                    });
+                                                                }
+                                                            }}
+                                                            title="Confirmar Recebimento"
+                                                            disabled={status === 'recebido'}
+                                                        >
+                                                            ✅
+                                                        </button>
+                                                        <button
+                                                            className="btn-icon btn-warning"
+                                                            onClick={() => handleEdit(receita)}
+                                                            title="Editar"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
+                                                            className="btn-icon btn-delete"
+                                                            onClick={() => handleDelete(receita)}
+                                                            title="Excluir"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -478,3 +665,4 @@ export default function Receitas() {
         </div>
     );
 }
+

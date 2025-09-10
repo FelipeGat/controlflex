@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import './despesas.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
-import ModalConfirmacao from './ModalConfirmacao'; 
+import ModalConfirmacao from './ModalConfirmacao';
 import './ModalConfirmacao.css';
 import ToggleSwitch from '../components/ToggleSwitch';
 
-// --- COMPONENTE DO FORMULÁRIO ---
-const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selectsData }) => {
+// --- COMPONENTE DO FORMULÁRIO DE DESPESA ---
+export const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selectsData }) => {
     const [form, setForm] = useState(initialFormState);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         setForm(editingDespesa ? { ...editingDespesa } : initialFormState);
@@ -26,10 +27,54 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
         setForm(prev => ({ ...prev, recorrente: e.target.checked }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave(form);
+    const validateForm = () => {
+        const requiredFields = ['quem_comprou', 'onde_comprou', 'categoria_id', 'forma_pagamento', 'valor', 'data_compra'];
+
+        for (let field of requiredFields) {
+            if (!form[field] || form[field] === '') {
+                return false;
+            }
+        }
+
+        if (parseFloat(form.valor) <= 0) {
+            return false;
+        }
+
+        return true;
     };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            alert('Por favor, preencha todos os campos obrigatórios corretamente.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await onSave(form);
+        } catch (error) {
+            console.error('Erro ao salvar despesa:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Verificar se os dados dos selects estão carregados
+    const isDataLoaded = selectsData &&
+        Array.isArray(selectsData.familiares) &&
+        Array.isArray(selectsData.fornecedores) &&
+        Array.isArray(selectsData.categorias);
+
+    if (!isDataLoaded) {
+        return (
+            <div className="form-loading">
+                <Spinner />
+                <p>Carregando dados do formulário...</p>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -37,28 +82,66 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
             <div className="form-grid">
                 <div className="form-group">
                     <label htmlFor="quem_comprou">Quem Comprou *</label>
-                    <select id="quem_comprou" name="quem_comprou" value={form.quem_comprou} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="quem_comprou"
+                        name="quem_comprou"
+                        value={form.quem_comprou}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {selectsData.familiares.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                        {selectsData.familiares.map(f => (
+                            <option key={f.id} value={f.id}>{f.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="onde_comprou">Fornecedor *</label>
-                    <select id="onde_comprou" name="onde_comprou" value={form.onde_comprou} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="onde_comprou"
+                        name="onde_comprou"
+                        value={form.onde_comprou}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {selectsData.fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                        {selectsData.fornecedores.map(f => (
+                            <option key={f.id} value={f.id}>{f.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="categoria_id">Categoria *</label>
-                    <select id="categoria_id" name="categoria_id" value={form.categoria_id} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="categoria_id"
+                        name="categoria_id"
+                        value={form.categoria_id}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
-                        {selectsData.categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                        {selectsData.categorias.map(c => (
+                            <option key={c.id} value={c.id}>{c.nome}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">
                     <label htmlFor="forma_pagamento">Forma de Pagamento *</label>
-                    <select id="forma_pagamento" name="forma_pagamento" value={form.forma_pagamento} onChange={handleChange} className="form-control" required>
+                    <select
+                        id="forma_pagamento"
+                        name="forma_pagamento"
+                        value={form.forma_pagamento}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    >
                         <option value="">Selecione...</option>
                         <option value="DINHEIRO">Dinheiro</option>
                         <option value="PIX">PIX</option>
@@ -69,33 +152,78 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                 </div>
                 <div className="form-group">
                     <label htmlFor="valor">Valor (R$) *</label>
-                    <input id="valor" name="valor" type="number" step="0.01" value={form.valor} onChange={handleChange} className="form-control" placeholder="0.00" required />
+                    <input
+                        id="valor"
+                        name="valor"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={form.valor}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="0.00"
+                        required
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="data_compra">Data da Compra *</label>
-                    <input id="data_compra" name="data_compra" type="date" value={form.data_compra} onChange={handleChange} className="form-control" required />
+                    <input
+                        id="data_compra"
+                        name="data_compra"
+                        type="date"
+                        value={form.data_compra}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="data_pagamento">Data do Pagamento</label>
-                    <input id="data_pagamento" name="data_pagamento" type="date" value={form.data_pagamento || ''} onChange={handleChange} className="form-control" />
+                    <input
+                        id="data_pagamento"
+                        name="data_pagamento"
+                        type="date"
+                        value={form.data_pagamento || ''}
+                        onChange={handleChange}
+                        className="form-control"
+                        disabled={isSubmitting}
+                    />
                     <small className="form-text">Deixe em branco se ainda não foi pago</small>
                 </div>
                 <div className="form-group form-group-full-width">
                     <label htmlFor="observacoes">Observações</label>
-                    <textarea id="observacoes" name="observacoes" value={form.observacoes} onChange={handleChange} className="form-control" rows="3" />
+                    <textarea
+                        id="observacoes"
+                        name="observacoes"
+                        value={form.observacoes}
+                        onChange={handleChange}
+                        className="form-control"
+                        rows="3"
+                        disabled={isSubmitting}
+                    />
                 </div>
                 <div className="form-group form-group-full-width">
-                    <ToggleSwitch 
+                    <ToggleSwitch
                         label="É uma conta recorrente?"
                         checked={form.recorrente}
                         onChange={handleToggleChange}
+                        disabled={isSubmitting}
                     />
                 </div>
                 {form.recorrente && (
                     <div className="form-grid form-group-full-width">
                         <div className="form-group">
                             <label htmlFor="frequencia">Frequência</label>
-                            <select id="frequencia" name="frequencia" value={form.frequencia} onChange={handleChange} className="form-control">
+                            <select
+                                id="frequencia"
+                                name="frequencia"
+                                value={form.frequencia}
+                                onChange={handleChange}
+                                className="form-control"
+                                disabled={isSubmitting}
+                            >
                                 <option value="diaria">Diária</option>
                                 <option value="semanal">Semanal</option>
                                 <option value="quinzenal">Quinzenal</option>
@@ -107,23 +235,37 @@ const DespesaForm = ({ onSave, onCancel, editingDespesa, initialFormState, selec
                         </div>
                         <div className="form-group">
                             <label htmlFor="parcelas">Repetir por (vezes)</label>
-                            <input 
-                                id="parcelas" 
-                                name="parcelas" 
-                                type="number" 
+                            <input
+                                id="parcelas"
+                                name="parcelas"
+                                type="number"
                                 min="0"
-                                value={form.parcelas} 
-                                onChange={handleChange} 
+                                value={form.parcelas}
+                                onChange={handleChange}
                                 className="form-control"
                                 title="Use 0 para recorrência 'infinita'"
+                                disabled={isSubmitting}
                             />
                         </div>
                     </div>
                 )}
             </div>
             <div className="form-buttons">
-                <button type="button" className="btn btn-cancel" onClick={onCancel}>{editingDespesa ? 'Cancelar' : 'Limpar'}</button>
-                <button type="submit" className="btn btn-save">{editingDespesa ? 'Salvar Alterações' : 'Adicionar Despesa'}</button>
+                <button
+                    type="button"
+                    className="btn btn-cancel"
+                    onClick={onCancel}
+                    disabled={isSubmitting}
+                >
+                    {editingDespesa ? 'Cancelar' : 'Limpar'}
+                </button>
+                <button
+                    type="submit"
+                    className="btn btn-save"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Salvando...' : (editingDespesa ? 'Salvar Alterações' : 'Adicionar Despesa')}
+                </button>
             </div>
         </form>
     );
@@ -146,7 +288,7 @@ const SortableHeader = ({ children, name, sortConfig, onSort }) => {
     );
 };
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA ---
+// --- COMPONENTE PRINCIPAL DA PÁGINA DE DESPESAS ---
 export default function Despesas() {
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
@@ -154,15 +296,15 @@ export default function Despesas() {
     const [editingDespesa, setEditingDespesa] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [notification, setNotification] = useState({ message: '', type: '' });
-    
+
     const [selectsData, setSelectsData] = useState({ familiares: [], fornecedores: [], categorias: [] });
-    
+
     const [filtroData, setFiltroData] = useState({ inicio: '', fim: '' });
     const [limit, setLimit] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: 'data_compra', direction: 'desc' });
 
-    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
-    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, onCancel: () => {}, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: 'Confirmar', cancelText: 'Cancelar' });
+    const [modalEditState, setModalEditState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, onCancel: () => { }, confirmText: 'Confirmar', cancelText: 'Cancelar' });
 
     const DESPESAS_API_URL = `${API_BASE_URL}/despesas.php`;
 
@@ -182,8 +324,8 @@ export default function Despesas() {
         if (!usuario) return;
         setIsLoading(true);
         try {
-            const params = { 
-                usuario_id: usuario.id, 
+            const params = {
+                usuario_id: usuario.id,
                 ...filtroData,
                 limit: limit,
                 sortBy: sortConfig.key,
@@ -207,11 +349,12 @@ export default function Despesas() {
                 axios.get(`${API_BASE_URL}/categorias.php?tipo=DESPESA`)
             ]);
             setSelectsData({
-                familiares: respFamiliares.data || [],
-                fornecedores: respFornecedores.data || [],
-                categorias: respCategorias.data || []
+                familiares: Array.isArray(respFamiliares.data) ? respFamiliares.data : [],
+                fornecedores: Array.isArray(respFornecedores.data) ? respFornecedores.data : [],
+                categorias: Array.isArray(respCategorias.data) ? respCategorias.data : []
             });
         } catch (error) {
+            console.error('Erro ao carregar dados de suporte:', error);
             showNotification('Erro ao carregar dados de suporte.', 'error');
         }
     }, [usuario]);
@@ -226,7 +369,7 @@ export default function Despesas() {
         if (usuario) {
             fetchSelectsData();
         }
-    }, [usuario]);
+    }, [usuario, fetchSelectsData]);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -241,7 +384,7 @@ export default function Despesas() {
             grupo_recorrencia_id: editingDespesa?.grupo_recorrencia_id,
             ...form
         };
-        
+
         if (!form.recorrente) {
             delete payload.parcelas;
             delete payload.frequencia;
@@ -255,6 +398,7 @@ export default function Despesas() {
         } catch (error) {
             const errorMsg = error.response?.data?.erro || 'Erro ao salvar a despesa.';
             showNotification(errorMsg, 'error');
+            throw error; // Re-throw para que o formulário possa lidar com o erro
         }
     };
 
@@ -277,16 +421,23 @@ export default function Despesas() {
                 onClose: () => setModalState({ isOpen: false })
             });
         } else {
-            if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
-                executeDelete(despesa, 'apenas_esta');
-            }
+            setModalState({
+                isOpen: true,
+                title: 'Confirmar Exclusão',
+                message: `Tem certeza que deseja excluir a despesa de ${despesa.valor}?`,
+                onConfirm: () => {
+                    executeDelete(despesa, 'unica');
+                    setModalState({ isOpen: false });
+                },
+                onCancel: () => setModalState({ isOpen: false })
+            });
         }
     };
 
     const executeDelete = async (despesa, escopo) => {
         try {
-            await axios.delete(`${DESPESAS_API_URL}?id=${despesa.id}&escopo=${escopo}`);
-            showNotification('Despesa(s) excluída(s) com sucesso!', 'success');
+            await axios.delete(`${DESPESAS_API_URL}?id=${despesa.id}&usuario_id=${usuario.id}&escopo=${escopo}&grupo_recorrencia_id=${despesa.grupo_recorrencia_id || ''}`);
+            showNotification('Despesa excluída com sucesso!', 'success');
             fetchDespesas();
         } catch (error) {
             const errorMsg = error.response?.data?.erro || 'Erro ao excluir a despesa.';
@@ -294,59 +445,27 @@ export default function Despesas() {
         }
     };
 
-    const handleEdit = (despesa) => {
-        if (despesa.grupo_recorrencia_id) {
-            setModalEditState({
-                isOpen: true,
-                title: 'Editar Despesa Recorrente',
-                message: 'Esta é uma despesa recorrente. Como você deseja editá-la?',
-                onConfirm: () => {
-                    // Opção 1: Editar "esta e as futuras"
-                    setEditingDespesa({
-                        ...despesa,
-                        quem_comprou: despesa.quem_comprou_id,
-                        onde_comprou: despesa.onde_comprou_id,
-                        escopo: 'esta_e_futuras' // Adiciona o escopo
-                    });
-                    setModalEditState({ isOpen: false });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-                confirmText: 'Esta e as Futuras',
-                onCancel: () => {
-                    // Opção 2: Editar "apenas esta parcela"
-                    setEditingDespesa({
-                        ...despesa,
-                        quem_comprou: despesa.quem_comprou_id,
-                        onde_comprou: despesa.onde_comprou_id,
-                        escopo: 'apenas_esta' // Adiciona o escopo
-                    });
-                    setModalEditState({ isOpen: false });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-                cancelText: 'Apenas Esta Parcela',
-                onClose: () => setModalEditState({ isOpen: false })
-            });
-        } else {
-            // Fluxo original para despesas não recorrentes
-            setEditingDespesa({
-                ...despesa,
-                quem_comprou: despesa.quem_comprou_id,
-                onde_comprou: despesa.onde_comprou_id,
-            });
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    const handleConfirmarPagamento = async (id) => {
+        try {
+            await axios.post(`${DESPESAS_API_URL}?action=confirmar_pagamento`, { id, usuario_id: usuario.id });
+            showNotification('Pagamento confirmado com sucesso!', 'success');
+            fetchDespesas();
+        } catch (error) {
+            const errorMsg = error.response?.data?.erro || 'Erro ao confirmar pagamento.';
+            showNotification(errorMsg, 'error');
         }
     };
 
-    const handleCancel = () => setEditingDespesa(null);
-    const handleFiltroChange = (e) => setFiltroData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleEdit = (despesa) => {
+        setEditingDespesa(despesa);
+    };
 
-    const handleSort = (key) => {
-        setSortConfig(prevConfig => {
-            if (prevConfig.key === key && prevConfig.direction === 'asc') {
-                return { key, direction: 'desc' };
-            }
-            return { key, direction: 'asc' };
-        });
+    const handleCancel = () => {
+        setEditingDespesa(null);
+    };
+
+    const handleFiltroChange = (e) => {
+        setFiltroData({ ...filtroData, [e.target.name]: e.target.value });
     };
 
     const handleLimitChange = (e) => {
@@ -357,17 +476,23 @@ export default function Despesas() {
         fetchDespesas();
     };
 
-    // Função para determinar o status da despesa
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
     const getStatusDespesa = (dataCompra, dataPagamento) => {
         if (dataPagamento) return 'pago';
-        
+
         const hoje = new Date().toISOString().split('T')[0];
         if (dataCompra < hoje) return 'atrasado';
         if (dataCompra === hoje) return 'hoje';
         return 'pendente';
     };
 
-    // Função para formatar data
     const formatarData = (data) => {
         if (!data) return '-';
         return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
@@ -376,108 +501,180 @@ export default function Despesas() {
     return (
         <div className="page-container">
             {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
-            
+
             <ModalConfirmacao
                 isOpen={modalState.isOpen}
                 title={modalState.title}
+                message={modalState.message}
                 onConfirm={modalState.onConfirm}
-                confirmText={modalState.confirmText}
                 onCancel={modalState.onCancel}
+                confirmText={modalState.confirmText}
                 cancelText={modalState.cancelText}
-                onClose={() => setModalState({ isOpen: false })}
-            >
-                <p>{modalState.message}</p>
-            </ModalConfirmacao>
+                onClose={modalState.onClose}
+            />
 
             <ModalConfirmacao
                 isOpen={modalEditState.isOpen}
                 title={modalEditState.title}
+                message={modalEditState.message}
                 onConfirm={modalEditState.onConfirm}
-                confirmText={modalEditState.confirmText}
                 onCancel={modalEditState.onCancel}
+                confirmText={modalEditState.confirmText}
                 cancelText={modalEditState.cancelText}
-                onClose={() => setModalEditState({ isOpen: false })}
-            >
-                <p>{modalEditState.message}</p>
-            </ModalConfirmacao>
+                onClose={modalEditState.onClose}
+            />
 
             <div className="content-card">
-                <DespesaForm 
-                    onSave={handleSave} 
-                    onCancel={handleCancel} 
-                    editingDespesa={editingDespesa} 
-                    initialFormState={initialFormState} 
-                    selectsData={selectsData} 
+                <div className="page-header">
+                    <h1 className="page-title">💸 Despesas</h1>
+                </div>
+
+                <DespesaForm
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    editingDespesa={editingDespesa}
+                    initialFormState={initialFormState}
+                    selectsData={selectsData}
                 />
             </div>
 
             <div className="content-card">
-                <h3 className="table-title">Últimas Despesas</h3>
-                
+                <div className="table-title">Últimos Lançamentos</div>
                 <div className="table-filters">
                     <div className="filter-group">
-                        <label htmlFor="inicio">Data Início</label>
-                        <input id="inicio" name="inicio" type="date" className="form-control" value={filtroData.inicio} onChange={handleFiltroChange} />
+                        <label>Data Início:</label>
+                        <input
+                            type="date"
+                            name="inicio"
+                            value={filtroData.inicio}
+                            onChange={handleFiltroChange}
+                            className="form-control"
+                        />
                     </div>
                     <div className="filter-group">
-                        <label htmlFor="fim">Data Fim</label>
-                        <input id="fim" name="fim" type="date" className="form-control" value={filtroData.fim} onChange={handleFiltroChange} />
+                        <label>Data Fim:</label>
+                        <input
+                            type="date"
+                            name="fim"
+                            value={filtroData.fim}
+                            onChange={handleFiltroChange}
+                            className="form-control"
+                        />
                     </div>
                     <div className="filter-group">
-                        <label htmlFor="limit">Mostrar</label>
-                        <select id="limit" name="limit" className="form-control" value={limit} onChange={handleLimitChange}>
-                            <option value={5}>5 linhas</option>
-                            <option value={10}>10 linhas</option>
-                            <option value={50}>50 linhas</option>
-                            <option value={100}>100 linhas</option>
+                        <label>Limite:</label>
+                        <select value={limit} onChange={handleLimitChange} className="form-control">
+                            <option value={10}>10</option>
+                            <option value={25}>25</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
                         </select>
                     </div>
-                    <div className="filter-group">
-                        <label>&nbsp;</label>
-                        <button className="btn btn-primary" onClick={handleFilterClick}>Filtrar</button>
+                    <div className="filter-actions">
+                        <button className="btn btn-primary" onClick={handleFilterClick}>
+                            Filtrar
+                        </button>
                     </div>
                 </div>
 
-                <div className="table-wrapper">
-                    {isLoading ? <Spinner /> : (
+                <div className="table-container">
+                    {isLoading ? (
+                        <div className="loading-container">
+                            <Spinner />
+                        </div>
+                    ) : (
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <SortableHeader name="quem_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>Quem Comprou</SortableHeader>
-                                    <SortableHeader name="onde_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>Fornecedor</SortableHeader>
-                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>Categoria</SortableHeader>
-                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>Valor</SortableHeader>
-                                    <SortableHeader name="data_compra" sortConfig={sortConfig} onSort={handleSort}>Data Compra</SortableHeader>
-                                    <th>Data Pagamento</th>
+                                    <SortableHeader name="quem_comprou_nome" sortConfig={sortConfig} onSort={handleSort}>
+                                        Quem Comprou
+                                    </SortableHeader>
+                                    <SortableHeader name="fornecedor_nome" sortConfig={sortConfig} onSort={handleSort}>
+                                        Fornecedor
+                                    </SortableHeader>
+                                    <SortableHeader name="categoria_nome" sortConfig={sortConfig} onSort={handleSort}>
+                                        Categoria
+                                    </SortableHeader>
+                                    <SortableHeader name="valor" sortConfig={sortConfig} onSort={handleSort}>
+                                        Valor
+                                    </SortableHeader>
+                                    <SortableHeader name="data_compra" sortConfig={sortConfig} onSort={handleSort}>
+                                        Data Prevista
+                                    </SortableHeader>
+                                    <SortableHeader name="data_pagamento" sortConfig={sortConfig} onSort={handleSort}>
+                                        Data Pagamento
+                                    </SortableHeader>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {despesas.length === 0 ? (
-                                    <tr><td colSpan="8" className="empty-state">Nenhuma despesa encontrada.</td></tr>
+                                    <tr>
+                                        <td colSpan="8" className="empty-state">
+                                            Nenhuma despesa encontrada.
+                                        </td>
+                                    </tr>
                                 ) : (
-                                    despesas.map(despesa => {
+                                    despesas.map((despesa) => {
                                         const status = getStatusDespesa(despesa.data_compra, despesa.data_pagamento);
                                         return (
-                                            <tr key={despesa.id} className={`linha-${status}`}>
+                                            <tr key={despesa.id} className={`status-${status}`}>
                                                 <td>{despesa.quem_comprou_nome}</td>
-                                                <td>{despesa.onde_comprou_nome}</td>
+                                                <td>{despesa.fornecedor_nome}</td>
                                                 <td>{despesa.categoria_nome}</td>
-                                                <td>R$ {parseFloat(despesa.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                                <td>R$ {parseFloat(despesa.valor).toFixed(2)}</td>
                                                 <td>{formatarData(despesa.data_compra)}</td>
                                                 <td>{formatarData(despesa.data_pagamento)}</td>
                                                 <td>
-                                                    <span className={`status-badge ${status}`}>
-                                                        {status === 'pago' ? 'PAGO' : 
-                                                         status === 'atrasado' ? 'ATRASADO' :
-                                                         status === 'hoje' ? 'VENCE HOJE' : 'PENDENTE'}
+                                                    <span className={`status-badge status-${status}`}>
+                                                        {status === 'pago' && 'Pago'}
+                                                        {status === 'pendente' && 'Pendente'}
+                                                        {status === 'atrasado' && 'Atrasado'}
+                                                        {status === 'hoje' && 'Vence Hoje'}
                                                     </span>
                                                 </td>
-                                                <td className="table-buttons">
-                                                    <button className="btn-icon" onClick={() => handleEdit(despesa)} title="Editar">✏️</button>
-                                                    <button className="btn-icon btn-delete" onClick={() => handleDelete(despesa)} title="Excluir">🗑️</button>
-                                                    {despesa.grupo_recorrencia_id && <span title="Despesa Recorrente">🔄</span>}
+                                                <td>
+                                                    <div className="action-buttons">
+                                                        {despesa.recorrente && (
+                                                            <span className="recorrente-icon" title="Despesa Recorrente">🔄</span>
+                                                        )}
+                                                        <button
+                                                            className="btn-icon btn-success"
+                                                            onClick={() => {
+                                                                if (status === 'pendente' || status === 'atrasado' || status === 'hoje') {
+                                                                    setModalEditState({
+                                                                        isOpen: true,
+                                                                        title: 'Confirmar Pagamento',
+                                                                        message: `Deseja confirmar o pagamento desta despesa?`,
+                                                                        onConfirm: () => {
+                                                                            handleConfirmarPagamento(despesa.id);
+                                                                            setModalEditState({ isOpen: false });
+                                                                        },
+                                                                        onCancel: () => setModalEditState({ isOpen: false })
+                                                                    });
+                                                                }
+                                                            }}
+                                                            title="Confirmar Pagamento"
+                                                            disabled={status === 'pago'}
+                                                        >
+                                                            ✅
+                                                        </button>
+                                                        <button
+                                                            className="btn-icon btn-warning"
+                                                            onClick={() => handleEdit(despesa)}
+                                                            title="Editar"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
+                                                            className="btn-icon btn-delete"
+                                                            onClick={() => handleDelete(despesa)}
+                                                            title="Excluir"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -491,3 +688,4 @@ export default function Despesas() {
         </div>
     );
 }
+

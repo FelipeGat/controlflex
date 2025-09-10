@@ -222,37 +222,58 @@ try {
     ];
 
     // --- 9. SALDOS BANCÁRIOS E CARTÕES ---
-    $saldos = ['bancarios' => [], 'cartoes' => []];
+$saldos = ['bancarios' => [], 'cartoes' => []];
 
-    $stmtBancos = $pdo->prepare("
-        SELECT id, nome, tipo_conta, saldo, cheque_especial, limite_cartao, saldo_cartao
-        FROM bancos
-        WHERE usuario_id = :uid
-        ORDER BY nome
-    ");
-    $stmtBancos->execute([':uid' => $usuario_id]);
-    $contas_raw = $stmtBancos->fetchAll();
+// A query foi ajustada para usar os nomes exatos das colunas da sua tabela 'bancos'
+// e cria aliases (AS) para manter a compatibilidade com o frontend.
+$stmtContas = $pdo->prepare("
+    SELECT
+        id,
+        nome,
+        tipo_conta,
+        saldo,
+        COALESCE(cheque_especial, 0) as cheque_especial_limite, -- Alterado
+        COALESCE(saldo_cheque, 0) as cheque_especial_usado,    -- Alterado
+        COALESCE(limite_cartao, 0) as limite,                 -- Alterado
+        COALESCE(saldo_cartao, 0) as utilizado                -- Alterado
+    FROM bancos 
+    WHERE usuario_id = :uid
+    ORDER BY nome
+");
+$stmtContas->execute([':uid' => $usuario_id]);
+$contas_raw = $stmtContas->fetchAll();
 
-    foreach ($contas_raw as $conta) {
-        if ($conta['tipo_conta'] === 'Dinheiro' || $conta['tipo_conta'] === 'Conta Corrente') {
-            $saldo_real = $conta['saldo'] + $conta['cheque_especial'];
-            $saldos['bancarios'][] = [
-                'id' => $conta['id'],
-                'nome' => $conta['nome'],
-                'saldo' => number_format($saldo_real, 2, '.', '')
-            ];
-        }
-        if (isset($conta['limite_cartao']) && $conta['limite_cartao'] > 0) {
-            $saldo_disponivel_cartao = $conta['limite_cartao'] - $conta['saldo_cartao'];
-            $saldos['cartoes'][] = [
-                'id' => $conta['id'],
-                'nome' => $conta['nome'],
-                'saldo' => number_format($saldo_disponivel_cartao, 2, '.', ''),
-                'limite_credito' => number_format($conta['limite_cartao'], 2, '.', ''),
-                'credito_utilizado' => number_format($conta['saldo_cartao'], 2, '.', '')
-            ];
-        }
+foreach ($contas_raw as $conta) {
+    // Processa contas do tipo 'Conta Corrente' e 'Dinheiro'
+    if ($conta['tipo_conta'] === 'Conta Corrente' || $conta['tipo_conta'] === 'Dinheiro') {
+        // O cálculo permanece o mesmo, pois os aliases garantem os nomes corretos das variáveis
+        $cheque_especial_disponivel = $conta['cheque_especial_limite'] - $conta['cheque_especial_usado'];
+
+        $saldos['bancarios'][] = [
+            'id' => $conta['id'],
+            'nome' => $conta['nome'],
+            'saldo' => number_format($conta['saldo'] ?? 0, 2, '.', ''),
+            'cheque_especial_limite' => number_format($conta['cheque_especial_limite'], 2, '.', ''),
+            'cheque_especial_usado' => number_format($conta['cheque_especial_usado'], 2, '.', ''),
+            'cheque_especial_disponivel' => number_format($cheque_especial_disponivel, 2, '.', '')
+        ];
     }
+
+    // Processa contas do tipo 'Cartão de Crédito'
+    // O ideal é que o 'tipo_conta' para cartões seja algo como 'Cartao de Credito'
+    // Este IF verifica se o limite do cartão é maior que zero para considerá-lo.
+    if ($conta['limite'] > 0) {
+        $credito_disponivel = $conta['limite'] - $conta['utilizado'];
+
+        $saldos['cartoes'][] = [
+            'id' => $conta['id'],
+            'nome' => $conta['nome'], // Usará o nome do banco como nome do cartão
+            'limite' => number_format($conta['limite'], 2, '.', ''),
+            'utilizado' => number_format($conta['utilizado'], 2, '.', ''),
+            'disponivel' => number_format($credito_disponivel, 2, '.', '')
+        ];
+    }
+}
 
     // === 10. INFOCARDS: ÚLTIMO MÊS (pago/recebido) e PRÓXIMO MÊS (previstos) ===
     // Períodos relativos ao HOJE:

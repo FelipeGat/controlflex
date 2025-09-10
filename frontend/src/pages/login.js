@@ -31,7 +31,7 @@ function Login() {
           tenant_id: dados.tenant_id
         }));
 
-        // ALTERAÇÃO: Redirecionar para HOME ao invés de Dashboard
+        // ALTERAÇÃO: Redirecionar para HOME
         navigate('/home');
       } else {
         setErro(dados.erro || 'Erro ao fazer login');
@@ -87,7 +87,7 @@ function Login() {
         <div className="text-center mt-4">
           <p className="cadastro-text">
             É novo por aqui?{' '}
-            <button 
+            <button
               type="button"
               className="link-cadastro"
               onClick={handleCadastroClick}

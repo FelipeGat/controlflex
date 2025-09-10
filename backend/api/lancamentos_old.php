@@ -103,7 +103,6 @@ class LancamentosAPI {
                 id,
                 tipo,
                 descricao,
-                fornecedor,
                 valor,
                 data_prevista,
                 data_real,
@@ -118,8 +117,7 @@ class LancamentosAPI {
                 SELECT 
                     d.id,
                     'despesa' AS tipo,
-                    COALESCE(d.observacoes, 'Sem observações') AS descricao,
-                    COALESCE(fo.nome, 'Fornecedor não informado') AS fornecedor,
+                    COALESCE(fo.nome, 'Fornecedor não informado') AS descricao,
                     d.valor,
                     d.data_compra AS data_prevista,
                     d.data_pagamento AS data_real,
@@ -142,8 +140,7 @@ class LancamentosAPI {
                 SELECT 
                     r.id,
                     'receita' AS tipo,
-                    COALESCE(r.observacoes, 'Sem observações') AS descricao,
-                    COALESCE(r.origem_receita, 'Origem não informada') AS fornecedor,
+                    COALESCE(r.origem_receita, 'Origem não informada') AS descricao,
                     r.valor,
                     r.data_prevista_recebimento AS data_prevista,
                     r.data_recebimento AS data_real,

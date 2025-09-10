@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -23,27 +24,43 @@ body, html {
 .bg-animated::before {
   content: '';
   position: absolute;
-  width: 150%; /* Reduzido de 200% para 150% */
-  height: 150%; /* Reduzido de 200% para 150% */
-  background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px); /* Opacidade reduzida */
-  background-size: 30px 30px; /* Aumentado de 20px para 30px - menos elementos */
-  animation: moveBg 60s linear infinite; /* Aumentado de 40s para 60s - mais lento */
+  width: 150%;
+  /* Reduzido de 200% para 150% */
+  height: 150%;
+  /* Reduzido de 200% para 150% */
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  /* Opacidade reduzida */
+  background-size: 30px 30px;
+  /* Aumentado de 20px para 30px - menos elementos */
+  animation: moveBg 60s linear infinite;
+  /* Aumentado de 40s para 60s - mais lento */
   z-index: 0;
-  will-change: transform; /* Otimização para GPU */
+  will-change: transform;
+  /* Otimização para GPU */
 }
 
 /* OTIMIZADO: Animação mais lenta */
 @keyframes moveBg {
-  0% { transform: translate3d(0, 0, 0); } /* Usando translate3d para GPU */
-  100% { transform: translate3d(-33%, -33%, 0); } /* Ajustado para novo tamanho */
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* Usando translate3d para GPU */
+  100% {
+    transform: translate3d(-33%, -33%, 0);
+  }
+
+  /* Ajustado para novo tamanho */
 }
 
 /* Card otimizado - backdrop-filter mais leve */
 .glass-card {
   position: relative;
   z-index: 1;
-  backdrop-filter: blur(8px); /* Reduzido de 12px para 8px */
-  background: rgba(255, 255, 255, 0.9); /* Aumentado de 0.85 para 0.9 - menos transparência */
+  backdrop-filter: blur(8px);
+  /* Reduzido de 12px para 8px */
+  background: rgba(255, 255, 255, 0.9);
+  /* Aumentado de 0.85 para 0.9 - menos transparência */
   color: #333;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
@@ -51,7 +68,8 @@ body, html {
   width: 100%;
   max-width: 400px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  will-change: auto; /* Remove will-change desnecessário */
+  will-change: auto;
+  /* Remove will-change desnecessário */
 }
 
 /* Logo otimizado - animação mais sutil */
@@ -61,13 +79,21 @@ body, html {
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 10px;
-  animation: floatText 4s ease-in-out infinite; /* Aumentado de 3s para 4s */
+  animation: floatText 4s ease-in-out infinite;
+  /* Aumentado de 3s para 4s */
 }
 
 /* OTIMIZADO: Animação mais sutil */
 @keyframes floatText {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); } /* Reduzido de -8px para -4px */
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 /* Centraliza o conteúdo */
@@ -81,14 +107,15 @@ body, html {
   align-items: center;
   margin-bottom: 15px;
   background-color: #f0f4f8;
-  border: 1px solid #ced4da;
   border-radius: 8px;
   overflow: hidden;
-  transition: box-shadow 0.2s ease; /* Transição mais rápida */
+  transition: box-shadow 0.2s ease;
+  /* Transição mais rápida */
 }
 
 .input-group:focus-within {
-  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2); /* Efeito focus otimizado */
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+  /* Efeito focus otimizado */
 }
 
 .input-group-text {
@@ -106,7 +133,8 @@ body, html {
   background-color: #f0f4f8;
   font-size: 1rem;
   outline: none;
-  transition: background-color 0.2s ease; /* Transição mais rápida */
+  transition: background-color 0.2s ease;
+  /* Transição mais rápida */
 }
 
 .form-control:focus {
@@ -117,18 +145,20 @@ body, html {
 .btn-primary {
   background-color: #1677ff;
   border: none;
-  padding: 12px;
-  font-size: 1rem;
+  padding: 10px;
+  font-size: rem;
   color: #fff;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 15px;
   width: 100%;
-  transition: background-color 0.2s ease, transform 0.1s ease; /* Transições mais rápidas */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  /* Transições mais rápidas */
 }
 
 .btn-primary:hover {
   background-color: #125edc;
-  transform: translateY(-1px); /* Efeito mais sutil */
+  transform: translateY(-1px);
+  /* Efeito mais sutil */
 }
 
 /* OTIMIZADO: Estilos para o link de cadastro - transições mais leves */
@@ -148,7 +178,8 @@ body, html {
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0;
-  transition: color 0.2s ease; /* Transição mais rápida */
+  transition: color 0.2s ease;
+  /* Transição mais rápida */
   position: relative;
 }
 
@@ -173,20 +204,32 @@ body, html {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  opacity: 0.7; /* Reduzida opacidade para menos impacto visual */
+  opacity: 0.7;
+  /* Reduzida opacidade para menos impacto visual */
 }
 
 .waves {
-  width: 150%; /* Reduzido de 200% para 150% */
+  width: 150%;
+  /* Reduzido de 200% para 150% */
   display: block;
-  animation: waveAnimation 45s linear infinite; /* Aumentado de 30s para 45s */
-  will-change: transform; /* Otimização para GPU */
+  animation: waveAnimation 45s linear infinite;
+  /* Aumentado de 30s para 45s */
+  will-change: transform;
+  /* Otimização para GPU */
 }
 
 /* OTIMIZADO: Animação de onda mais lenta */
 @keyframes waveAnimation {
-  0% { transform: translate3d(0, 0, 0); } /* Usando translate3d para GPU */
-  100% { transform: translate3d(-33%, 0, 0); } /* Ajustado para novo tamanho */
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* Usando translate3d para GPU */
+  100% {
+    transform: translate3d(-33%, 0, 0);
+  }
+
+  /* Ajustado para novo tamanho */
 }
 
 .center-container {
@@ -212,13 +255,33 @@ body, html {
 }
 
 /* Classes utilitárias */
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.w-100 { width: 100%; }
-.text-muted { color: #6c757d; }
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.text-muted {
+  color: #6c757d;
+}
 
 /* OTIMIZADO: Responsividade com menos breakpoints */
 @media (max-width: 768px) {
@@ -227,44 +290,47 @@ body, html {
     padding: 25px;
     max-width: none;
   }
-  
+
   .cursive-logo {
     font-size: 2rem;
   }
-  
+
   .cadastro-text,
   .link-cadastro {
     font-size: 0.85rem;
   }
-  
+
   /* OTIMIZADO: Reduzir animações em mobile */
   .bg-animated::before {
-    animation-duration: 90s; /* Mais lento em mobile */
+    animation-duration: 90s;
+    /* Mais lento em mobile */
   }
-  
+
   .waves {
-    animation-duration: 60s; /* Mais lento em mobile */
+    animation-duration: 60s;
+    /* Mais lento em mobile */
   }
-  
+
   .cursive-logo {
-    animation: none; /* Remove animação em mobile para melhor performance */
+    animation: none;
+    /* Remove animação em mobile para melhor performance */
   }
 }
 
 /* NOVO: Reduzir animações para usuários que preferem menos movimento */
 @media (prefers-reduced-motion: reduce) {
+
   .bg-animated::before,
   .waves,
   .cursive-logo {
     animation: none;
   }
-  
+
   .btn-primary:hover {
     transform: none;
   }
-  
+
   * {
     transition-duration: 0.01ms !important;
   }
 }
-

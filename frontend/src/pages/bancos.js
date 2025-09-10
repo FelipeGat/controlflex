@@ -18,6 +18,10 @@ const BankForm = ({ onSave, onCancel, editingBank, initialFormState, familiares 
     const [form, setForm] = useState(initialFormState);
     const [temChequeEspecial, setTemChequeEspecial] = useState(false);
     const [temCartaoCredito, setTemCartaoCredito] = useState(false);
+    const [showCartaoModal, setShowCartaoModal] = useState(false);
+    const [selectedCartao, setSelectedCartao] = useState(null);
+    const [newSaldoCartao, setNewSaldoCartao] = useState("");
+
 
     useEffect(() => {
         if (editingBank) {
@@ -320,6 +324,60 @@ function Bancos() {
         }
     }, [usuario, fetchFamiliares, checkAndCreateCarteira]);
 
+    const [showAdjustModal, setShowAdjustModal] = useState(false);
+    const [selectedBank, setSelectedBank] = useState(null);
+    const [newSaldo, setNewSaldo] = useState("");
+    const [showCartaoModal, setShowCartaoModal] = useState(false);
+    const [selectedCartao, setSelectedCartao] = useState(null);
+    const [newSaldoCartao, setNewSaldoCartao] = useState("");
+
+
+    // Função para abrir modal
+    const handleAdjustSaldoClick = (banco) => {
+        setSelectedBank(banco);
+        setNewSaldo(banco.saldo);
+        setShowAdjustModal(true);
+    };
+
+    const handleOpenModalLimite = (banco) => {
+        setSelectedCartao(banco);
+        setNewSaldoCartao(banco.saldo_cartao || 0);
+        setShowCartaoModal(true);
+    };
+
+
+    // Função para salvar ajuste
+    const handleAdjustSaldoSave = async () => {
+        try {
+            await axios.post(`${BANCOS_API_URL}?action=ajustarSaldo`, {
+                banco_id: selectedBank.id,
+                saldo: parseFloat(newSaldo),
+                usuario_id: usuario.id
+            });
+            showNotification(`Saldo de "${selectedBank.nome}" atualizado!`, 'success');
+            setShowAdjustModal(false);
+            fetchBancos();
+        } catch (error) {
+            showNotification('Erro ao ajustar saldo.', 'error');
+        }
+    };
+
+    const handleSaveCartaoSaldo = async () => {
+        try {
+            await axios.post(`${BANCOS_API_URL}?action=ajustarSaldoCartao`, {
+                banco_id: selectedCartao.id,
+                saldo_cartao: parseFloat(newSaldoCartao),
+                usuario_id: usuario.id
+            });
+            showNotification(`Saldo do cartão de "${selectedCartao.nome}" atualizado!`, 'success');
+            setShowCartaoModal(false);
+            fetchBancos();
+        } catch (error) {
+            showNotification('Erro ao ajustar saldo do cartão.', 'error');
+        }
+    };
+
+
     const handleSave = async (form, temChequeEspecial, temCartaoCredito) => {
         try {
             const isUpdate = form.id !== null && form.id !== undefined;
@@ -443,6 +501,46 @@ function Bancos() {
                 )}
             </div>
 
+            {showAdjustModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <h3>Ajustar Saldo - {selectedBank?.nome}</h3>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={newSaldo}
+                            onChange={(e) => setNewSaldo(e.target.value)}
+                            className="form-control"
+                        />
+                        <div className="form-buttons">
+                            <button className="btn btn-cancel" onClick={() => setShowAdjustModal(false)}>Cancelar</button>
+                            <button className="btn btn-save" onClick={handleAdjustSaldoSave}>Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showCartaoModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <h3>Ajustar Limite do Cartão - {selectedCartao?.nome}</h3>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={newSaldoCartao}
+                            onChange={(e) => setNewSaldoCartao(e.target.value)}
+                            className="form-control"
+                        />
+                        <div className="form-buttons">
+                            <button className="btn btn-cancel" onClick={() => setShowCartaoModal(false)}>Cancelar</button>
+                            <button className="btn btn-save" onClick={handleSaveCartaoSaldo}>Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+
             <div className="content-card">
                 <h3 className="table-title">Contas Cadastradas</h3>
                 <div className="table-filters">
@@ -490,9 +588,21 @@ function Bancos() {
                                         <td>{b.limite_cartao > 0 ? formatCurrency(b.limite_cartao) : '-'}</td>
                                         <td>
                                             <div className="table-buttons">
-                                                <button onClick={() => handleEdit(b)} className="btn-icon" title="Editar"><i className="fas fa-pen"></i></button>
+                                                <button onClick={() => handleEdit(b)} className="btn-icon" title="Editar">
+                                                    <i className="fas fa-pen"></i>
+                                                </button>
                                                 {b.tipo_conta !== 'Dinheiro' && (
-                                                    <button onClick={() => handleDelete(b.id)} className="btn-icon btn-delete" title="Excluir"><i className="fas fa-trash"></i></button>
+                                                    <>
+                                                        <button onClick={() => handleDelete(b.id)} className="btn-icon btn-delete" title="Excluir">
+                                                            <i className="fas fa-trash"></i>
+                                                        </button>
+                                                        <button onClick={() => handleAdjustSaldoClick(b)} className="btn-icon" title="Ajustar Saldo">
+                                                            <i className="fas fa-coins"></i>
+                                                        </button>
+                                                        <button className="btn-icon" onClick={() => handleOpenModalLimite(b)} title="Ajustar Limite do Cartão">
+                                                            <i className="fas fa-credit-card"></i>
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                         </td>
@@ -507,6 +617,7 @@ function Bancos() {
             </div>
         </div>
     );
+
 }
 
 export default Bancos;

@@ -252,8 +252,6 @@ export default function Lancamentos() {
   const [showFormDespesa, setShowFormDespesa] = useState(false);
   const [selectsDataReceita, setSelectsDataReceita] = useState({ familiares: [], categorias: [], bancos: [] });
   const [selectsDataDespesa, setSelectsDataDespesa] = useState({ familiares: [], fornecedores: [], categorias: [] });
-  const [editingReceita, setEditingReceita] = useState(null);
-  const [editingDespesa, setEditingDespesa] = useState(null);
 
   const sortedLancamentos = useMemo(() => {
     if (!sortConfig.key) {
@@ -582,74 +580,13 @@ export default function Lancamentos() {
     showNotification('Funcionalidade de visualização em desenvolvimento', 'info');
   }, [showNotification]);
 
-  const editarLancamento = useCallback(async (id, tipo) => {
-    try {
-      // Buscar os dados do lançamento para edição
-      const response = await axios.get(`${API_BASE_URL}/lancamentos.php`, {
-        params: {
-          action: 'detalhes',
-          id: id,
-          tipo: tipo,
-          usuario_id: usuario.id
-        }
-      });
-
-      if (response.data.success) {
-        const dadosLancamento = response.data.data;
-
-        if (tipo === 'receita') {
-          // Carregar dados necessários para o formulário de receita
-          try {
-            const [familiares, categorias, bancos] = await Promise.all([
-              axios.get(`${API_BASE_URL}/familiares.php`, { params: { usuario_id: usuario.id } }),
-              axios.get(`${API_BASE_URL}/categorias.php`, { params: { usuario_id: usuario.id } }),
-              axios.get(`${API_BASE_URL}/bancos.php`, { params: { usuario_id: usuario.id } })
-            ]);
-
-            setSelectsDataReceita({
-              familiares: familiares.data.data || [],
-              categorias: categorias.data.data || [],
-              bancos: bancos.data.data || []
-            });
-          } catch (error) {
-            console.error('Erro ao carregar dados para receita:', error);
-          }
-
-          // Definir dados de edição
-          setEditingReceita(dadosLancamento);
-          // Abrir modal de receita com dados preenchidos
-          setShowFormReceita(true);
-        } else {
-          // Carregar dados necessários para o formulário de despesa
-          try {
-            const [familiares, fornecedores, categorias] = await Promise.all([
-              axios.get(`${API_BASE_URL}/familiares.php`, { params: { usuario_id: usuario.id } }),
-              axios.get(`${API_BASE_URL}/fornecedores.php`, { params: { usuario_id: usuario.id } }),
-              axios.get(`${API_BASE_URL}/categorias.php`, { params: { usuario_id: usuario.id } })
-            ]);
-
-            setSelectsDataDespesa({
-              familiares: familiares.data.data || [],
-              fornecedores: fornecedores.data.data || [],
-              categorias: categorias.data.data || []
-            });
-          } catch (error) {
-            console.error('Erro ao carregar dados para despesa:', error);
-          }
-
-          // Definir dados de edição
-          setEditingDespesa(dadosLancamento);
-          // Abrir modal de despesa com dados preenchidos
-          setShowFormDespesa(true);
-        }
-      } else {
-        throw new Error(response.data.message || 'Erro ao carregar dados do lançamento');
-      }
-    } catch (error) {
-      console.error('Erro ao editar lançamento:', error);
-      showNotification('Erro ao carregar dados para edição: ' + error.message, 'error');
+  const editarLancamento = useCallback((id, tipo) => {
+    if (tipo === 'receita') {
+      navigate(`/receitas?edit=${id}`);
+    } else {
+      navigate(`/despesas?edit=${id}`);
     }
-  }, [usuario, showNotification]);
+  }, [navigate]);
 
   const excluirLancamento = useCallback(async (id, tipo) => {
     try {
@@ -758,45 +695,6 @@ export default function Lancamentos() {
     }
   }, [desquitarLancamento, contasBancarias, showNotification, formatarMoeda]);
 
-  // FUNÇÕES PARA CARREGAR DADOS DOS FORMULÁRIOS
-  const carregarDadosReceita = useCallback(async () => {
-    try {
-      const [familiares, categorias, bancos] = await Promise.all([
-        axios.get(`${API_BASE_URL}/familiares.php`, { params: { usuario_id: usuario.id } }),
-        axios.get(`${API_BASE_URL}/categorias.php`, { params: { usuario_id: usuario.id } }),
-        axios.get(`${API_BASE_URL}/bancos.php`, { params: { usuario_id: usuario.id } })
-      ]);
-
-      setSelectsDataReceita({
-        familiares: familiares.data.data || [],
-        categorias: categorias.data.data || [],
-        bancos: bancos.data.data || []
-      });
-    } catch (error) {
-      console.error('Erro ao carregar dados para receita:', error);
-      showNotification('Erro ao carregar dados do formulário', 'error');
-    }
-  }, [usuario, showNotification]);
-
-  const carregarDadosDespesa = useCallback(async () => {
-    try {
-      const [familiares, fornecedores, categorias] = await Promise.all([
-        axios.get(`${API_BASE_URL}/familiares.php`, { params: { usuario_id: usuario.id } }),
-        axios.get(`${API_BASE_URL}/fornecedores.php`, { params: { usuario_id: usuario.id } }),
-        axios.get(`${API_BASE_URL}/categorias.php`, { params: { usuario_id: usuario.id } })
-      ]);
-
-      setSelectsDataDespesa({
-        familiares: familiares.data.data || [],
-        fornecedores: fornecedores.data.data || [],
-        categorias: categorias.data.data || []
-      });
-    } catch (error) {
-      console.error('Erro ao carregar dados para despesa:', error);
-      showNotification('Erro ao carregar dados do formulário', 'error');
-    }
-  }, [usuario, showNotification]);
-
   // FUNÇÕES MELHORADAS PARA SALVAMENTO
   const handleSaveReceita = useCallback(async (form) => {
     try {
@@ -823,7 +721,6 @@ export default function Lancamentos() {
       if (response.data.success !== false) {
         showNotification('Receita salva com sucesso!');
         setShowFormReceita(false);
-        setEditingReceita(null);
         fetchLancamentos();
       } else {
         throw new Error(response.data.message || 'Erro ao salvar receita');
@@ -860,7 +757,6 @@ export default function Lancamentos() {
       if (response.data.success !== false) {
         showNotification('Despesa salva com sucesso!');
         setShowFormDespesa(false);
-        setEditingDespesa(null);
         fetchLancamentos();
       } else {
         throw new Error(response.data.message || 'Erro ao salvar despesa');
@@ -984,7 +880,6 @@ export default function Lancamentos() {
         onClose={() => {
           if (window.confirm('Deseja realmente fechar? Os dados não salvos serão perdidos.')) {
             setShowFormReceita(false);
-            setEditingReceita(null);
           }
         }}
       >
@@ -994,11 +889,10 @@ export default function Lancamentos() {
             onCancel={() => {
               if (window.confirm('Deseja realmente cancelar? Os dados não salvos serão perdidos.')) {
                 setShowFormReceita(false);
-                setEditingReceita(null);
               }
             }}
-            editingReceita={editingReceita}
-            initialFormState={editingReceita || {
+            editingReceita={null}
+            initialFormState={{
               quem_recebeu: '', categoria_id: '', forma_recebimento: '',
               valor: '', data_prevista_recebimento: new Date().toISOString().split('T')[0],
               data_recebimento: '', recorrente: false, parcelas: 1, frequencia: 'mensal',
@@ -1020,7 +914,6 @@ export default function Lancamentos() {
         onClose={() => {
           if (window.confirm('Deseja realmente fechar? Os dados não salvos serão perdidos.')) {
             setShowFormDespesa(false);
-            setEditingDespesa(null);
           }
         }}
       >
@@ -1030,11 +923,10 @@ export default function Lancamentos() {
             onCancel={() => {
               if (window.confirm('Deseja realmente cancelar? Os dados não salvos serão perdidos.')) {
                 setShowFormDespesa(false);
-                setEditingDespesa(null);
               }
             }}
-            editingDespesa={editingDespesa}
-            initialFormState={editingDespesa || {
+            editingDespesa={null}
+            initialFormState={{
               quem_comprou: '', onde_comprou: '', categoria_id: '', forma_pagamento: '',
               valor: '', data_compra: new Date().toISOString().split('T')[0],
               data_pagamento: '', recorrente: false, parcelas: 1, frequencia: 'mensal',
@@ -1058,7 +950,6 @@ export default function Lancamentos() {
             <button
               className="btn btn-success"
               onClick={() => {
-                setEditingReceita(null);
                 setShowFormReceita(true);
                 setShowFormDespesa(false);
               }}
@@ -1069,7 +960,6 @@ export default function Lancamentos() {
             <button
               className="btn btn-danger"
               onClick={() => {
-                setEditingDespesa(null);
                 setShowFormDespesa(true);
                 setShowFormReceita(false);
               }}
@@ -1118,40 +1008,34 @@ export default function Lancamentos() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th><button className="sort-button" onClick={() => requestSort('tipo')} style={{ whiteSpace: 'nowrap' }}>
+                  <th><button className="sort-button" onClick={() => requestSort('tipo')}>
                     Tipo {getSortIndicator('tipo')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('descricao')} style={{ whiteSpace: 'nowrap' }}>
-                    Observações {getSortIndicator('descricao')}
+                  <th><button className="sort-button" onClick={() => requestSort('categoria')}>
+                    Descrição {getSortIndicator('categoria')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('fornecedor')} style={{ whiteSpace: 'nowrap' }}>
-                    Fornecedor {getSortIndicator('fornecedor')}
-                  </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('valor')} style={{ whiteSpace: 'nowrap' }}>
+                  <th><button className="sort-button" onClick={() => requestSort('valor')}>
                     Valor {getSortIndicator('valor')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('familiar')} style={{ whiteSpace: 'nowrap' }}>
+                  <th><button className="sort-button" onClick={() => requestSort('familiar')}>
                     Familiar {getSortIndicator('familiar')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('data_prevista')} style={{ whiteSpace: 'nowrap' }}>
+                  <th><button className="sort-button" onClick={() => requestSort('data_prevista')}>
                     Data Prevista {getSortIndicator('data_prevista')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('data_real')} style={{ whiteSpace: 'nowrap' }}>
-                    Data Pagto {getSortIndicator('data_real')}
+                  <th><button className="sort-button" onClick={() => requestSort('data_real')}>
+                    Data Real {getSortIndicator('data_real')}
                   </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('tipo_pagamento')} style={{ whiteSpace: 'nowrap' }}>
-                    Forma Pagto {getSortIndicator('tipo_pagamento')}
-                  </button></th>
-                  <th><button className="sort-button" onClick={() => requestSort('status')} style={{ whiteSpace: 'nowrap' }}>
+                  <th><button className="sort-button" onClick={() => requestSort('status')}>
                     Status {getSortIndicator('status')}
                   </button></th>
-                  <th style={{ whiteSpace: 'nowrap' }}>Ações</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {!loading && sortedLancamentos.length === 0 ? (
                   <tr>
-                    <td colSpan="10" className="empty-state">
+                    <td colSpan="8" className="empty-state">
                       Nenhum lançamento encontrado para os filtros aplicados.
                     </td>
                   </tr>
@@ -1164,14 +1048,12 @@ export default function Lancamentos() {
                         </span>
                       </td>
                       <td>{item.descricao}</td>
-                      <td>{item.fornecedor}</td>
                       <td className={item.tipo === 'receita' ? 'valor-positivo' : 'valor-negativo'}>
                         {formatarMoeda(item.valor)}
                       </td>
                       <td>{item.familiar}</td>
                       <td>{formatarData(item.data_prevista)}</td>
                       <td>{formatarData(item.data_real)}</td>
-                      <td>{item.tipo_pagamento || '-'}</td>
                       <td>
                         {/* CORREÇÃO: Mostrar apenas o status em texto */}
                         <span className={`status-text ${item.status}`}>
@@ -1185,13 +1067,12 @@ export default function Lancamentos() {
                         </span>
                       </td>
                       <td>
-                        <div className="action-buttons" style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap' }}>
+                        <div className="action-buttons">
                           {/* CORREÇÃO: Mover o botão de Pagar/Receber para as ações */}
                           <button
                             className={`btn-action ${item.data_real ? 'btn-secondary' : (item.tipo === 'receita' ? 'btn-success' : 'btn-danger')}`}
                             onClick={() => handleStatusClick(item)}
                             title={item.data_real ? 'Clique para desquitar' : 'Clique para quitar'}
-                            style={{ minWidth: '60px', fontSize: '12px' }}
                           >
                             {item.data_real ? (
                               '✓'
@@ -1200,20 +1081,18 @@ export default function Lancamentos() {
                             )}
                           </button>
 
-                          {/* <button
+                          <button
                             className="btn-action btn-info"
                             onClick={() => visualizarDetalhes(item.id, item.tipo)}
                             title="Visualizar"
-                            style={{ minWidth: '35px', padding: '5px' }}
                           >
                             <FaEye />
-                          </button> */}
+                          </button>
 
                           <button
                             className="btn-action btn-warning"
                             onClick={() => editarLancamento(item.id, item.tipo)}
                             title="Editar"
-                            style={{ minWidth: '35px', padding: '5px' }}
                           >
                             <FaEdit />
                           </button>
@@ -1222,7 +1101,6 @@ export default function Lancamentos() {
                             className="btn-action btn-danger"
                             onClick={() => confirmarExclusao(item.id, item.tipo, item.descricao)}
                             title="Excluir"
-                            style={{ minWidth: '35px', padding: '5px' }}
                           >
                             <FaTrash />
                           </button>

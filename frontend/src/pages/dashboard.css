@@ -114,8 +114,15 @@ body {
     background-size: 0.6em;
 }
 
+.divider-line {
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 1rem 0 1.5rem 0;
+}
+
 /* =================================================================
-   3. GRIDS DE KPI E INFORMAÇÕES
+   3. GRIDS DE KPI E CONTEÚDO
    ================================================================= */
 .kpi-grid,
 .info-grid {
@@ -135,35 +142,22 @@ body {
     .kpi-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-
-    .info-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 @media (min-width: 1200px) {
     .kpi-grid {
         grid-template-columns: repeat(6, 1fr);
     }
-
-    .info-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
 }
 
 .dashboard-card {
     background-color: var(--card-background);
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     width: 100%;
     box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
-    .dashboard-card {
-        padding: 1.5rem;
-    }
+    cursor: pointer;
 }
 
 .kpi-card {
@@ -178,12 +172,6 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-@media (min-width: 768px) {
-    .kpi-card {
-        padding: 1.5rem;
-    }
-}
-
 .kpi-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
@@ -194,6 +182,14 @@ body {
 }
 
 .kpi-card.despesa {
+    border-left-color: #dc3545;
+}
+
+.kpi-card.saldo.positivo {
+    border-left-color: #1a73e8;
+}
+
+.kpi-card.saldo.negativo {
     border-left-color: #dc3545;
 }
 
@@ -255,151 +251,6 @@ body {
     color: #6c757d;
 }
 
-.info-card {
-    text-align: center;
-}
-
-.info-card .info-card-title {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #6c757d;
-    margin-bottom: 0.75rem;
-}
-
-.info-card .info-card-value {
-    display: block;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #343a40;
-}
-
-/* =================================================================
-   4. GRIDS DE CONTEÚDO E GRÁFICOS
-   ================================================================= */
-
-.saldos-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    align-items: flex-start;
-    /* Alinha os itens no topo */
-}
-
-@media (min-width: 992px) {
-    .saldos-container {
-        grid-template-columns: 4fr 6fr;
-        /* Define a proporção das colunas principais */
-    }
-}
-
-.saldo-meters-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    /* Garante que o primeiro item ocupe a linha toda */
-    gap: 1.5rem;
-}
-
-.card-meters-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    /* Padrão de uma coluna para telas pequenas */
-    gap: 1.5rem;
-}
-
-@media (min-width: 576px) {
-    .card-meters-row {
-        grid-template-columns: repeat(2, 1fr);
-        /* Duas colunas para os gráficos de cartão */
-    }
-}
-
-.saldo-meter-card {
-    text-align: center;
-}
-
-.saldo-meter-interactive {
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.saldo-meter-interactive:hover {
-    transform: scale(1.03);
-}
-
-.saldo-meter-chart-container {
-    position: relative;
-    height: 150px;
-    width: 100%;
-    margin-bottom: 0.5rem;
-}
-
-.saldo-meter-value {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: 700;
-    width: 80%;
-    font-size: clamp(1rem, 10vw, 1.75rem);
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.saldo-meter-value.extra-small-text {
-    font-size: clamp(0.8rem, 8vw, 1.2rem);
-}
-
-.pagination-dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 8px;
-    height: 10px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #ccc;
-    transition: background-color 0.3s ease;
-}
-
-.dot.active {
-    background-color: var(--primary-color);
-}
-
-.card-details-meter {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 150px;
-    gap: 0.5rem;
-}
-
-.card-detail-row {
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.card-detail-row .label {
-    color: var(--secondary-text-color);
-}
-
-.card-detail-row .value {
-    color: var(--text-color);
-    font-weight: 700;
-}
-
-.saldos-bar-chart-container {
-    height: 320px;
-    width: 100%;
-}
-
 .main-content-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -425,10 +276,7 @@ body {
     color: var(--text-color);
     margin-top: 0;
     margin-bottom: 1.5rem;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
 }
 
 .annual-chart-card {
@@ -439,6 +287,10 @@ body {
     .annual-chart-card {
         height: 600px;
     }
+}
+
+.doughnut-chart-card {
+    height: 400px;
 }
 
 .doughnut-chart-container {
@@ -458,8 +310,14 @@ body {
     }
 }
 
+.empty-chart {
+    text-align: center;
+    color: var(--secondary-text-color);
+    padding: 2rem;
+}
+
 /* =================================================================
-   5. TABELA DE TRANSAÇÕES
+   4. TABELA DE TRANSAÇÕES
    ================================================================= */
 .table-wrapper {
     overflow-x: auto;
@@ -542,38 +400,179 @@ body {
 }
 
 /* =================================================================
-   6. RESPONSIVIDADE E ESTILOS ADICIONAIS
+   5. NOVO CARD DE RESUMO FINANCEIRO
    ================================================================= */
-.info-card.receita {
-    border-left: 5px solid #34a853;
+.financial-summary-card {
+    border-left: 5px solid var(--primary-color);
 }
 
-.info-card.despesa {
-    border-left: 5px solid #ea4335;
+.financial-summary-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
 }
 
-.kpi-card.saldo.positivo {
-    background-color: rgba(52, 168, 83, 0.15);
-    border-left-color: #34a853;
-    color: #1e4620;
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
-.kpi-card.saldo.negativo {
-    background-color: rgba(234, 67, 53, 0.15);
-    border-left-color: #ea4335;
-    color: #5a1a15;
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed #e9ecef;
 }
 
-.kpi-card.saldo .kpi-value {
-    color: inherit;
+.summary-item:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.info-card.receita {
-    border-left: 5px solid var(--success-color);
-    /* Borda verde para receita */
+.summary-item .summary-label {
+    font-size: 0.9rem;
+    color: var(--secondary-text-color);
+    font-weight: 500;
 }
 
-.info-card.despesa {
-    border-left: 5px solid var(--danger-color);
-    /* Borda vermelha para despesa */
+.summary-item .summary-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.summary-item.total {
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #dadce0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.summary-item.total .summary-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.summary-item.total .summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.text-success {
+    color: var(--success-color);
+}
+
+.text-danger {
+    color: var(--danger-color);
+}
+
+/* FLIP CARD CSS */
+.card-flipper {
+    perspective: 1000px;
+    position: relative;
+    min-height: 400px;
+    height: auto;
+    cursor: pointer;
+    z-index: 0;
+    /* garante que o container respeite o fluxo */
+}
+
+.card-front,
+.card-back {
+    width: 100%;
+    min-height: 100%;
+    backface-visibility: hidden;
+    transition: transform 0.6s cubic-bezier(0.45, 0, 0.55, 1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    background-color: var(--card-background);
+}
+
+.card-front {
+    transform: rotateY(0deg);
+    z-index: 2;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    z-index: 1;
+}
+
+.is-flipped .card-front {
+    transform: rotateY(-180deg);
+    z-index: 1;
+}
+
+.is-flipped .card-back {
+    transform: rotateY(0deg);
+    z-index: 2;
+}
+
+.back-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    justify-items: center;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .back-charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.card-footer-info {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+}
+
+/* Adicione estas novas classes ao seu dashboard.css */
+
+/* Cores para os novos cards */
+.kpi-card.pago {
+    border-left-color: #dc3545;
+    /* Vermelho */
+}
+
+.kpi-card.recebido {
+    border-left-color: #28a745;
+    /* Verde */
+}
+
+.kpi-card.a-pagar {
+    border-left-color: #ffc107;
+    /* Amarelo */
+}
+
+.kpi-card.a-receber {
+    border-left-color: #007bff;
+    /* Azul */
+}
+
+/* Ajuste a cor do valor para os cards KPI de Receita e Despesa */
+.kpi-card.receita .kpi-value,
+.kpi-card.recebido .kpi-value {
+    color: var(--success-color);
+}
+
+.kpi-card.despesa .kpi-value,
+.kpi-card.pago .kpi-value,
+.kpi-card.a-pagar .kpi-value {
+    color: var(--danger-color);
 }

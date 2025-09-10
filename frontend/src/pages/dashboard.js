@@ -30,7 +30,7 @@ ChartJS.register(
     LineElement
 );
 
-const formatCurrency = (value) => {
+export const formatCurrency = (value) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return 'R$ 0,00';
     return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -121,10 +121,13 @@ const getPeriodDates = (period) => {
 // Componentes Reutilizáveis
 // =================================================================
 const KpiCard = ({ title, value, percentage, theme, showValues }) => {
-    const valueColor = theme === 'receita' ? 'kpi-value-positive' : 'kpi-value-negative';
-    const percentageColor = parseFloat(percentage) >= 100 ? 'kpi-percent-positive' : 'kpi-percent-negative';
+    const valueColor = theme === 'receita' ? 'kpi-value-positive' : theme === 'despesa' ? 'kpi-value-negative' : '';
+    const percentageColor = percentage === null ? '' : (parseFloat(percentage) >= 100 ? 'kpi-percent-positive' : 'kpi-percent-negative');
+    const isSaldo = theme === 'saldo';
+    const saldoTheme = isSaldo ? (value >= 0 ? 'positivo' : 'negativo') : '';
+
     return (
-        <div className={`kpi-card ${theme}`}>
+        <div className={`kpi-card ${theme} ${saldoTheme}`}>
             <span className="kpi-title">{title}</span>
             <span className={`kpi-value ${valueColor}`}>{showValues ? formatCurrency(value) : 'R$ ****'}</span>
             {percentage !== null && (
@@ -137,224 +140,27 @@ const KpiCard = ({ title, value, percentage, theme, showValues }) => {
     );
 };
 
-const SaldoMeter = ({ title, items, showValues, color, type }) => {
-    const [currentIndex, setCurrentIndex] = useState(-1);
-
-    const handleInteraction = () => {
-        console.log(`Clique processado em SaldoMeter. Itens: ${items?.length}`);
-
-        if (!items || items.length === 0) {
-            return;
-        }
-
-        setCurrentIndex(prevIndex => {
-            const nextIndex = prevIndex + 1;
-            if (nextIndex >= items.length) {
-                return -1;
-            }
-
-            return nextIndex;
-        });
-    };
-
-    useEffect(() => {
-        setCurrentIndex(-1);
-    }, [items]);
-
-    const isTotalView = currentIndex === -1 || items.length === 0;
-    const currentItem = isTotalView ? null : items[currentIndex];
-
-    const totalValue = useMemo(() => {
-        if (!items) return 0;
-        return items.reduce((acc, item) => {
-            const value = type === 'conta'
-                ? parseFloat(item.saldo)
-                : (parseFloat(item.limite_credito) - parseFloat(item.credito_utilizado));
-            return acc + (isNaN(value) ? 0 : value);
-        }, 0);
-    }, [items, type]);
-
-    const displayValue = isTotalView
-        ? totalValue
-        : (type === 'conta'
-            ? parseFloat(currentItem.saldo)
-            : (parseFloat(currentItem.limite_credito) - parseFloat(currentItem.credito_utilizado)));
-
-    const displayTitle = isTotalView ? title : currentItem.nome;
-    const displayColor = isTotalView ? color : (type === 'conta' ? (displayValue >= 0 ? generateColor(currentItem.nome) : '#dc3545') : generateColor(currentItem.nome));
-
-    const data = {
-        datasets: [{
-            data: [100],
-            backgroundColor: [displayColor],
-            circumference: 360,
-            borderWidth: 0,
-        }]
-    };
-
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '80%',
-        plugins: { tooltip: { enabled: false }, legend: { display: false } }
-    };
-
-    const formattedValue = showValues ? formatCurrency(displayValue) : 'R$ ****';
-    const valueClassName = `saldo-meter-value ${formattedValue.length > 10 ? 'extra-small-text' : ''}`;
-
+const SaldoCard = ({ title, value, percentage, showValues }) => {
+    const positive = value >= 0;
     return (
-        // A classe 'saldo-meter-interactive' agora serve mais para o CSS (cursor: pointer)
-        <div className="saldo-meter-card saldo-meter-interactive">
-            <h3 className="chart-title" onClick={handleInteraction}>{displayTitle}</h3>
-            <div className="saldo-meter-chart-container" onClick={handleInteraction}>
-                <Doughnut data={data} options={options} />
-                <div className={valueClassName} style={{ color: displayColor }}>
-                    {formattedValue}
+        <div className={`kpi-card saldo ${positive ? 'positivo' : 'negativo'}`}>
+            <span className="kpi-title">{title}</span>
+            <span className={`kpi-value ${positive ? 'kpi-value-positive' : 'kpi-value-negative'}`}>
+                {showValues ? formatCurrency(value) : 'R$ ****'}
+            </span>
+            {percentage !== null && (
+                <div className="kpi-footer">
+                    <span className={`kpi-percent ${positive ? 'kpi-percent-positive' : 'kpi-percent-negative'}`}>
+                        {showValues ? `${percentage}%` : '**%'}
+                    </span>
+                    <span className="kpi-footer-text">do previsto</span>
                 </div>
-            </div>
-            <div className="pagination-dots">
-                {items && items.length > 1 && (
-                    <>
-                        <div className={`dot ${isTotalView ? 'active' : ''}`}></div>
-                        {items.map((_, index) => (
-                            <div key={index} className={`dot ${index === currentIndex ? 'active' : ''}`}></div>
-                        ))}
-                    </>
-                )}
-            </div>
+            )}
         </div>
     );
 };
 
-const CardDetailsMeter = ({ title, items, showValues }) => {
-    const [currentIndex, setCurrentIndex] = useState(-1);
-
-    const handleInteraction = () => {
-        console.log(`Clique processado em CardDetailsMeter. Itens: ${items?.length}`);
-
-        if (!items || items.length === 0) {
-            return;
-        }
-
-        setCurrentIndex(prevIndex => {
-            const nextIndex = prevIndex + 1;
-
-            if (nextIndex >= items.length) {
-                return -1;
-            }
-
-            return nextIndex;
-        });
-    };
-
-    useEffect(() => {
-        setCurrentIndex(-1);
-    }, [items]);
-
-    const isTotalView = currentIndex === -1 || items.length === 0;
-    const currentItem = isTotalView ? null : items[currentIndex];
-
-    const totals = useMemo(() => {
-        if (!items) return { limite: 0, utilizado: 0 };
-        return items.reduce((acc, item) => {
-            acc.limite += parseFloat(item.limite_credito) || 0;
-            acc.utilizado += parseFloat(item.credito_utilizado) || 0;
-            return acc;
-        }, { limite: 0, utilizado: 0 });
-    }, [items]);
-
-    const limite = isTotalView ? totals.limite : parseFloat(currentItem.limite_credito);
-    const utilizado = isTotalView ? totals.utilizado : parseFloat(currentItem.credito_utilizado);
-    const disponivel = limite - utilizado;
-
-    const displayTitle = isTotalView ? title : currentItem.nome;
-    const displayColor = generateColor(isTotalView ? 'total' : currentItem.nome);
-
-    return (
-        <div className="saldo-meter-card saldo-meter-interactive">
-            <h3 className="chart-title" style={{ color: displayColor }} onClick={handleInteraction}>{displayTitle}</h3>
-            <div className="card-details-meter" onClick={handleInteraction}>
-                <div className="card-detail-row">
-                    <span className="label">Limite: </span>
-                    <span className="value">{showValues ? formatCurrency(limite) : 'R$ ****'}</span>
-                </div>
-                <div className="card-detail-row">
-                    <span className="label">Utilizado: </span>
-                    <span className="value" style={{ color: '#ea4335' }}>{showValues ? formatCurrency(utilizado) : 'R$ ****'}</span>
-                </div>
-                <div className="card-detail-row">
-                    <span className="label">Disponível: </span>
-                    <span className="value" style={{ color: '#34a853' }}>{showValues ? formatCurrency(disponivel) : 'R$ ****'}</span>
-                </div>
-            </div>
-            <div className="pagination-dots">
-                {items && items.length > 1 && (
-                    <>
-                        <div className={`dot ${isTotalView ? 'active' : ''}`}></div>
-                        {items.map((_, index) => (
-                            <div key={index} className={`dot ${index === currentIndex ? 'active' : ''}`}></div>
-                        ))}
-                    </>
-                )}
-            </div>
-        </div>
-    );
-};
-
-const SaldosBarChart = ({ contas, cartoes, showValues }) => {
-    const chartData = useMemo(() => {
-        const allSaldos = [
-            ...contas.map(c => ({ ...c, tipo: 'conta' })),
-            ...cartoes.map(c => ({ ...c, tipo: 'cartao', saldo: parseFloat(c.limite_credito) - parseFloat(c.credito_utilizado) }))
-        ];
-
-        return {
-            labels: allSaldos.map(item => item.nome),
-            datasets: [{
-                label: 'Saldo',
-                data: allSaldos.map(item => showValues ? item.saldo : 0),
-                backgroundColor: allSaldos.map(item => {
-                    const saldo = parseFloat(item.saldo);
-                    if (saldo < 0) return 'rgba(234, 67, 53, 0.7)';
-                    return generateColor(item.nome);
-                }),
-                borderColor: allSaldos.map(item => {
-                    const saldo = parseFloat(item.saldo);
-                    if (saldo < 0) return 'rgb(234, 67, 53)';
-                    return generateColor(item.nome);
-                }),
-                borderWidth: 1,
-            }],
-        };
-    }, [contas, cartoes, showValues]);
-
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-            legend: { display: false },
-            title: { display: true, text: 'Detalhes dos Saldos', font: { size: 16 }, color: '#333' },
-            tooltip: { callbacks: { label: (context) => `Saldo: ${formatCurrency(context.parsed.x)}` } }
-        },
-        scales: { x: { beginAtZero: true, ticks: { callback: (value) => formatCurrency(value) } } }
-    };
-
-    return (
-        <div className="saldos-bar-chart-container">
-            <Bar data={chartData} options={options} />
-        </div>
-    );
-};
-
-const InfoCard = ({ title, value, showValues, theme }) => (
-    <div className={`dashboard-card info-card ${theme}`}>
-        <span className="info-card-title">{title}</span>
-        <span className="info-card-value">{showValues ? formatCurrency(value) : 'R$ ****'}</span>
-    </div>
-);
-
-const DoughnutChartCard = ({ title, chartData }) => {
+const DoughnutChartCard = ({ title, chartData, showValues }) => {
     const data = useMemo(() => {
         return {
             labels: chartData.map(c => c.nome),
@@ -384,15 +190,15 @@ const DoughnutChartCard = ({ title, chartData }) => {
                         const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
                         if (total === 0) return `${label}: R$ 0,00 (0%)`;
                         const percentage = ((value / total) * 100).toFixed(1);
-                        return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                        return showValues ? `${label}: ${formatCurrency(value)} (${percentage}%)` : `${label}: R$ **** (${percentage}%)`;
                     }
                 }
             }
         },
-    }), []);
+    }), [showValues]);
 
     return (
-        <div className="dashboard-card">
+        <div className="dashboard-card doughnut-chart-card">
             <h3 className="chart-title">{title}</h3>
             {chartData && chartData.length > 0 ? (
                 <div className="doughnut-chart-container">
@@ -405,7 +211,84 @@ const DoughnutChartCard = ({ title, chartData }) => {
     );
 };
 
-const LatestTransactionsCard = ({ latestTransactions }) => {
+const FinancialSummaryCard = ({ data, showValues }) => {
+    const [isFlipped, setIsFlipped] = useState(false);
+
+    const handleFlip = () => {
+        setIsFlipped(!isFlipped);
+    };
+
+    const {
+        contas,
+        cartoes,
+        totalChequeEspecialDisponivel,
+        totalCreditoDisponivelCartao,
+        totalSaldoContas,
+    } = data;
+
+    // Calcular os dados para os gráficos de pizza
+    const totalLimiteCheque = contas.reduce((acc, conta) => acc + parseFloat(conta.cheque_especial_limite || 0), 0);
+    const totalLimiteCartoes = cartoes.reduce((acc, cartao) => acc + parseFloat(cartao.limite || 0), 0);
+    const totalCreditoUsadoCartao = cartoes.reduce((acc, cartao) => acc + parseFloat(cartao.utilizado || 0), 0);
+    const totalChequeEspecialUsado = contas.reduce((acc, conta) => acc + parseFloat(conta.cheque_especial_usado || 0), 0);
+
+    const totalSaldoGeral = totalSaldoContas + totalChequeEspecialDisponivel + totalCreditoDisponivelCartao;
+    const totalSaldoGeralColor = totalSaldoGeral >= 0 ? 'text-success' : 'text-danger';
+
+    // Data para os gráficos de pizza
+    const contasData = contas.map(c => ({ nome: c.nome, total: parseFloat(c.saldo) }));
+    const creditoData = [
+        { nome: 'Limite em Cartões', total: totalLimiteCartoes },
+        { nome: 'Limite em Cheque Especial', total: totalLimiteCheque },
+    ];
+    const chequeEspecialData = [
+        { nome: 'Disponível', total: totalChequeEspecialDisponivel },
+        { nome: 'Utilizado', total: totalChequeEspecialUsado },
+    ];
+    const cartoesData = cartoes.map(c => ({ nome: c.nome, total: parseFloat(c.limite) }));
+    const cartoesDisponivelData = cartoes.map(c => ({ nome: c.nome, total: parseFloat(c.limite - c.utilizado) }));
+
+    return (
+        <div className={`dashboard-card card-flipper ${isFlipped ? 'is-flipped' : ''}`} onClick={handleFlip}>
+            <div className="card-front">
+                <h3 className="card-title">Resumo Financeiro</h3>
+                <div className="summary-list">
+                    <div className="summary-item">
+                        <span className="summary-label">Saldo em Contas:</span>
+                        <span className="summary-value text-success">{showValues ? formatCurrency(totalSaldoContas) : 'R$ ****'}</span>
+                    </div>
+                    <div className="summary-item">
+                        <span className="summary-label">Cheque Especial Disponível:</span>
+                        <span className="summary-value text-success">{showValues ? formatCurrency(totalChequeEspecialDisponivel) : 'R$ ****'}</span>
+                    </div>
+                    <div className="summary-item">
+                        <span className="summary-label">Crédito Disponível em Cartões:</span>
+                        <span className="summary-value text-success">{showValues ? formatCurrency(totalCreditoDisponivelCartao) : 'R$ ****'}</span>
+                    </div>
+                    <div className="summary-item total">
+                        <span className="summary-label">Saldo Total:</span>
+                        <span className={`summary-value ${totalSaldoGeralColor}`}>{showValues ? formatCurrency(totalSaldoGeral) : 'R$ ****'}</span>
+                    </div>
+                </div>
+                <div className="card-footer-info">Clique para detalhes</div>
+            </div>
+
+            <div className="card-back">
+                <h3 className="card-title">Detalhes por Conta</h3>
+                <div className="back-charts-grid">
+                    <DoughnutChartCard title="Saldo em Contas" chartData={contasData} showValues={showValues} />
+                    <DoughnutChartCard title="Limite Total de Crédito" chartData={creditoData} showValues={showValues} />
+                    <DoughnutChartCard title="Cheque Especial" chartData={chequeEspecialData} showValues={showValues} />
+                    <DoughnutChartCard title="Limites de Cartão" chartData={cartoesData} showValues={showValues} />
+                    <DoughnutChartCard title="Disponível em Cartões" chartData={cartoesDisponivelData} showValues={showValues} />
+                </div>
+                <div className="card-footer-info">Clique para voltar</div>
+            </div>
+        </div>
+    );
+};
+
+const LatestTransactionsCard = ({ latestTransactions, showValues }) => {
     const [sortConfig, setSortConfig] = useState({ key: 'data', direction: 'desc' });
 
     const sortedTransactions = useMemo(() => {
@@ -464,7 +347,7 @@ const LatestTransactionsCard = ({ latestTransactions }) => {
                                 <td>{t.tipo === 'receita' ? 'Receita' : 'Despesa'}</td>
                                 <td>{t.categoria_nome}</td>
                                 <td>{new Date(t.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                                <td className={t.tipo === 'receita' ? 'text-success' : 'text-danger'} style={{ textAlign: 'right' }}>{`${t.tipo === 'receita' ? '+' : '-'} ${formatCurrency(t.valor)}`}</td>
+                                <td className={t.tipo === 'receita' ? 'text-success' : 'text-danger'} style={{ textAlign: 'right' }}>{showValues ? `${t.tipo === 'receita' ? '+' : '-'} ${formatCurrency(t.valor)}` : 'R$ ****'}</td>
                             </tr>
                         )) : (
                             <tr><td colSpan="5" className="empty-state">Nenhum lançamento recente.</td></tr>
@@ -473,26 +356,6 @@ const LatestTransactionsCard = ({ latestTransactions }) => {
                 </table>
             </div>
             <div className="table-footer"><a href="/controleflex/lancamentos">Ver todos os lançamentos</a></div>
-        </div>
-    );
-};
-
-const SaldoCard = ({ title, value, percentage, showValues }) => {
-    const positive = value >= 0;
-    return (
-        <div className={`kpi-card saldo ${positive ? 'positivo' : 'negativo'}`}>
-            <span className="kpi-title">{title}</span>
-            <span className={`kpi-value ${positive ? 'kpi-value-positive' : 'kpi-value-negative'}`}>
-                {showValues ? formatCurrency(value) : 'R$ ****'}
-            </span>
-            {percentage !== null && (
-                <div className="kpi-footer">
-                    <span className={`kpi-percent ${positive ? 'kpi-percent-positive' : 'kpi-percent-negative'}`}>
-                        {showValues ? `${percentage}%` : '**%'}
-                    </span>
-                    <span className="kpi-footer-text">do previsto</span>
-                </div>
-            )}
         </div>
     );
 };
@@ -535,7 +398,15 @@ export default function Dashboard() {
 
     const processedData = useMemo(() => {
         if (!dashboardData) return null;
-        const { kpi, realizados, saldos, lastMonth, nextMonth, latestTransactions, ...charts } = dashboardData;
+
+        const { kpi, realizados, saldos, latestTransactions, ...charts } = dashboardData;
+
+        const contas = saldos?.bancarios || [];
+        const cartoes = saldos?.cartoes || [];
+
+        const totalSaldoContas = contas.reduce((acc, conta) => acc + parseFloat(conta.saldo || 0), 0);
+        const totalChequeEspecialDisponivel = contas.reduce((acc, conta) => acc + parseFloat(conta.cheque_especial_disponivel || 0), 0);
+        const totalCreditoDisponivelCartao = cartoes.reduce((acc, cartao) => acc + parseFloat(cartao.disponivel || 0), 0);
 
         const receitaPrevista = parseFloat(kpi?.total_receitas) || 0;
         const receitaRealizada = parseFloat(realizados?.receitas_realizadas) || 0;
@@ -548,27 +419,28 @@ export default function Dashboard() {
         const saldoPrevisto = receitaPrevista - despesaPrevista;
         const saldoRealizado = receitaRealizada - despesaRealizada;
 
-        const percentualSaldoPrevisto = receitaPrevista > 0 ? ((saldoPrevisto / receitaPrevista) * 100).toFixed(1) : "0.0";
-        const percentualSaldoRealizado = receitaRealizada > 0 ? ((saldoRealizado / receitaRealizada) * 100).toFixed(1) : "0.0";
-
-        const totalSaldoContas = saldos?.bancarios?.reduce((acc, conta) => acc + parseFloat(conta.saldo), 0) || 0;
+        // --- CÁLCULO ADICIONADO AQUI ---
+        // Calcula o percentual do saldo realizado em relação ao previsto.
+        // Evita divisão por zero se o saldo previsto for 0.
+        const percentualSaldoRealizado = saldoPrevisto !== 0
+            ? ((saldoRealizado / saldoPrevisto) * 100).toFixed(1)
+            : "0.0";
 
         return {
             receitaPrevista, receitaRealizada, despesaPrevista, despesaRealizada,
             percentualReceita, percentualDespesa,
             saldoPrevisto, saldoRealizado,
-            percentualSaldoPrevisto, percentualSaldoRealizado,
-            contas: saldos?.bancarios || [],
-            cartoes: saldos?.cartoes || [],
+            percentualSaldoRealizado, // <-- Adicionado ao retorno
+            contas,
+            cartoes,
             totalSaldoContas,
-            pagoUltimoMes: parseFloat(lastMonth?.pago) || 0,
-            recebidoUltimoMes: parseFloat(lastMonth?.recebido) || 0,
-            aPagarProximoMes: parseFloat(nextMonth?.previsto_despesas) || 0,
-            aReceberProximoMes: parseFloat(nextMonth?.previsto_receitas) || 0,
             latestTransactions: latestTransactions || [],
-            charts: charts || {}
+            charts: charts || {},
+            totalChequeEspecialDisponivel,
+            totalCreditoDisponivelCartao,
         };
     }, [dashboardData]);
+
 
     const investmentChartData = useMemo(() => {
         if (!dashboardData) return { labels: [], datasets: [] };
@@ -598,9 +470,9 @@ export default function Dashboard() {
         plugins: {
             legend: { position: 'top' },
             title: { display: true, text: title, font: { size: 16 }, color: '#333' },
-            tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${formatCurrency(context.parsed.y)}` } }
+            tooltip: { callbacks: { label: (context) => showValues ? `${context.dataset.label}: ${formatCurrency(context.parsed.y)}` : `${context.dataset.label}: R$ ****` } }
         },
-        scales: { y: { beginAtZero: true, ticks: { callback: (value) => formatCurrency(value) } } }
+        scales: { y: { beginAtZero: true, ticks: { callback: (value) => showValues ? formatCurrency(value) : 'R$ ****' } } }
     });
 
     if (isLoading) {
@@ -621,11 +493,6 @@ export default function Dashboard() {
                     <div className="period-filter">
                         <label htmlFor="period">Período:</label>
                         <select id="period" value={period} onChange={handlePeriodChange}>
-                            <option value="today">Hoje</option>
-                            <option value="yesterday">Ontem</option>
-                            <option value="tomorrow">Amanhã</option>
-                            <option value="this_week">Esta Semana</option>
-                            <option value="last_week">Última Semana</option>
                             <option value="this_month">Este Mês</option>
                             <option value="last_month">Último Mês</option>
                             <option value="next_month">Próximo Mês</option>
@@ -640,76 +507,36 @@ export default function Dashboard() {
                 </div>
             </div>
 
+            <hr className="divider-line" />
+
             <div className="kpi-grid">
                 <KpiCard title="Receita Prevista" value={processedData.receitaPrevista} theme="receita" showValues={showValues} percentage={null} />
                 <KpiCard title="Despesa Prevista" value={processedData.despesaPrevista} theme="despesa" showValues={showValues} percentage={null} />
                 <SaldoCard title="Saldo Previsto" value={processedData.saldoPrevisto} percentage={processedData.percentualSaldoPrevisto} showValues={showValues} />
-                <KpiCard title="Receita Realizada" value={processedData.receitaRealizada} theme="receita" showValues={showValues} percentage={null} />
-                <KpiCard title="Despesa Realizada" value={processedData.despesaRealizada} theme="despesa" showValues={showValues} percentage={null} />
+                <KpiCard title="Receita Realizada" value={processedData.receitaRealizada} theme="receita" showValues={showValues} percentage={processedData.percentualReceita} />
+                <KpiCard title="Despesa Realizada" value={processedData.despesaRealizada} theme="despesa" showValues={showValues} percentage={processedData.percentualDespesa} />
                 <SaldoCard title="Saldo Realizado" value={processedData.saldoRealizado} percentage={processedData.percentualSaldoRealizado} showValues={showValues} />
             </div>
 
-            <div className="dashboard-card">
-                <div className="saldos-container">
-                    {/* Container da esquerda com os 3 gráficos */}
-                    <div className="saldo-meters-grid">
-                        {/* Gráfico de Saldo em Contas (ocupa a linha inteira) */}
-                        <SaldoMeter
-                            title="Saldo Total em Contas"
-                            items={processedData.contas}
-                            showValues={showValues}
-                            color={processedData.totalSaldoContas >= 0 ? '#28a745' : '#dc3545'}
-                            type="conta"
-                        />
-                        {/* Linha para os dois gráficos de cartão, que ficarão lado a lado */}
-                        <div className="card-meters-row">
-                            <SaldoMeter
-                                title="Crédito Total Disponível"
-                                items={processedData.cartoes}
-                                showValues={showValues}
-                                color="#1a73e8"
-                                type="cartao"
-                            />
-                            <CardDetailsMeter
-                                title="Detalhes do Cartão"
-                                items={processedData.cartoes}
-                                showValues={showValues}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Container da direita com o gráfico de barras */}
-                    <SaldosBarChart
-                        contas={processedData.contas}
-                        cartoes={processedData.cartoes}
-                        showValues={showValues}
-                    />
-                </div>
-            </div>
-
-            <div className="info-grid">
-                <InfoCard title="Valor Pago (Último Mês)" value={processedData.pagoUltimoMes} showValues={showValues} theme="despesa" />
-                <InfoCard title="Valor Recebido (Último Mês)" value={processedData.recebidoUltimoMes} showValues={showValues} theme="receita" />
-                <InfoCard title="A Pagar (Proximo Mês)" value={processedData.aPagarProximoMes} showValues={showValues} theme="despesa" />
-                <InfoCard title="A Receber (Proximo Mês)" value={processedData.aReceberProximoMes} showValues={showValues} theme="receita" />
-            </div>
+            <hr className="divider-line" />
 
             <div className="main-content-grid">
                 <div className="main-panel">
+                    <FinancialSummaryCard data={processedData} showValues={showValues} />
                     <div className="dashboard-card annual-chart-card">
                         <Bar options={chartOptions('Fluxo de Caixa Anual')} data={annualChartData} />
                     </div>
                     <div className="dashboard-card annual-chart-card">
-                        <Bar options={chartOptions('Evolução Patrimonial (Anual)')} data={investmentChartData} />
+                        <Bar options={chartOptions('Evolução Patrimonial')} data={investmentChartData} />
                     </div>
-                    <LatestTransactionsCard latestTransactions={processedData.latestTransactions} />
+                    <LatestTransactionsCard latestTransactions={processedData.latestTransactions} showValues={showValues} />
                 </div>
 
                 <div className="side-panel">
-                    <DoughnutChartCard title="Despesas por Categoria" chartData={charts.expensesByCategory || []} />
-                    <DoughnutChartCard title="Receitas por Categoria" chartData={charts.incomesByCategory || []} />
-                    <DoughnutChartCard title="Despesas por Familiar" chartData={charts.expensesByFamilyMember || []} />
-                    <DoughnutChartCard title="Receitas por Familiar" chartData={charts.incomesByFamilyMember || []} />
+                    <DoughnutChartCard title="Despesas por Categoria" chartData={charts.expensesByCategory || []} showValues={showValues} />
+                    <DoughnutChartCard title="Receitas por Categoria" chartData={charts.incomesByCategory || []} showValues={showValues} />
+                    <DoughnutChartCard title="Despesas por Familiar" chartData={charts.expensesByFamilyMember || []} showValues={showValues} />
+                    <DoughnutChartCard title="Receitas por Familiar" chartData={charts.incomesByFamilyMember || []} showValues={showValues} />
                 </div>
             </div>
         </div>

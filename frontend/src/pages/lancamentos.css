@@ -16,7 +16,7 @@
   --transition: all 0.2s ease-in-out;
 }
 
-/* ===== Importação da Fonte Inter (recomendada) ===== */
+/* ===== Importação da Fonte Inter ===== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ===== Reset e Base ===== */
@@ -26,7 +26,6 @@
 
 body {
   background-color: var(--background-color);
-  /* Alterado de 'Roboto' para 'Inter' */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0;
   padding: 0;
@@ -154,7 +153,7 @@ body {
   border-color: var(--primary-color);
 }
 
-/* ===== Botões ===== */
+/* ===== Sistema de Botões Unificado ===== */
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -179,6 +178,12 @@ body {
   transform: translateY(0);
 }
 
+.btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Variações de Botões */
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
@@ -231,6 +236,80 @@ body {
 
 .btn-info:hover {
   background-color: #3367d6;
+}
+
+/* ===== Botões de Ação (Unificado) ===== */
+.btn-action {
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+}
+
+.btn-action:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.btn-action.btn-success {
+  background-color: var(--success-color);
+  color: white;
+  min-width: 70px;
+}
+
+.btn-action.btn-success:hover {
+  background-color: #2d8f47;
+}
+
+.btn-action.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+  min-width: 60px;
+}
+
+.btn-action.btn-danger:hover {
+  background-color: #d33b2c;
+}
+
+.btn-action.btn-info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+.btn-action.btn-info:hover {
+  background-color: #3367d6;
+}
+
+.btn-action.btn-warning {
+  background-color: var(--warning-color);
+  color: var(--text-color);
+}
+
+.btn-action.btn-warning:hover {
+  background-color: #f9ab00;
+}
+
+.btn-action.btn-secondary {
+  background-color: var(--secondary-text-color);
+  color: white;
+}
+
+.btn-action.btn-secondary:hover {
+  background-color: #4a4d52;
 }
 
 /* ===== Cards de Resumo ===== */
@@ -327,7 +406,6 @@ body {
   text-align: center;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
-
 }
 
 .data-table th {
@@ -374,7 +452,7 @@ body {
   background-color: var(--card-background);
 }
 
-/* ===== Badges e Indicadores ===== */
+/* ===== Badges e Indicadores Unificados ===== */
 .tipo-badge {
   display: inline-flex;
   align-items: center;
@@ -388,41 +466,51 @@ body {
 .tipo-badge.receita {
   background-color: rgba(52, 168, 83, 0.1);
   color: var(--success-color);
+  border: 1px solid rgba(52, 168, 83, 0.2);
 }
 
 .tipo-badge.despesa {
   background-color: rgba(234, 67, 53, 0.1);
   color: var(--danger-color);
+  border: 1px solid rgba(234, 67, 53, 0.2);
 }
 
-.status-badge {
+/* Status Unificado */
+.status-text {
+  font-weight: 500;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
 }
 
-.status-badge.pago {
-  background-color: rgba(52, 168, 83, 0.1);
-  color: var(--success-color);
-}
-
-.status-badge.hoje {
-  background-color: rgba(251, 188, 5, 0.1);
-  color: #f57c00;
-}
-
-.status-badge.atrasado {
-  background-color: rgba(234, 67, 53, 0.1);
-  color: var(--danger-color);
-}
-
-.status-badge.normal,
-.status-badge.pendente {
-  background-color: rgba(95, 99, 104, 0.1);
+.status-text.pendente {
   color: var(--secondary-text-color);
+  background-color: rgba(95, 99, 104, 0.1);
+  border: 1px solid rgba(95, 99, 104, 0.2);
+}
+
+.status-text.pago,
+.status-text.recebido {
+  color: var(--success-color);
+  background-color: rgba(52, 168, 83, 0.1);
+  border: 1px solid rgba(52, 168, 83, 0.2);
+}
+
+.status-text.atrasado {
+  color: var(--danger-color);
+  background-color: rgba(234, 67, 53, 0.1);
+  border: 1px solid rgba(234, 67, 53, 0.2);
+}
+
+.status-text.hoje {
+  color: #f57c00;
+  background-color: rgba(251, 188, 5, 0.1);
+  border: 1px solid rgba(251, 188, 5, 0.2);
 }
 
 /* ===== Células Especiais ===== */
@@ -438,77 +526,22 @@ body {
   text-align: right;
 }
 
-.valor-cell.receita {
+.valor-positivo {
   color: var(--success-color);
 }
 
-.valor-cell.despesa {
+.valor-negativo {
   color: var(--danger-color);
 }
 
 /* ===== Ações da Tabela ===== */
-.table-actions {
+.table-actions,
+.action-buttons {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
-}
-
-.btn-action {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  font-size: 0.9rem;
-}
-
-.btn-action:hover {
-  transform: scale(1.1);
-}
-
-.btn-action.btn-success {
-  background-color: rgba(52, 168, 83, 0.1);
-  color: var(--success-color);
-}
-
-.btn-action.btn-success:hover {
-  background-color: var(--success-color);
-  color: white;
-}
-
-.btn-action.btn-info {
-  background-color: rgba(66, 133, 244, 0.1);
-  color: var(--info-color);
-}
-
-.btn-action.btn-info:hover {
-  background-color: var(--info-color);
-  color: white;
-}
-
-.btn-action.btn-warning {
-  background-color: rgba(251, 188, 5, 0.1);
-  color: #f57c00;
-}
-
-.btn-action.btn-warning:hover {
-  background-color: var(--warning-color);
-  color: var(--text-color);
-}
-
-.btn-action.btn-danger {
-  background-color: rgba(234, 67, 53, 0.1);
-  color: var(--danger-color);
-}
-
-.btn-action.btn-danger:hover {
-  background-color: var(--danger-color);
-  color: white;
+  flex-wrap: wrap;
 }
 
 /* ===== Paginação ===== */
@@ -721,7 +754,8 @@ body {
     max-width: 120px;
   }
 
-  .table-actions {
+  .table-actions,
+  .action-buttons {
     flex-direction: column;
     gap: 0.25rem;
   }
@@ -790,13 +824,6 @@ body {
   }
 }
 
-.btn:focus,
-.form-control:focus,
-.btn-action:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
 /* ===== Impressão ===== */
 @media print {
   .page-container {
@@ -812,6 +839,7 @@ body {
   .filtros-avancados,
   .page-actions,
   .table-actions,
+  .action-buttons,
   .pagination {
     display: none;
   }
@@ -826,34 +854,4 @@ body {
     background-color: transparent !important;
     border-left: 2px solid #000;
   }
-}
-
-.btn-status {
-  border-radius: 6px;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-
-.btn-status.btn-cancelar {
-  background-color: #ff6b6b;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-status.btn-cancelar:hover {
-  background-color: #ff4c4c;
 }
