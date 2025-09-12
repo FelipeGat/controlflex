@@ -36,19 +36,107 @@ export const formatCurrency = (value) => {
     return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-const colorPalette = [
-    '#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#8c564b',
-    '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8',
-    '#ffbb78', '#98df8a', '#c5b0d5', '#c49c94', '#f7b6d2'
-];
+// Paleta de cores profissional
+const professionalColors = {
+    // Cores principais
+    receita: '#10B981',      // Verde moderno
+    despesa: '#EF4444',      // Vermelho moderno
+    saldoPositivo: '#3B82F6', // Azul moderno
+    saldoNegativo: '#F59E0B', // Laranja de alerta
 
-const generateColor = (str) => {
+    // Gradientes
+    receitaGradient: ['#10B981', '#059669'],
+    despesaGradient: ['#EF4444', '#DC2626'],
+    neutroGradient: ['#6366F1', '#4F46E5'],
+
+    // Paleta para gráficos diversos
+    chart: [
+        '#3B82F6', // Azul
+        '#10B981', // Verde
+        '#F59E0B', // Laranja
+        '#EF4444', // Vermelho
+        '#8B5CF6', // Roxo
+        '#06B6D4', // Ciano
+        '#84CC16', // Lima
+        '#F97316', // Laranja escuro
+        '#EC4899', // Rosa
+        '#6366F1', // Índigo
+        '#14B8A6', // Teal
+        '#A855F7'  // Violeta
+    ],
+
+    // Cores de fundo e texto
+    background: '#F8FAFC',
+    cardBackground: '#FFFFFF',
+    textPrimary: '#1E293B',
+    textSecondary: '#64748B',
+    border: '#E2E8F0'
+};
+
+const generateColor = (str, type = 'chart') => {
+    if (type === 'receita') return professionalColors.receita;
+    if (type === 'despesa') return professionalColors.despesa;
+    if (type === 'saldo') return professionalColors.saldoPositivo;
+
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const index = Math.abs(hash % colorPalette.length);
-    return colorPalette[index];
+    const index = Math.abs(hash % professionalColors.chart.length);
+    return professionalColors.chart[index];
+};
+
+// Função para gerar gradientes
+const generateGradient = (ctx, colors, direction = 'vertical') => {
+    const gradient = ctx.createLinearGradient(
+        0, direction === 'vertical' ? 0 : ctx.canvas.width,
+        direction === 'vertical' ? ctx.canvas.height : 0,
+        0
+    );
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(1, colors[1]);
+    return gradient;
+};
+
+// Função melhorada para cálculo de percentuais
+const calculatePercentage = (realizado, previsto, type = 'default') => {
+    // Converte para números e trata valores inválidos
+    const real = parseFloat(realizado) || 0;
+    const prev = parseFloat(previsto) || 0;
+
+    // Se o previsto for zero, retorna casos especiais
+    if (prev === 0) {
+        if (real === 0) return 0; // Ambos zero = 0%
+        return real > 0 ? 999 : -999; // Valor muito alto/baixo para indicar situação especial
+    }
+
+    // Cálculo padrão
+    const percentage = (real / prev) * 100;
+
+    // Para saldos negativos previstos, inverte a lógica
+    if (type === 'saldo' && prev < 0) {
+        return ((real - prev) / Math.abs(prev)) * 100;
+    }
+
+    // Limita valores extremos
+    if (percentage > 9999) return 9999;
+    if (percentage < -9999) return -9999;
+
+    return Math.round(percentage * 10) / 10; // Arredonda para 1 casa decimal
+};
+
+// Função para formatar percentual com indicadores visuais
+const formatPercentage = (percentage, type = 'default') => {
+    const value = parseFloat(percentage);
+
+    if (isNaN(value)) return '0.0';
+
+    // Casos especiais
+    if (Math.abs(value) >= 999) {
+        return value > 0 ? '999+' : '-999';
+    }
+
+    return value.toFixed(1);
 };
 
 const getPeriodDates = (period) => {
@@ -118,7 +206,7 @@ const getPeriodDates = (period) => {
 };
 
 // =================================================================
-// Componentes Reutilizáveis
+// Componentes Reutilizáveis (mantendo estrutura original)
 // =================================================================
 const KpiCard = ({ title, value, percentage, theme, showValues }) => {
     const valueColor = theme === 'receita' ? 'kpi-value-positive' : theme === 'despesa' ? 'kpi-value-negative' : '';
@@ -413,24 +501,24 @@ export default function Dashboard() {
         const despesaPrevista = parseFloat(kpi?.total_despesas) || 0;
         const despesaRealizada = parseFloat(realizados?.despesas_realizadas) || 0;
 
-        const percentualReceita = receitaPrevista > 0 ? ((receitaRealizada / receitaPrevista) * 100).toFixed(1) : "0.0";
-        const percentualDespesa = despesaPrevista > 0 ? ((despesaRealizada / despesaPrevista) * 100).toFixed(1) : "0.0";
+        // Cálculos melhorados de percentuais
+        const percentualReceita = formatPercentage(calculatePercentage(receitaRealizada, receitaPrevista, 'receita'));
+        const percentualDespesa = formatPercentage(calculatePercentage(despesaRealizada, despesaPrevista, 'despesa'));
 
         const saldoPrevisto = receitaPrevista - despesaPrevista;
         const saldoRealizado = receitaRealizada - despesaRealizada;
 
-        // --- CÁLCULO ADICIONADO AQUI ---
-        // Calcula o percentual do saldo realizado em relação ao previsto.
-        // Evita divisão por zero se o saldo previsto for 0.
-        const percentualSaldoRealizado = saldoPrevisto !== 0
-            ? ((saldoRealizado / saldoPrevisto) * 100).toFixed(1)
-            : "0.0";
+        // Cálculo melhorado do percentual de saldo
+        const percentualSaldoRealizado = formatPercentage(calculatePercentage(saldoRealizado, saldoPrevisto, 'saldo'));
+
+        // Cálculo adicional: percentual do saldo previsto (para comparação)
+        const percentualSaldoPrevisto = saldoPrevisto !== 0 ? 100 : 0;
 
         return {
             receitaPrevista, receitaRealizada, despesaPrevista, despesaRealizada,
             percentualReceita, percentualDespesa,
             saldoPrevisto, saldoRealizado,
-            percentualSaldoRealizado, // <-- Adicionado ao retorno
+            percentualSaldoRealizado, percentualSaldoPrevisto,
             contas,
             cartoes,
             totalSaldoContas,
