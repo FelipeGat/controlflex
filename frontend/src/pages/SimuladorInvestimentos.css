@@ -1,0 +1,292 @@
+/* Importação e variáveis existentes */
+:root {
+    --primary-color: #0a3b66;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --light-gray-color: #f3f7fa;
+    --border-color: #e9ecef;
+    --text-color: #333;
+    --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+    --border-radius: 12px;
+}
+
+/* Reutilizando estilos de layout */
+.page-container {
+    padding: 2rem;
+    background-color: var(--light-gray-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.content-card {
+    width: 100%;
+    max-width: 900px;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 2.5rem;
+}
+
+.form-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem 1.75rem;
+    margin-bottom: 2rem;
+}
+
+/* Reutilizando form-group e form-control */
+
+/* --- TÍTULOS DE SEÇÃO --- */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+
+/* --- 2. KPIS DE RESULTADO --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background-color: var(--light-gray-color);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--primary-color);
+}
+
+.kpi-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+
+/* --- 3. GRÁFICOS --- */
+.charts-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    /* Linha maior para Linha, menor para Pizza */
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-placeholder {
+    height: 300px;
+    /* Altura padrão para os gráficos */
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #6c757d;
+    text-align: center;
+}
+
+.chart-placeholder h4 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+/* --- 4. ANÁLISE HIPOTÉTICA "E SE..." --- */
+.analise-hipotetica-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.hipotetica-item {
+    background-color: #f8fcfb;
+    border: 1px solid #e0f0e0;
+    border-left: 4px solid var(--success-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.hipotetica-label {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.hipotetica-result {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--success-color);
+}
+
+
+/* --- 5. TIMELINE E MARCOS DE ALCANCE --- */
+.marcos-grid {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.marco-item {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background-color: #e9f5ff;
+    min-width: 120px;
+}
+
+.marco-valor {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.marco-tempo {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* --- 6. TABELA DETALHADA --- */
+/* Reutiliza .data-table, .table-wrapper */
+.detailed-table th,
+.detailed-table td {
+    text-align: center;
+}
+
+/* --- 7. COMPARATIVO DE CENÁRIOS --- */
+.cenarios-comparativo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.cenario-card {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+    border-bottom: 4px solid var(--cenario-color);
+    /* Usa variável customizada do JS */
+}
+
+.cenario-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.cenario-nome {
+    font-weight: 700;
+    color: var(--cenario-color);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.cenario-taxa {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.cenario-result {
+    margin-top: 0.5rem;
+}
+
+.cenario-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.cenario-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+
+/* ===== Responsividade para o Simulador ===== */
+@media (max-width: 900px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+        /* Empilha os gráficos */
+    }
+
+    .analise-hipotetica-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cenarios-comparativo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 colunas em telas menores */
+    }
+}
+
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cenarios-comparativo-grid {
+        grid-template-columns: 1fr;
+        /* 1 coluna em telas muito pequenas */
+    }
+}
+
+.custom-tooltip {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+}
+
+.custom-tooltip .label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}

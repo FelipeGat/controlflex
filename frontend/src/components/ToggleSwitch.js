@@ -1,10 +1,7 @@
 import React from 'react';
-import './ToggleSwitch.css'; // Importa os estilos que acabamos de criar
+import './ToggleSwitch.css';
 
-// O componente recebe 3 props:
-// - label: O texto que aparecerá ao lado do switch.
-// - checked: Um booleano (true ou false) que define se o switch está ligado.
-// - onChange: A função que será chamada quando o switch for clicado.
+
 const ToggleSwitch = ({ label, checked, onChange }) => {
   return (
     <label className="toggle-switch-container" htmlFor={label}>

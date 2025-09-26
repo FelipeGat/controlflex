@@ -32,7 +32,8 @@
 }
 
 /* ===== Formulário ===== */
-.form-title, .table-title {
+.form-title,
+.table-title {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--primary-color);
@@ -44,7 +45,8 @@
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem 1.75rem; /* Espaçamento vertical e horizontal */
+  gap: 1.25rem 1.75rem;
+  /* Espaçamento vertical e horizontal */
   margin-bottom: 2rem;
 }
 
@@ -105,6 +107,7 @@ textarea.form-control {
   background-color: var(--primary-color);
   color: white;
 }
+
 .form-buttons .btn-save:hover {
   background-color: #082f50;
   transform: translateY(-2px);
@@ -114,6 +117,7 @@ textarea.form-control {
   background-color: var(--danger-color);
   color: white;
 }
+
 .form-buttons .btn-cancel:hover {
   background-color: #c82333;
 }
@@ -121,11 +125,15 @@ textarea.form-control {
 /* ========= INÍCIO DA CORREÇÃO DO CSS DOS FILTROS ========= */
 .table-filters {
   display: flex;
-  justify-content: space-between; /* Distribui o espaço entre os grupos */
-  align-items: flex-end; /* Alinha os itens na parte de baixo */
+  justify-content: space-between;
+  /* Distribui o espaço entre os grupos */
+  align-items: flex-end;
+  /* Alinha os itens na parte de baixo */
   gap: 1.5rem;
-  margin-bottom: 2rem; /* Aumenta o espaço antes da tabela */
-  flex-wrap: wrap; /* Permite que os filtros quebrem a linha em telas menores */
+  margin-bottom: 2rem;
+  /* Aumenta o espaço antes da tabela */
+  flex-wrap: wrap;
+  /* Permite que os filtros quebrem a linha em telas menores */
 }
 
 .filter-group {
@@ -138,7 +146,8 @@ textarea.form-control {
 .filter-date-inputs {
   display: flex;
   gap: 1.5rem;
-  flex-grow: 1; /* Permite que os campos de data ocupem o espaço disponível */
+  flex-grow: 1;
+  /* Permite que os campos de data ocupem o espaço disponível */
 }
 
 .filter-group label {
@@ -150,16 +159,20 @@ textarea.form-control {
 .filter-group .btn-primary {
   background-color: var(--primary-color);
   color: white;
-  padding: 0.8rem 1.5rem; /* Ajusta o padding do botão */
+  padding: 0.8rem 1.5rem;
+  /* Ajusta o padding do botão */
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  white-space: nowrap; /* Impede que o texto do botão quebre */
+  white-space: nowrap;
+  /* Impede que o texto do botão quebre */
 }
+
 .filter-group .btn-primary:hover {
   background-color: #082f50;
 }
+
 /* ========= FIM DA CORREÇÃO DO CSS DOS FILTROS ========= */
 
 .table-wrapper {
@@ -172,7 +185,8 @@ textarea.form-control {
   text-align: left;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
@@ -226,17 +240,105 @@ textarea.form-control {
   border-radius: 8px;
   color: white;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.notification.success { background-color: var(--success-color); }
-.notification.error { background-color: var(--danger-color); }
+
+.notification.success {
+  background-color: var(--success-color);
+}
+
+.notification.error {
+  background-color: var(--danger-color);
+}
 
 /* ===== Responsividade ===== */
 @media (max-width: 768px) {
-  .page-container { padding: 1rem; gap: 1rem; }
-  .content-card { padding: 1.5rem; }
-  .form-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .form-buttons { flex-direction: column-reverse; }
-  .btn { width: 100%; }
-  .table-filters { flex-direction: column; align-items: stretch; }
+  .page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .content-card {
+    padding: 1.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .table-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.header-with-print {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-print {
+  background-color: #6c757d;
+  /* Cinza */
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.btn-print:hover {
+  background-color: #5a6268;
+}
+
+.btn-print i {
+  margin-right: 8px;
+}
+
+/* --- Estilos Específicos para Impressão (Media Query) --- */
+@media print {
+
+  /* Esconde o formulário, notificações e botões de ação na impressão */
+  .content-card:first-child,
+  .notification,
+  .no-print,
+  .btn-print,
+  .form-buttons,
+  .table-buttons {
+    display: none !important;
+  }
+
+  /* Remove a sombra e a cor de fundo da página */
+  .page-container {
+    padding: 0;
+    background-color: white !important;
+  }
+
+  .content-card {
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Garante que o histórico ocupe toda a largura */
+  .table-title {
+    text-align: left;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+  }
 }

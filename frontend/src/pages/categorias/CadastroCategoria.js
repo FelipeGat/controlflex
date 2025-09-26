@@ -15,7 +15,9 @@ const ICONS_MAP = {
     bills: { emoji: '💡', label: 'Contas' },
     gifts: { emoji: '🎁', label: 'Presentes' },
     health: { emoji: '❤️', label: 'Saúde' },
+    beauty: { emoji: '✨', label: 'Beleza' },
     travel: { emoji: '✈️', label: 'Viagem' },
+
 };
 
 // --- Componente IconSelector ---

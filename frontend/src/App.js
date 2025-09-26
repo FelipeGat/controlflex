@@ -12,6 +12,7 @@ import Bancos from './pages/bancos';
 import Fornecedores from './pages/fornecedores';
 import Usuarios from './pages/usuarios';
 import MainLayout from './layouts/MainLayout';
+import SimuladorInvestimentos from './pages/SimuladorInvestimentos';
 import Investimentos from './pages/Investimentos';
 import Lancamentos from './pages/lancamentos';
 
@@ -46,8 +47,9 @@ function App() {
         <Route path="/bancos" element={<MainLayout><Bancos /></MainLayout>} />
         <Route path="/fornecedores" element={<MainLayout><Fornecedores /></MainLayout>} />
         <Route path="/usuarios" element={<MainLayout><Usuarios /></MainLayout>} />
-        <Route path="/investimentos" element={<MainLayout><Investimentos /></MainLayout>} />
+        <Route path="/SimuladorInvestimentos" element={<MainLayout><SimuladorInvestimentos /></MainLayout>} />
         <Route path="/lancamentos" element={<MainLayout><Lancamentos /></MainLayout>} />
+        <Route path="/Investimentos" element={<MainLayout><Investimentos /></MainLayout>} />
       </Routes>
     </Router>
   );

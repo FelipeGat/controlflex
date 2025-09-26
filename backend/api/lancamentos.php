@@ -1,7 +1,6 @@
 <?php
 /**
  * API de Lançamentos - Sistema ControleFlex
- * Versão corrigida com funcionalidades completas
  */
 
 // Ativar a exibição de erros durante o desenvolvimento
@@ -32,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Incluir configuração do banco
-// O arquivo db.php deve inicializar a variável $pdo
 try {
     require_once __DIR__ . '/../config/db.php';
     if (!isset($pdo) || !$pdo instanceof PDO) {
@@ -50,9 +48,6 @@ try {
 }
 
 
-/**
- * Classe para gerenciar lançamentos
- */
 class LancamentosAPI {
     private $pdo;
     private $usuario_id;
@@ -273,6 +268,12 @@ class LancamentosAPI {
             $bind_params[':busca1'] = $busca;
             $bind_params[':busca2'] = $busca;
         }
+
+        if (empty($params['status']) && empty($params['mostrarQuitados'])) {
+        $where_despesas .= " AND d.data_pagamento IS NULL";
+        
+        $where_receitas .= " AND r.data_recebimento IS NULL";
+    }
         
         return [
             'where_despesas' => $where_despesas,

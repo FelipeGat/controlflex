@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Investimentos.css'; // Criaremos este arquivo a seguir
+import './Investimentos.css';
 import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
 
 // Lista de tipos de investimento para o select
 const tiposDeInvestimento = [
-    "Poupança", "Tesouro Direto", "CDB", "LCI/LCA", "CRI/CRA", 
-    "Ações", "Fundos Imobiliários (FII)", "ETFs", "BDRs", 
+    "Poupança", "Tesouro Direto", "CDB", "LCI/LCA", "CRI/CRA",
+    "Ações", "Fundos Imobiliários (FII)", "ETFs", "BDRs",
     "Fundos de Investimento", "Debêntures"
 ];
+
+// Função de formatação de moeda para a tabela
+const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '';
+    return `R$ ${parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
 // --- COMPONENTE DO FORMULÁRIO ---
 const InvestimentoForm = ({ onSave, onCancel, editingInvestimento, initialFormState, selectsData }) => {
@@ -49,7 +55,8 @@ const InvestimentoForm = ({ onSave, onCancel, editingInvestimento, initialFormSt
                     <label htmlFor="banco_id">Corretora / Banco *</label>
                     <select id="banco_id" name="banco_id" value={form.banco_id} onChange={handleChange} className="form-control" required>
                         <option value="">Selecione...</option>
-                        {selectsData.bancos.map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
+                        {/* CORREÇÃO APLICADA AQUI! Garante que selectsData.bancos é um array antes de chamar .map() */}
+                        {(selectsData.bancos || []).map(b => <option key={b.id} value={b.id}>{b.nome}</option>)}
                     </select>
                 </div>
                 <div className="form-group">
@@ -85,6 +92,7 @@ export default function Investimentos() {
     const [editingInvestimento, setEditingInvestimento] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [notification, setNotification] = useState({ message: '', type: '' });
+    // Inicializa bancos como array VAZIO, o que é CORRETO
     const [selectsData, setSelectsData] = useState({ bancos: [] });
 
     const INVESTIMENTOS_API_URL = `${API_BASE_URL}/investimentos.php`;
@@ -118,7 +126,8 @@ export default function Investimentos() {
         if (!usuario) return;
         try {
             const respBancos = await axios.get(`${API_BASE_URL}/bancos.php?usuario_id=${usuario.id}`);
-            setSelectsData({ bancos: respBancos.data || [] });
+            // Garante que o estado é atualizado com um array (ou um array vazio se for null/undefined)
+            setSelectsData({ bancos: Array.isArray(respBancos.data) ? respBancos.data : [] });
         } catch (error) {
             showNotification('Erro ao carregar dados de suporte.', 'error');
         }
@@ -171,14 +180,14 @@ export default function Investimentos() {
     return (
         <div className="page-container">
             {notification.message && <div className={`notification ${notification.type}`}>{notification.message}</div>}
-            
+
             <div className="content-card">
-                <InvestimentoForm 
-                    onSave={handleSave} 
-                    onCancel={handleCancel} 
-                    editingInvestimento={editingInvestimento} 
-                    initialFormState={initialFormState} 
-                    selectsData={selectsData} 
+                <InvestimentoForm
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    editingInvestimento={editingInvestimento}
+                    initialFormState={initialFormState}
+                    selectsData={selectsData}
                 />
             </div>
 
@@ -204,7 +213,8 @@ export default function Investimentos() {
                                         <td>{inv.tipo_investimento}</td>
                                         <td>{inv.banco_nome}</td>
                                         <td>{new Date(inv.data_aporte).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
-                                        <td>{`R$ ${parseFloat(inv.valor_aportado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</td>
+                                        {/* Usa a função de formatação */}
+                                        <td>{formatCurrency(inv.valor_aportado)}</td>
                                         <td>
                                             <div className="table-buttons">
                                                 <button onClick={() => handleEdit(inv)} className="btn-icon" title="Editar"><i className="fas fa-pen"></i></button>

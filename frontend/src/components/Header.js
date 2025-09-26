@@ -80,7 +80,8 @@ function Header() {
               <button onClick={() => navigate('/despesas')}>💸 Despesas</button>
               <button onClick={() => navigate('/receitas')}>💰 Receitas</button>
               <button onClick={() => navigate('/categorias')}>📂 Categorias</button>
-              <button onClick={() => navigate('/investimentos')}>📈 Investimentos</button>
+              <button onClick={() => navigate('/SimuladorInvestimentos')}>📈 Simulador de Investimentos</button>
+              <button onClick={() => navigate('/Investimentos')}>📈 Investimentos</button>
             </div>
           )}
         </div>
@@ -103,7 +104,7 @@ function Header() {
               <button onClick={() => navigate('/relatorio-despesas')}>💸 Despesas</button>
               <button onClick={() => navigate('/relatorio-receitas')}>💰 Receitas</button>
               <button onClick={() => navigate('/relatorio-investimentos')}>📈 Investimentos</button>
-              {/* NOVO: Adicionar link direto para Lançamentos nos relatórios */}
+              {/* Adicionar link direto para Lançamentos nos relatórios */}
               <button onClick={() => navigate('/lancamentos')}>📌 Lançamentos</button>
             </div>
           )}
@@ -146,4 +147,3 @@ function Header() {
 }
 
 export default Header;
-

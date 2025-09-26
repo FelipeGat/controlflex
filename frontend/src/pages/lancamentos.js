@@ -7,6 +7,7 @@ import { API_BASE_URL } from '../apiConfig';
 import Spinner from '../components/Spinner';
 import { ReceitaForm } from './receitas';
 import { DespesaForm } from './despesas';
+import ToggleSwitch from '../components/ToggleSwitch';
 import Modal from '../components/Modal';
 
 // Componente de Notificação
@@ -124,11 +125,14 @@ const ConfirmDialog = ({
   );
 };
 
-// Componente de Filtros Avançados
+
+// Componente de Filtros Avançados CORRIGIDO E MELHORADO
 const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
   return (
     <div className="filtros-avancados">
+      {/* LINHA 1: PERÍODO, TIPO, STATUS E O NOVO TOGGLE SWITCH */}
       <div className="filtros-linha">
+        {/* Período */}
         <div className="filtro-grupo">
           <label>Período:</label>
           <select
@@ -151,6 +155,7 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
           </select>
         </div>
 
+        {/* Datas Personalizadas */}
         {filtros.periodo === 'personalizado' && (
           <>
             <div className="filtro-grupo">
@@ -174,6 +179,7 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
           </>
         )}
 
+        {/* Tipo */}
         <div className="filtro-grupo">
           <label>Tipo:</label>
           <select
@@ -187,6 +193,7 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
           </select>
         </div>
 
+        {/* Status */}
         <div className="filtro-grupo">
           <label>Status:</label>
           <select
@@ -201,8 +208,19 @@ const FiltrosAvancados = ({ filtros, onFiltrosChange, onBuscar, onLimpar }) => {
             <option value="hoje">Vencem Hoje</option>
           </select>
         </div>
+
+        {/* NOVO TOGGLE SWITCH ALINHADO */}
+        {/* Usamos o componente ToggleSwitch com o label para 'Incluir Quitados' */}
+        <div className="filtro-grupo filtro-toggle">
+          <ToggleSwitch
+            label="Incluir Quitados"
+            checked={filtros.mostrarQuitados}
+            onChange={(e) => onFiltrosChange({ ...filtros, mostrarQuitados: e.target.checked })}
+          />
+        </div>
       </div>
 
+      {/* LINHA 2: BUSCA E AÇÕES */}
       <div className="filtros-linha">
         <div className="filtro-grupo filtro-busca">
           <label>Buscar:</label>
@@ -313,7 +331,8 @@ export default function Lancamentos() {
     dataFim: '',
     tipo: '',
     status: '',
-    busca: ''
+    busca: '',
+    mostrarQuitados: false
   });
 
   const [resumoTotais, setResumoTotais] = useState({
@@ -443,6 +462,7 @@ export default function Lancamentos() {
         dataFim: dataFim,
         tipo: filtrosAtuais.tipo,
         status: filtrosAtuais.status,
+        mostrarQuitados: filtrosAtuais.mostrarQuitados ? 1 : 0,
         busca: filtrosAtuais.busca
       };
 
@@ -698,7 +718,8 @@ export default function Lancamentos() {
       dataFim: '',
       tipo: '',
       status: '',
-      busca: ''
+      busca: '',
+      mostrarQuitados: false
     };
     setFiltros(filtrosLimpos);
     fetchLancamentos(filtrosLimpos, 1);
