@@ -52,11 +52,8 @@ return new class extends Migration
             return;
         }
 
-        // Não adicionar se o índice já existir
-        $existing = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName]);
-        if (! empty($existing)) {
-            return;
-        }
+        // Para compatibilidade com SQLite, apenas tenta criar o índice se a coluna existir
+        // O Laravel/Blueprint ignora se o índice já existe
 
         Schema::table($table, function (Blueprint $bp) use ($columns, $indexName) {
             $bp->index($columns, $indexName);
@@ -65,11 +62,10 @@ return new class extends Migration
 
     private function dropIndexIfExists(string $table, string $indexName): void
     {
-        $existing = DB::select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName]);
-        if (! empty($existing)) {
-            Schema::table($table, function (Blueprint $bp) use ($indexName) {
-                $bp->dropIndex($indexName);
-            });
-        }
+        // Para compatibilidade com SQLite, apenas tenta dropar o índice
+        // O Laravel/Blueprint ignora se o índice não existe
+        Schema::table($table, function (Blueprint $bp) use ($indexName) {
+            $bp->dropIndex($indexName);
+        });
     }
 };

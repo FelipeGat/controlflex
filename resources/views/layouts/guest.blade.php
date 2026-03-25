@@ -5,7 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'ControleFlex') }}</title>
+        <title>{{ config('app.name', 'AlfaHome') }}</title>
+        <link rel="icon" type="image/png" href="/favicon.png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,13 +18,11 @@
     <body class="font-sans text-gray-100 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-slate-900 via-slate-800 to-black">
             <div class="mb-6">
-                <a href="/" class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <span class="text-2xl font-bold text-white">ControleFlex</span>
+                <a href="/" class="flex items-center justify-center"
+                   style="padding: 14px 32px; border-radius: 14px;
+                          background: radial-gradient(ellipse at center, rgba(20,184,166,.18) 0%, rgba(15,23,42,.0) 70%);
+                          box-shadow: 0 0 40px rgba(20,184,166,.12), inset 0 1px 0 rgba(255,255,255,.05);">
+                    <img src="/alfa-home-logo.png" alt="AlfaHome" style="height: 38px; width: auto; filter: drop-shadow(0 2px 12px rgba(20,184,166,.35));">
                 </a>
             </div>
 

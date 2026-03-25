@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'ControleFlex') }} — @yield('title', 'Dashboard')</title>
+    <title>{{ config('app.name', 'AlfaHome') }} — @yield('title', 'Dashboard')</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -14,7 +15,8 @@
 
         :root {
             --sidebar-w: 240px;
-            --topbar-h: 56px;
+            --sidebar-w-collapsed: 70px;
+            --topbar-h: 64px;
             --bottom-nav-h: 60px;
             --color-primary: #4f46e5;
             --color-primary-hover: #4338ca;
@@ -48,42 +50,84 @@
             background: var(--color-sidebar);
             display: flex; flex-direction: column;
             z-index: 200;
-            transition: transform .25s ease;
+            transition: width .25s ease, transform .25s ease;
             overflow-y: auto;
+            overflow-x: hidden;
         }
+        .sidebar.collapsed { width: var(--sidebar-w-collapsed); }
+
         .sidebar-logo {
-            display: flex; align-items: center; gap: 10px;
-            padding: 16px 16px 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px;
+            height: var(--topbar-h);
             border-bottom: 1px solid rgba(255,255,255,.06);
+            border-top: 3px solid var(--color-primary);
             flex-shrink: 0;
+            position: relative;
         }
-        .sidebar-logo-icon {
-            width: 34px; height: 34px; flex-shrink: 0;
-            background: var(--color-primary); border-radius: 8px;
+        .sidebar-logo-img {
+            height: 34px; width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+            transition: opacity .2s;
+        }
+        .sidebar-logo-img-full { display: block; }
+        .sidebar-logo-img-icon { display: none; }
+        .sidebar.collapsed .sidebar-logo-img-full { display: none; }
+        .sidebar.collapsed .sidebar-logo-img-icon { display: block; }
+
+        /* Collapse toggle button */
+        .sidebar-collapse-btn {
+            position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px;
+            background: var(--color-sidebar);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 15px;
+            cursor: pointer; color: #94a3b8; font-size: 11px;
+            z-index: 210;
+            transition: background .15s, color .15s;
+            box-shadow: 0 1px 4px rgba(0,0,0,.4);
         }
-        .sidebar-logo-text { line-height: 1.2; }
-        .sidebar-logo-text strong { color: #f1f5f9; font-size: 14px; font-weight: 600; display: block; }
-        .sidebar-logo-text span { color: #64748b; font-size: 11px; }
+        .sidebar-collapse-btn:hover { background: var(--color-primary); color: #fff; }
 
         .sidebar-section-label {
             padding: 14px 16px 4px;
             font-size: 10px; font-weight: 700;
             color: #475569; text-transform: uppercase; letter-spacing: .07em;
+            white-space: nowrap; overflow: hidden;
+            transition: opacity .2s;
         }
+        .sidebar.collapsed .sidebar-section-label { opacity: 0; height: 0; padding: 0; }
+
         .sidebar-nav { padding: 6px 8px; flex: 1; }
         .sidebar-link {
             display: flex; align-items: center; gap: 10px;
-            padding: 9px 10px; border-radius: 6px;
+            padding: 9px 10px; border-radius: 20px;
             color: #94a3b8; text-decoration: none;
             font-size: 14px; font-weight: 500;
             transition: background .15s, color .15s;
+            white-space: nowrap; overflow: hidden;
+            position: relative;
         }
-        .sidebar-link i { width: 16px; text-align: center; font-size: 14px; flex-shrink: 0; }
-        .sidebar-link:hover { background: rgba(255,255,255,.06); color: #e2e8f0; }
-        .sidebar-link.active { background: rgba(79,70,229,.3); color: #a5b4fc; }
-        .sidebar-link.active i { color: #a5b4fc; }
+        .sidebar-link i { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
+        .sidebar-link span { transition: opacity .2s; }
+        .sidebar.collapsed .sidebar-link { justify-content: center; }
+        .sidebar.collapsed .sidebar-link span { opacity: 0; width: 0; overflow: hidden; }
+        .sidebar-link:hover { background: #0f172a; color: #e2e8f0; }
+        .sidebar-link.active { background: var(--color-primary); color: #fff; }
+        .sidebar-link.active i { color: #fff; }
+
+        /* Tooltip on collapsed */
+        .sidebar.collapsed .sidebar-link:hover::after {
+            content: attr(data-label);
+            position: absolute; left: calc(var(--sidebar-w-collapsed) + 6px); top: 50%; transform: translateY(-50%);
+            background: #1e293b; color: #e2e8f0;
+            padding: 5px 10px; border-radius: 6px;
+            font-size: 13px; white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+            z-index: 300; pointer-events: none;
+        }
 
         .sidebar-user {
             padding: 12px 8px 10px;
@@ -93,6 +137,7 @@
         .sidebar-user-info {
             display: flex; align-items: center; gap: 10px;
             padding: 6px 10px; margin-bottom: 4px;
+            overflow: hidden;
         }
         .sidebar-user-avatar {
             width: 30px; height: 30px; flex-shrink: 0;
@@ -100,6 +145,8 @@
             display: flex; align-items: center; justify-content: center;
             color: #a5b4fc; font-size: 12px;
         }
+        .sidebar-user-details { transition: opacity .2s; min-width: 0; }
+        .sidebar.collapsed .sidebar-user-details { opacity: 0; width: 0; overflow: hidden; }
         .sidebar-user-name { color: #cbd5e1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-user-email { color: #475569; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -117,14 +164,16 @@
             margin-left: var(--sidebar-w);
             min-height: 100vh;
             display: flex; flex-direction: column;
+            transition: margin-left .25s ease;
         }
+        .main-content.sidebar-collapsed { margin-left: var(--sidebar-w-collapsed); }
 
         /* ─── Topbar ─────────────────────────────────────────────── */
         .topbar {
             position: sticky; top: 0; z-index: 100;
             height: var(--topbar-h);
-            background: #fff;
-            border-bottom: 1px solid var(--color-border);
+            background: #1e293b;
+            border-bottom: 1px solid rgba(255,255,255,.06);
             display: flex; align-items: center;
             padding: 0 20px; gap: 12px;
         }
@@ -132,17 +181,22 @@
             display: none;
             width: 36px; height: 36px;
             border: none; background: none; cursor: pointer;
-            border-radius: 6px; color: var(--color-text-muted);
+            border-radius: 6px; color: #94a3b8;
             align-items: center; justify-content: center;
             font-size: 16px;
             flex-shrink: 0;
         }
-        .topbar-hamburger:hover { background: var(--color-bg); }
+        .topbar-hamburger:hover { background: rgba(255,255,255,.06); }
         .topbar-title {
             flex: 1;
-            font-size: 15px; font-weight: 600; color: var(--color-text);
+            font-size: 15px; font-weight: 600; color: #e2e8f0;
         }
         .topbar-actions { display: flex; align-items: center; gap: 8px; }
+        .topbar-actions .btn-secondary {
+            background: rgba(255,255,255,.08); color: #94a3b8;
+            border-color: rgba(255,255,255,.1);
+        }
+        .topbar-actions .btn-secondary:hover { background: rgba(255,255,255,.14); color: #e2e8f0; }
 
         /* ─── Page content ──────────────────────────────────────── */
         .page-content {
@@ -398,10 +452,11 @@
             .grid-4 { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { transform: translateX(-100%); width: var(--sidebar-w) !important; }
             .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
+            .main-content { margin-left: 0 !important; }
             .topbar-hamburger { display: flex; }
+            .sidebar-collapse-btn { display: none; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .grid-4 { grid-template-columns: 1fr 1fr; }
             .page-content { padding: 14px 12px calc(var(--bottom-nav-h) + 14px); }
@@ -426,49 +481,47 @@
 {{-- ─── Sidebar ──────────────────────────────────────────────────────── --}}
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">
-            <i class="fa-solid fa-chart-pie"></i>
-        </div>
-        <div class="sidebar-logo-text">
-            <strong>ControleFlex</strong>
-            <span>Finanças</span>
-        </div>
+        <img src="/alfa-home-logo.png" alt="AlfaHome" class="sidebar-logo-img sidebar-logo-img-full" style="max-width: 140px;">
+        <img src="/alfa-home-logo-2.png" alt="AlfaHome" class="sidebar-logo-img sidebar-logo-img-icon" style="height: 34px; width: auto;">
+        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Recolher menu">
+            <i class="fa-solid fa-chevron-left" id="sidebar-collapse-icon"></i>
+        </button>
     </div>
 
     <nav class="sidebar-nav">
         <div class="sidebar-section-label">Visão Geral</div>
-        <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-label="Dashboard">
+            <i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span>
         </a>
-        <a href="{{ route('despesas.index') }}" class="sidebar-link {{ request()->routeIs('despesas.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-arrow-trend-down"></i> Despesas
+        <a href="{{ route('despesas.index') }}" class="sidebar-link {{ request()->routeIs('despesas.*') ? 'active' : '' }}" data-label="Despesas">
+            <i class="fa-solid fa-arrow-trend-down"></i> <span>Despesas</span>
         </a>
-        <a href="{{ route('receitas.index') }}" class="sidebar-link {{ request()->routeIs('receitas.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-arrow-trend-up"></i> Receitas
+        <a href="{{ route('receitas.index') }}" class="sidebar-link {{ request()->routeIs('receitas.*') ? 'active' : '' }}" data-label="Receitas">
+            <i class="fa-solid fa-arrow-trend-up"></i> <span>Receitas</span>
         </a>
-        <a href="{{ route('investimentos.index') }}" class="sidebar-link {{ request()->routeIs('investimentos.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-seedling"></i> Investimentos
+        <a href="{{ route('investimentos.index') }}" class="sidebar-link {{ request()->routeIs('investimentos.*') ? 'active' : '' }}" data-label="Investimentos">
+            <i class="fa-solid fa-seedling"></i> <span>Investimentos</span>
         </a>
 
         <div class="sidebar-section-label">Cadastros</div>
-        <a href="{{ route('bancos.index') }}" class="sidebar-link {{ request()->routeIs('bancos.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-building-columns"></i> Contas Bancárias
+        <a href="{{ route('bancos.index') }}" class="sidebar-link {{ request()->routeIs('bancos.*') ? 'active' : '' }}" data-label="Contas Bancárias">
+            <i class="fa-solid fa-building-columns"></i> <span>Contas Bancárias</span>
         </a>
-        <a href="{{ route('familiares.index') }}" class="sidebar-link {{ request()->routeIs('familiares.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-users"></i> Familiares
+        <a href="{{ route('familiares.index') }}" class="sidebar-link {{ request()->routeIs('familiares.*') ? 'active' : '' }}" data-label="Familiares">
+            <i class="fa-solid fa-users"></i> <span>Familiares</span>
         </a>
-        <a href="{{ route('fornecedores.index') }}" class="sidebar-link {{ request()->routeIs('fornecedores.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-store"></i> Fornecedores
+        <a href="{{ route('fornecedores.index') }}" class="sidebar-link {{ request()->routeIs('fornecedores.*') ? 'active' : '' }}" data-label="Fornecedores">
+            <i class="fa-solid fa-store"></i> <span>Fornecedores</span>
         </a>
-        <a href="{{ route('categorias.index') }}" class="sidebar-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-tags"></i> Categorias
+        <a href="{{ route('categorias.index') }}" class="sidebar-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}" data-label="Categorias">
+            <i class="fa-solid fa-tags"></i> <span>Categorias</span>
         </a>
     </nav>
 
     <div class="sidebar-user">
         <div class="sidebar-user-info">
             <div class="sidebar-user-avatar"><i class="fa-solid fa-user"></i></div>
-            <div style="min-width:0;">
+            <div class="sidebar-user-details">
                 <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
                 <div class="sidebar-user-email">{{ Auth::user()->email }}</div>
             </div>
@@ -486,7 +539,7 @@
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 {{-- ─── Main content ──────────────────────────────────────────────────── --}}
-<div class="main-content">
+<div class="main-content" id="main-content">
     <header class="topbar">
         <button class="topbar-hamburger" id="hamburger" aria-label="Menu">
             <i class="fa-solid fa-bars"></i>
@@ -561,11 +614,40 @@
 
 @stack('scripts')
 <script>
-    // Sidebar toggle
-    const sidebar  = document.getElementById('sidebar');
-    const overlay  = document.getElementById('sidebar-overlay');
-    const hamburger = document.getElementById('hamburger');
+    const sidebar     = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    const overlay     = document.getElementById('sidebar-overlay');
+    const hamburger   = document.getElementById('hamburger');
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    const collapseIcon = document.getElementById('sidebar-collapse-icon');
 
+    // ── Desktop collapse (persisted) ──────────────────────────────
+    const STORAGE_KEY = 'alfahome_sidebar_collapsed';
+
+    function applyCollapse(collapsed) {
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('sidebar-collapsed');
+            collapseIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('sidebar-collapsed');
+            collapseIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
+        }
+    }
+
+    // Load persisted state (desktop only)
+    if (window.innerWidth > 768) {
+        applyCollapse(localStorage.getItem(STORAGE_KEY) === 'true');
+    }
+
+    collapseBtn.addEventListener('click', () => {
+        const collapsed = !sidebar.classList.contains('collapsed');
+        applyCollapse(collapsed);
+        localStorage.setItem(STORAGE_KEY, collapsed);
+    });
+
+    // ── Mobile open/close ─────────────────────────────────────────
     function openSidebar()  { sidebar.classList.add('open');  overlay.classList.add('active');  document.body.style.overflow = 'hidden'; }
     function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
