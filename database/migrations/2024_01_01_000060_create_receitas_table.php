@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('receitas', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('quem_recebeu')->nullable()->constrained('familiares')->onDelete('set null');
+            $table->foreignId('categoria_id')->nullable()->constrained('categorias')->onDelete('set null');
+            $table->foreignId('forma_recebimento')->nullable()->constrained('bancos')->onDelete('set null');
+            $table->decimal('valor', 15, 2);
+            $table->date('data_prevista_recebimento');
+            $table->date('data_recebimento')->nullable();
+            $table->text('observacoes')->nullable();
+            $table->boolean('recorrente')->default(false);
+            $table->integer('parcelas')->default(1);
+            $table->enum('frequencia', ['diaria', 'semanal', 'quinzenal', 'mensal', 'trimestral', 'semestral', 'anual'])->default('mensal');
+            $table->string('grupo_recorrencia_id')->nullable()->index();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('receitas');
+    }
+};
