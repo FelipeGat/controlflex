@@ -9,6 +9,7 @@ use App\Http\Controllers\FamiliarController;
 use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\InvestimentoController;
+use App\Http\Controllers\FluxoCaixaController;
 use App\Http\Controllers\LancamentoDiarioController;
 use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
@@ -56,6 +57,13 @@ Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(func
 // ─── Tenant (Master / Membro) ───────────────────────────────────────────────
 Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Fluxo de Caixa / Baixas
+    Route::get('/fluxo-caixa', [FluxoCaixaController::class, 'index'])->name('fluxo-caixa.index');
+    Route::post('/fluxo-caixa/baixar-despesa/{despesa}', [FluxoCaixaController::class, 'baixarDespesa'])->name('fluxo-caixa.baixar-despesa');
+    Route::post('/fluxo-caixa/estornar-despesa/{despesa}', [FluxoCaixaController::class, 'estornarDespesa'])->name('fluxo-caixa.estornar-despesa');
+    Route::post('/fluxo-caixa/baixar-receita/{receita}', [FluxoCaixaController::class, 'baixarReceita'])->name('fluxo-caixa.baixar-receita');
+    Route::post('/fluxo-caixa/estornar-receita/{receita}', [FluxoCaixaController::class, 'estornarReceita'])->name('fluxo-caixa.estornar-receita');
 
     // Lançamento Diário
     Route::get('/lancamentos-diarios', [LancamentoDiarioController::class, 'index'])->name('lancamentos-diarios.index')->middleware('permissao:despesas,criar');

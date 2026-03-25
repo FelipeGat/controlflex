@@ -519,6 +519,9 @@
         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-label="Dashboard">
             <i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span>
         </a>
+        <a href="{{ route('fluxo-caixa.index') }}" class="sidebar-link {{ request()->routeIs('fluxo-caixa.*') ? 'active' : '' }}" data-label="Contas a Pagar/Receber">
+            <i class="fa-solid fa-arrows-left-right"></i> <span>Contas / Baixas</span>
+        </a>
 
         <div class="sidebar-section-label">Lançamentos</div>
         @if(Auth::user()->temPermissao('despesas', 'criar'))
