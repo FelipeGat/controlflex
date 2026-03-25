@@ -3,11 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Receita extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'user_id', 'quem_recebeu', 'categoria_id', 'forma_recebimento',
         'valor', 'data_prevista_recebimento', 'data_recebimento', 'observacoes',
@@ -15,11 +19,13 @@ class Receita extends Model
     ];
 
     protected $casts = [
-        'valor' => 'decimal:2',
-        'data_prevista_recebimento' => 'date',
-        'data_recebimento' => 'date',
-        'recorrente' => 'boolean',
+        'valor'                      => 'decimal:2',
+        'data_prevista_recebimento'  => 'date',
+        'data_recebimento'           => 'date',
+        'recorrente'                 => 'boolean',
     ];
+
+    // ─── Relacionamentos ──────────────────────────────────────────────────────
 
     public function user()
     {
@@ -41,45 +47,87 @@ class Receita extends Model
         return $this->belongsTo(Banco::class, 'forma_recebimento');
     }
 
+    // ─── Atributos computados ─────────────────────────────────────────────────
+
+    /**
+     * Status financeiro da receita:
+     *   'recebido'  → data_recebimento preenchida
+     *   'vencido'   → sem recebimento e data prevista já passou
+     *   'a_receber' → sem recebimento, data prevista hoje ou futura
+     */
+    public function getStatusAttribute(): string
+    {
+        if ($this->data_recebimento) {
+            return 'recebido';
+        }
+
+        if ($this->data_prevista_recebimento->isPast() && ! $this->data_prevista_recebimento->isToday()) {
+            return 'vencido';
+        }
+
+        return 'a_receber';
+    }
+
+    // ─── Lógica de recorrência ────────────────────────────────────────────────
+
+    /**
+     * Cria uma ou múltiplas receitas dentro de uma transação atômica.
+     * Se qualquer parcela falhar, nenhuma é persistida.
+     */
     public static function criarComRecorrencia(array $data, int $userId): int
     {
-        $isRecorrente = !empty($data['recorrente']);
-        $parcelas = isset($data['parcelas']) ? (int)$data['parcelas'] : 1;
-        $frequencia = $data['frequencia'] ?? 'mensal';
-
-        $intervalos = [
-            'diaria' => '1 day', 'semanal' => '1 week', 'quinzenal' => '2 weeks',
-            'mensal' => '1 month', 'trimestral' => '3 months',
-            'semestral' => '6 months', 'anual' => '1 year',
-        ];
-        $intervalo = $intervalos[$frequencia] ?? '1 month';
+        $isRecorrente = ! empty($data['recorrente']);
+        $parcelas     = isset($data['parcelas']) ? (int) $data['parcelas'] : 1;
+        $frequencia   = $data['frequencia'] ?? 'mensal';
 
         $total = 1;
         if ($isRecorrente) {
-            $total = ($parcelas === 0) ? 60 : $parcelas;
+            $total = ($parcelas === 0) ? 60 : max(1, $parcelas);
         }
 
-        $grupoId = ($total > 1) ? Str::uuid()->toString() : null;
+        $grupoId     = ($total > 1) ? Str::uuid()->toString() : null;
         $dataInicial = Carbon::parse($data['data_prevista_recebimento']);
 
-        for ($i = 0; $i < $total; $i++) {
-            $dataAtual = (clone $dataInicial)->modify("+{$i} {$intervalo}");
-            self::create([
-                'user_id' => $userId,
-                'quem_recebeu' => $data['quem_recebeu'] ?? null,
-                'categoria_id' => $data['categoria_id'] ?? null,
-                'forma_recebimento' => $data['forma_recebimento'] ?? null,
-                'valor' => $data['valor'],
-                'data_prevista_recebimento' => $dataAtual->format('Y-m-d'),
-                'data_recebimento' => !empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
-                'recorrente' => $isRecorrente,
-                'parcelas' => $total,
-                'frequencia' => $frequencia,
-                'observacoes' => $data['observacoes'] ?? null,
-                'grupo_recorrencia_id' => $grupoId,
-            ]);
-        }
+        DB::transaction(function () use ($data, $userId, $total, $grupoId, $dataInicial, $frequencia, $isRecorrente) {
+            for ($i = 0; $i < $total; $i++) {
+                $dataAtual = self::calcularData($dataInicial, $frequencia, $i);
+
+                self::create([
+                    'user_id'                    => $userId,
+                    'quem_recebeu'               => $data['quem_recebeu'] ?? null,
+                    'categoria_id'               => $data['categoria_id'] ?? null,
+                    'forma_recebimento'          => $data['forma_recebimento'] ?? null,
+                    'valor'                      => $data['valor'],
+                    'data_prevista_recebimento'  => $dataAtual->format('Y-m-d'),
+                    'data_recebimento'           => ! empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
+                    'recorrente'                 => $isRecorrente,
+                    'parcelas'                   => $total,
+                    'frequencia'                 => $frequencia,
+                    'observacoes'                => $data['observacoes'] ?? null,
+                    'grupo_recorrencia_id'       => $grupoId,
+                ]);
+            }
+        });
 
         return $total;
+    }
+
+    /**
+     * Calcula a data de uma parcela usando Carbon nativo (evita ambiguidade do modify()).
+     */
+    private static function calcularData(Carbon $base, string $frequencia, int $offset): Carbon
+    {
+        $data = $base->copy();
+
+        return match ($frequencia) {
+            'diaria'     => $data->addDays($offset),
+            'semanal'    => $data->addWeeks($offset),
+            'quinzenal'  => $data->addWeeks($offset * 2),
+            'mensal'     => $data->addMonths($offset),
+            'trimestral' => $data->addMonths($offset * 3),
+            'semestral'  => $data->addMonths($offset * 6),
+            'anual'      => $data->addYears($offset),
+            default      => $data->addMonths($offset),
+        };
     }
 }

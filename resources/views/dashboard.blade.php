@@ -1,248 +1,254 @@
 @extends('layouts.main')
-
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
 
 @section('content')
+
 {{-- Filtro de Período --}}
-<form method="GET" action="{{ route('dashboard') }}" style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-    <div style="display:flex;align-items:center;gap:8px;">
-        <label class="form-label" style="margin:0;">De:</label>
-        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="width:160px;">
+<form method="GET" action="{{ route('dashboard') }}" class="d-flex flex-wrap align-center gap-2 mb-5">
+    <div class="d-flex align-center gap-2">
+        <label class="form-label" style="margin:0;white-space:nowrap;">De</label>
+        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="width:140px;">
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-        <label class="form-label" style="margin:0;">Até:</label>
-        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="width:160px;">
+    <div class="d-flex align-center gap-2">
+        <label class="form-label" style="margin:0;white-space:nowrap;">Até</label>
+        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="width:140px;">
     </div>
-    <button type="submit" class="btn-primary">
-        <i class="fa-solid fa-filter"></i> Filtrar
-    </button>
-    <a href="{{ route('dashboard') }}" class="btn-secondary">Mês Atual</a>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filtrar</button>
+    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Mês Atual</a>
 </form>
 
 {{-- KPI Cards Principais --}}
-<div class="grid-3" style="margin-bottom: 24px;">
-    <div class="card" style="border-left: 4px solid #10b981;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+<div class="grid-3 mb-5">
+    <div class="card" style="border-top: 3px solid #16a34a;">
+        <div class="d-flex justify-between align-center">
             <div>
-                <div class="text-muted">Receitas Previstas</div>
-                <div style="font-size:26px;font-weight:800;color:#10b981;margin:4px 0;">
-                    R$ {{ number_format($totalReceitas, 2, ',', '.') }}
-                </div>
-                <div style="font-size:12px;color:#94a3b8;">
+                <div class="kpi-label">Receitas Previstas</div>
+                <div class="kpi-value text-green">R$ {{ number_format($totalReceitas, 2, ',', '.') }}</div>
+                <div class="mt-1">
                     @if($variacaoReceitas >= 0)
-                        <span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoReceitas, 1) }}%</span>
+                        <span class="badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoReceitas, 1) }}%</span>
                     @else
-                        <span class="badge badge-danger"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoReceitas), 1) }}%</span>
+                        <span class="badge badge-red"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoReceitas), 1) }}%</span>
                     @endif
-                    vs mês anterior
+                    <span class="text-subtle" style="font-size:11px;"> vs mês anterior</span>
                 </div>
             </div>
-            <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">
+            <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">
                 <i class="fa-solid fa-arrow-trend-up"></i>
             </div>
         </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:13px;color:#64748b;">
-            Realizado: <strong style="color:#16a34a;">R$ {{ number_format($receitasRealizadas, 2, ',', '.') }}</strong>
+        <div class="kpi-sub">
+            Realizado: <strong class="text-green">R$ {{ number_format($receitasRealizadas, 2, ',', '.') }}</strong>
         </div>
     </div>
 
-    <div class="card" style="border-left: 4px solid #ef4444;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div class="card" style="border-top: 3px solid #dc2626;">
+        <div class="d-flex justify-between align-center">
             <div>
-                <div class="text-muted">Despesas Previstas</div>
-                <div style="font-size:26px;font-weight:800;color:#ef4444;margin:4px 0;">
-                    R$ {{ number_format($totalDespesas, 2, ',', '.') }}
-                </div>
-                <div style="font-size:12px;color:#94a3b8;">
+                <div class="kpi-label">Despesas Previstas</div>
+                <div class="kpi-value text-red">R$ {{ number_format($totalDespesas, 2, ',', '.') }}</div>
+                <div class="mt-1">
                     @if($variacaoDespesas <= 0)
-                        <span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoDespesas), 1) }}%</span>
+                        <span class="badge badge-green"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoDespesas), 1) }}%</span>
                     @else
-                        <span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoDespesas, 1) }}%</span>
+                        <span class="badge badge-red"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoDespesas, 1) }}%</span>
                     @endif
-                    vs mês anterior
+                    <span class="text-subtle" style="font-size:11px;"> vs mês anterior</span>
                 </div>
             </div>
-            <div class="kpi-icon" style="background:#fee2e2;color:#dc2626;">
+            <div class="kpi-icon" style="background:#fee2e2; color:#dc2626;">
                 <i class="fa-solid fa-arrow-trend-down"></i>
             </div>
         </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:13px;color:#64748b;">
-            Realizado: <strong style="color:#dc2626;">R$ {{ number_format($despesasRealizadas, 2, ',', '.') }}</strong>
+        <div class="kpi-sub">
+            Realizado: <strong class="text-red">R$ {{ number_format($despesasRealizadas, 2, ',', '.') }}</strong>
         </div>
     </div>
 
-    <div class="card" style="border-left: 4px solid {{ $saldo >= 0 ? '#6366f1' : '#ef4444' }};">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div class="card" style="border-top: 3px solid {{ $saldo >= 0 ? '#4f46e5' : '#dc2626' }};">
+        <div class="d-flex justify-between align-center">
             <div>
-                <div class="text-muted">Saldo do Período</div>
-                <div style="font-size:26px;font-weight:800;color:{{ $saldo >= 0 ? '#6366f1' : '#ef4444' }};margin:4px 0;">
+                <div class="kpi-label">Saldo do Período</div>
+                <div class="kpi-value" style="color: {{ $saldo >= 0 ? '#4f46e5' : '#dc2626' }}">
                     R$ {{ number_format($saldo, 2, ',', '.') }}
                 </div>
-                <div style="font-size:12px;color:#94a3b8;">
+                <div class="mt-1">
                     @if($variacaoSaldo >= 0)
-                        <span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoSaldo, 1) }}%</span>
+                        <span class="badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoSaldo, 1) }}%</span>
                     @else
-                        <span class="badge badge-danger"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoSaldo), 1) }}%</span>
+                        <span class="badge badge-red"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoSaldo), 1) }}%</span>
                     @endif
-                    vs mês anterior
+                    <span class="text-subtle" style="font-size:11px;"> vs mês anterior</span>
                 </div>
             </div>
-            <div class="kpi-icon" style="background:#ede9fe;color:#7c3aed;">
+            <div class="kpi-icon" style="background:#ede9fe; color:#6d28d9;">
                 <i class="fa-solid fa-scale-balanced"></i>
             </div>
         </div>
-        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:13px;color:#64748b;">
-            Total Investido: <strong style="color:#7c3aed;">R$ {{ number_format($totalInvestido, 2, ',', '.') }}</strong>
+        <div class="kpi-sub">
+            Total Investido: <strong style="color:#6d28d9">R$ {{ number_format($totalInvestido, 2, ',', '.') }}</strong>
         </div>
     </div>
 </div>
 
-{{-- Infocards: Último Mês / Próximo Mês --}}
-<div class="grid-4" style="margin-bottom: 24px;">
-    <div class="card" style="padding:16px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.04em;">Pago (Últ. Mês)</div>
-        <div style="font-size:20px;font-weight:800;color:#ef4444;margin-top:4px;">R$ {{ number_format($pagamentoUltimoMes, 2, ',', '.') }}</div>
+{{-- Info cards --}}
+<div class="grid-4 mb-5">
+    <div class="card">
+        <div class="kpi-label">Pago — Último Mês</div>
+        <div class="kpi-value text-red mt-1">R$ {{ number_format($pagamentoUltimoMes, 2, ',', '.') }}</div>
     </div>
-    <div class="card" style="padding:16px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.04em;">Recebido (Últ. Mês)</div>
-        <div style="font-size:20px;font-weight:800;color:#10b981;margin-top:4px;">R$ {{ number_format($recebidoUltimoMes, 2, ',', '.') }}</div>
+    <div class="card">
+        <div class="kpi-label">Recebido — Último Mês</div>
+        <div class="kpi-value text-green mt-1">R$ {{ number_format($recebidoUltimoMes, 2, ',', '.') }}</div>
     </div>
-    <div class="card" style="padding:16px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.04em;">À Pagar (Próx. Mês)</div>
-        <div style="font-size:20px;font-weight:800;color:#f59e0b;margin-top:4px;">R$ {{ number_format($previsaoDespesasProxMes, 2, ',', '.') }}</div>
+    <div class="card">
+        <div class="kpi-label">À Pagar — Próx. Mês</div>
+        <div class="kpi-value text-amber mt-1">R$ {{ number_format($previsaoDespesasProxMes, 2, ',', '.') }}</div>
     </div>
-    <div class="card" style="padding:16px;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.04em;">À Receber (Próx. Mês)</div>
-        <div style="font-size:20px;font-weight:800;color:#6366f1;margin-top:4px;">R$ {{ number_format($previsaoReceitasProxMes, 2, ',', '.') }}</div>
+    <div class="card">
+        <div class="kpi-label">À Receber — Próx. Mês</div>
+        <div class="kpi-value mt-1" style="color:#4f46e5">R$ {{ number_format($previsaoReceitasProxMes, 2, ',', '.') }}</div>
     </div>
 </div>
 
-{{-- Gráficos --}}
-<div class="grid-2" style="margin-bottom: 24px;">
+{{-- Gráficos: Fluxo de caixa + Patrimônio --}}
+<div class="grid-2 mb-5">
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-chart-line" style="color:#6366f1;"></i> Fluxo de Caixa {{ $ano }}
+        <div class="card-title">
+            <i class="fa-solid fa-chart-column" style="color:#4f46e5;"></i>
+            Fluxo de Caixa {{ $ano }}
         </div>
-        <canvas id="annualChart" height="200"></canvas>
+        <div class="chart-box">
+            <canvas id="annualChart"></canvas>
+        </div>
     </div>
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-chart-bar" style="color:#f59e0b;"></i> Patrimônio Acumulado {{ $ano }}
+        <div class="card-title">
+            <i class="fa-solid fa-chart-line" style="color:#d97706;"></i>
+            Patrimônio Acumulado {{ $ano }}
         </div>
-        <canvas id="investChart" height="200"></canvas>
+        <div class="chart-box">
+            <canvas id="investChart"></canvas>
+        </div>
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom: 24px;">
+{{-- Gráficos: Categorias --}}
+<div class="grid-2 mb-5">
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-chart-pie" style="color:#ef4444;"></i> Despesas por Categoria
+        <div class="card-title">
+            <i class="fa-solid fa-chart-pie" style="color:#dc2626;"></i>
+            Despesas por Categoria
         </div>
         @if(count($despesasPorCategoria) > 0)
-            <canvas id="expCatChart" height="220"></canvas>
+            <div class="chart-box-sm"><canvas id="expCatChart"></canvas></div>
         @else
-            <div style="text-align:center;padding:40px;color:#94a3b8;">Sem despesas no período</div>
+            <div class="empty-state"><i class="fa-regular fa-circle-xmark"></i><p>Sem despesas no período</p></div>
         @endif
     </div>
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-chart-pie" style="color:#10b981;"></i> Receitas por Categoria
+        <div class="card-title">
+            <i class="fa-solid fa-chart-pie" style="color:#16a34a;"></i>
+            Receitas por Categoria
         </div>
         @if(count($receitasPorCategoria) > 0)
-            <canvas id="incCatChart" height="220"></canvas>
+            <div class="chart-box-sm"><canvas id="incCatChart"></canvas></div>
         @else
-            <div style="text-align:center;padding:40px;color:#94a3b8;">Sem receitas no período</div>
+            <div class="empty-state"><i class="fa-regular fa-circle-xmark"></i><p>Sem receitas no período</p></div>
         @endif
     </div>
 </div>
 
-{{-- Saldos e Últimos Lançamentos --}}
-<div class="grid-2" style="margin-bottom: 24px;">
-    {{-- Saldos Bancários --}}
+{{-- Contas + Últimos Lançamentos --}}
+<div class="grid-2">
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-building-columns" style="color:#6366f1;"></i> Contas Bancárias
+        <div class="card-title">
+            <i class="fa-solid fa-building-columns"></i> Contas Bancárias
         </div>
         @forelse($bancos as $banco)
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f8fafc;">
+            <div class="d-flex justify-between align-center" style="padding:9px 0; border-bottom:1px solid #f8fafc;">
                 <div>
-                    <div style="font-weight:600;font-size:14px;color:#1e293b;">{{ $banco->nome }}</div>
-                    <div style="font-size:12px;color:#94a3b8;">{{ $banco->tipo_conta }}</div>
+                    <div class="fw-600" style="font-size:13px;">{{ $banco->nome }}</div>
+                    <div style="font-size:11px;" class="text-subtle">{{ $banco->tipo_conta }}</div>
                 </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:700;font-size:15px;color:{{ $banco->saldo >= 0 ? '#16a34a' : '#dc2626' }};">
+                <div class="text-right">
+                    <div class="fw-600 {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}" style="font-size:14px;">
                         R$ {{ number_format($banco->saldo, 2, ',', '.') }}
                     </div>
                     @if($banco->limite_cartao > 0)
-                        <div style="font-size:11px;color:#94a3b8;">Cartão: R$ {{ number_format($banco->saldo_cartao, 2, ',', '.') }} / {{ number_format($banco->limite_cartao, 2, ',', '.') }}</div>
+                        <div style="font-size:11px;" class="text-subtle">
+                            Cartão: R$ {{ number_format($banco->saldo_cartao, 2, ',', '.') }}
+                        </div>
                     @endif
                 </div>
             </div>
         @empty
-            <div style="text-align:center;padding:24px;color:#94a3b8;">
-                <i class="fa-solid fa-building-columns" style="font-size:32px;margin-bottom:8px;display:block;"></i>
-                Nenhuma conta cadastrada
-            </div>
+            <div class="empty-state"><i class="fa-solid fa-building-columns"></i><p>Nenhuma conta cadastrada</p></div>
         @endforelse
-        <div style="margin-top:12px;">
-            <a href="{{ route('bancos.index') }}" class="btn-secondary" style="font-size:12px;width:100%;justify-content:center;">Ver todas</a>
+        <div class="mt-3">
+            <a href="{{ route('bancos.index') }}" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;">
+                Ver todas
+            </a>
         </div>
     </div>
 
-    {{-- Últimos Lançamentos --}}
     <div class="card">
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:16px;">
-            <i class="fa-solid fa-list" style="color:#6366f1;"></i> Últimos Lançamentos
+        <div class="card-title">
+            <i class="fa-solid fa-clock-rotate-left"></i> Últimos Lançamentos
         </div>
         @forelse($ultimosLancamentos as $lancamento)
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f8fafc;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:32px;height:32px;border-radius:8px;background:{{ $lancamento->tipo === 'receita' ? '#dcfce7' : '#fee2e2' }};display:flex;align-items:center;justify-content:center;">
-                        <i class="fa-solid {{ $lancamento->tipo === 'receita' ? 'fa-arrow-down' : 'fa-arrow-up' }}" style="color:{{ $lancamento->tipo === 'receita' ? '#16a34a' : '#dc2626' }};font-size:12px;"></i>
+            <div class="d-flex justify-between align-center" style="padding:8px 0; border-bottom:1px solid #f8fafc;">
+                <div class="d-flex align-center gap-2">
+                    <div style="width:30px;height:30px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ $lancamento->tipo === 'receita' ? '#dcfce7' : '#fee2e2' }};">
+                        <i class="fa-solid {{ $lancamento->tipo === 'receita' ? 'fa-arrow-down' : 'fa-arrow-up' }}" style="font-size:11px;color:{{ $lancamento->tipo === 'receita' ? '#16a34a' : '#dc2626' }};"></i>
                     </div>
                     <div>
-                        <div style="font-size:13px;font-weight:600;color:#1e293b;">{{ $lancamento->categoria_nome }}</div>
-                        <div style="font-size:11px;color:#94a3b8;">{{ \Carbon\Carbon::parse($lancamento->data)->format('d/m/Y') }}</div>
+                        <div class="fw-600" style="font-size:13px;">{{ $lancamento->categoria_nome }}</div>
+                        <div style="font-size:11px;" class="text-subtle">{{ \Carbon\Carbon::parse($lancamento->data)->format('d/m/Y') }}</div>
                     </div>
                 </div>
-                <div style="font-weight:700;font-size:14px;color:{{ $lancamento->tipo === 'receita' ? '#16a34a' : '#dc2626' }};">
-                    {{ $lancamento->tipo === 'receita' ? '+' : '-' }} R$ {{ number_format($lancamento->valor, 2, ',', '.') }}
+                <div class="fw-600 {{ $lancamento->tipo === 'receita' ? 'text-green' : 'text-red' }}" style="font-size:13px;">
+                    {{ $lancamento->tipo === 'receita' ? '+' : '−' }} R$ {{ number_format($lancamento->valor, 2, ',', '.') }}
                 </div>
             </div>
         @empty
-            <div style="text-align:center;padding:24px;color:#94a3b8;">Nenhum lançamento encontrado</div>
+            <div class="empty-state"><i class="fa-regular fa-folder-open"></i><p>Nenhum lançamento encontrado</p></div>
         @endforelse
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
 <script>
-const meses = {!! json_encode($mesesLabels) !!};
-const chartColors = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4','#84cc16','#a855f7','#3b82f6'];
+const _meses = {!! json_encode($mesesLabels) !!};
+const _colors = ['#4f46e5','#16a34a','#d97706','#dc2626','#7c3aed','#db2777','#0891b2','#ea580c','#0d9488','#65a30d','#9333ea','#2563eb'];
+const _chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12, padding: 10 } } }
+};
 
-// Fluxo de caixa anual
 new Chart(document.getElementById('annualChart'), {
     type: 'bar',
     data: {
-        labels: meses,
+        labels: _meses,
         datasets: [
-            { label: 'Receitas', data: {!! json_encode($receitasMes) !!}, backgroundColor: 'rgba(16,185,129,.7)', borderRadius: 6 },
-            { label: 'Despesas', data: {!! json_encode($despesasMes) !!}, backgroundColor: 'rgba(239,68,68,.7)', borderRadius: 6 }
+            { label: 'Receitas', data: {!! json_encode($receitasMes) !!}, backgroundColor: 'rgba(22,163,74,.7)', borderRadius: 4, borderSkipped: false },
+            { label: 'Despesas', data: {!! json_encode($despesasMes) !!}, backgroundColor: 'rgba(220,38,38,.65)', borderRadius: 4, borderSkipped: false }
         ]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    options: { ..._chartDefaults, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
 });
 
-// Patrimônio
 new Chart(document.getElementById('investChart'), {
     type: 'line',
     data: {
-        labels: meses,
-        datasets: [{ label: 'Patrimônio Acumulado', data: {!! json_encode($patrimonioAcumulado) !!}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,.1)', fill: true, tension: .4 }]
+        labels: _meses,
+        datasets: [{ label: 'Patrimônio (R$)', data: {!! json_encode($patrimonioAcumulado) !!}, borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,.08)', fill: true, tension: .35, pointRadius: 3 }]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    options: { ..._chartDefaults, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10 } }, grid: { display: false } } } }
 });
 
 @if(count($despesasPorCategoria) > 0)
@@ -250,9 +256,9 @@ new Chart(document.getElementById('expCatChart'), {
     type: 'doughnut',
     data: {
         labels: {!! json_encode($despesasPorCategoria->pluck('nome')) !!},
-        datasets: [{ data: {!! json_encode($despesasPorCategoria->pluck('total')) !!}, backgroundColor: chartColors }]
+        datasets: [{ data: {!! json_encode($despesasPorCategoria->pluck('total')) !!}, backgroundColor: _colors, borderWidth: 1 }]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    options: { ..._chartDefaults, cutout: '60%' }
 });
 @endif
 
@@ -261,9 +267,9 @@ new Chart(document.getElementById('incCatChart'), {
     type: 'doughnut',
     data: {
         labels: {!! json_encode($receitasPorCategoria->pluck('nome')) !!},
-        datasets: [{ data: {!! json_encode($receitasPorCategoria->pluck('total')) !!}, backgroundColor: chartColors }]
+        datasets: [{ data: {!! json_encode($receitasPorCategoria->pluck('total')) !!}, backgroundColor: _colors, borderWidth: 1 }]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    options: { ..._chartDefaults, cutout: '60%' }
 });
 @endif
 </script>

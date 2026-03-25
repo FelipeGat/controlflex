@@ -3,132 +3,147 @@
 @section('page-title', 'Fornecedores')
 
 @section('content')
-<div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-    <button class="btn-primary" onclick="openModal('modal-novo-fornecedor')">
+
+<div class="section-header mb-4">
+    <span></span>
+    <button class="btn btn-primary" onclick="openModal('modal-novo-fornecedor')">
         <i class="fa-solid fa-plus"></i> Novo Fornecedor
     </button>
 </div>
 
 <div class="card">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Contato</th>
-                <th>CNPJ</th>
-                <th>Telefone</th>
-                <th>Observações</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($fornecedores as $forn)
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><strong>{{ $forn->nome }}</strong></td>
-                    <td>{{ $forn->contato ?? '—' }}</td>
-                    <td>{{ $forn->cnpj ?? '—' }}</td>
-                    <td>{{ $forn->telefone ?? '—' }}</td>
-                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $forn->observacoes ?? '—' }}</td>
-                    <td>
-                        <div style="display:flex;gap:6px;">
-                            <button onclick="editarFornecedor({{ $forn->id }}, {{ $forn->toJson() }})" class="btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></button>
-                            <form method="POST" action="{{ route('fornecedores.destroy', $forn) }}" onsubmit="return confirm('Excluir este fornecedor?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
-                            </form>
-                        </div>
-                    </td>
+                    <th>Nome</th>
+                    <th class="hide-mobile">Contato</th>
+                    <th class="hide-mobile">CNPJ</th>
+                    <th class="hide-mobile">Telefone</th>
+                    <th></th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align:center;padding:32px;color:#94a3b8;">
-                        <i class="fa-solid fa-store" style="font-size:32px;display:block;margin-bottom:8px;"></i>
-                        Nenhum fornecedor cadastrado
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div style="margin-top:16px;">{{ $fornecedores->links() }}</div>
+            </thead>
+            <tbody>
+                @forelse($fornecedores as $forn)
+                    <tr>
+                        <td><strong>{{ $forn->nome }}</strong></td>
+                        <td class="hide-mobile">{{ $forn->contato ?? '—' }}</td>
+                        <td class="hide-mobile">{{ $forn->cnpj ?? '—' }}</td>
+                        <td class="hide-mobile">{{ $forn->telefone ?? '—' }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button onclick="editarFornecedor({{ $forn->id }}, {{ $forn->toJson() }})" class="btn btn-ghost btn-icon btn-sm" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <form method="POST" action="{{ route('fornecedores.destroy', $forn) }}" onsubmit="return confirm('Excluir este fornecedor?')" style="display:inline;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-icon btn-sm text-red" title="Excluir">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-store"></i>
+                                <p>Nenhum fornecedor cadastrado</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-4">{{ $fornecedores->links() }}</div>
 </div>
 
 {{-- Modal Novo --}}
 <div class="modal-backdrop" id="modal-novo-fornecedor">
     <div class="modal">
-        <div class="modal-title">
-            <i class="fa-solid fa-store" style="color:#6366f1;"></i> Novo Fornecedor
-            <button onclick="closeModal('modal-novo-fornecedor')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">&times;</button>
+        <div class="modal-header">
+            <i class="fa-solid fa-store" style="color:var(--color-primary);"></i>
+            <h3>Novo Fornecedor</h3>
+            <button class="modal-close" onclick="closeModal('modal-novo-fornecedor')">&times;</button>
         </div>
-        <form method="POST" action="{{ route('fornecedores.store') }}">
-            @csrf
-            <div class="grid-2" style="gap:12px;">
-                <div style="grid-column:span 2;">
-                    <label class="form-label">Nome *</label>
-                    <input type="text" name="nome" class="form-control" required placeholder="Nome do fornecedor / loja">
+        <div class="modal-body">
+            <form method="POST" action="{{ route('fornecedores.store') }}">
+                @csrf
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label class="form-label">Nome *</label>
+                        <input type="text" name="nome" class="form-control" required placeholder="Nome do fornecedor / loja">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contato</label>
+                        <input type="text" name="contato" class="form-control" placeholder="Nome do contato">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">CNPJ</label>
+                        <input type="text" name="cnpj" class="form-control" placeholder="00.000.000/0000-00">
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">Observações</label>
+                        <textarea name="observacoes" class="form-control" rows="3" placeholder="Observações..."></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Contato</label>
-                    <input type="text" name="contato" class="form-control" placeholder="Nome do contato">
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('modal-novo-fornecedor')" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
                 </div>
-                <div>
-                    <label class="form-label">Telefone</label>
-                    <input type="text" name="telefone" class="form-control" placeholder="(00) 00000-0000">
-                </div>
-                <div style="grid-column:span 2;">
-                    <label class="form-label">CNPJ</label>
-                    <input type="text" name="cnpj" class="form-control" placeholder="00.000.000/0000-00">
-                </div>
-                <div style="grid-column:span 2;">
-                    <label class="form-label">Observações</label>
-                    <textarea name="observacoes" class="form-control" rows="3" placeholder="Observações..."></textarea>
-                </div>
-            </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-                <button type="button" onclick="closeModal('modal-novo-fornecedor')" class="btn-secondary">Cancelar</button>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Salvar</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
 {{-- Modal Editar --}}
 <div class="modal-backdrop" id="modal-editar-fornecedor">
     <div class="modal">
-        <div class="modal-title">
-            <i class="fa-solid fa-pen" style="color:#6366f1;"></i> Editar Fornecedor
-            <button onclick="closeModal('modal-editar-fornecedor')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">&times;</button>
+        <div class="modal-header">
+            <i class="fa-solid fa-pen" style="color:var(--color-primary);"></i>
+            <h3>Editar Fornecedor</h3>
+            <button class="modal-close" onclick="closeModal('modal-editar-fornecedor')">&times;</button>
         </div>
-        <form method="POST" action="" id="form-editar-fornecedor">
-            @csrf @method('PUT')
-            <div class="grid-2" style="gap:12px;">
-                <div style="grid-column:span 2;">
-                    <label class="form-label">Nome *</label>
-                    <input type="text" name="nome" id="forn-edit-nome" class="form-control" required>
+        <div class="modal-body">
+            <form method="POST" action="" id="form-editar-fornecedor">
+                @csrf @method('PUT')
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label class="form-label">Nome *</label>
+                        <input type="text" name="nome" id="forn-edit-nome" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contato</label>
+                        <input type="text" name="contato" id="forn-edit-contato" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" name="telefone" id="forn-edit-telefone" class="form-control">
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">CNPJ</label>
+                        <input type="text" name="cnpj" id="forn-edit-cnpj" class="form-control">
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">Observações</label>
+                        <textarea name="observacoes" id="forn-edit-obs" class="form-control" rows="3"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label">Contato</label>
-                    <input type="text" name="contato" id="forn-edit-contato" class="form-control">
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('modal-editar-fornecedor')" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Atualizar</button>
                 </div>
-                <div>
-                    <label class="form-label">Telefone</label>
-                    <input type="text" name="telefone" id="forn-edit-telefone" class="form-control">
-                </div>
-                <div style="grid-column:span 2;">
-                    <label class="form-label">CNPJ</label>
-                    <input type="text" name="cnpj" id="forn-edit-cnpj" class="form-control">
-                </div>
-                <div style="grid-column:span 2;">
-                    <label class="form-label">Observações</label>
-                    <textarea name="observacoes" id="forn-edit-obs" class="form-control" rows="3"></textarea>
-                </div>
-            </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-                <button type="button" onclick="closeModal('modal-editar-fornecedor')" class="btn-secondary">Cancelar</button>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Atualizar</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')

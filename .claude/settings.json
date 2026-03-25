@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql -u root -e \"SHOW TABLES FROM controleflex;\")",
+      "Bash(/c/xampp/mysql/bin/mysql -u root -e \"SHOW TABLES FROM controleflex;\")",
+      "Bash(/c/xampp/mysql/bin/mysql -u root -e \"SHOW TABLES FROM controleflex_laravel;\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Duque de Caxias\\.claude\\projects\\c--xampp-htdocs-controleflex-laravel"
+    ]
+  }
+}
