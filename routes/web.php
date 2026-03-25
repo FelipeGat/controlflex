@@ -9,6 +9,7 @@ use App\Http\Controllers\FamiliarController;
 use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\InvestimentoController;
+use App\Http\Controllers\LancamentoDiarioController;
 use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
@@ -55,6 +56,10 @@ Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(func
 // ─── Tenant (Master / Membro) ───────────────────────────────────────────────
 Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Lançamento Diário
+    Route::get('/lancamentos-diarios', [LancamentoDiarioController::class, 'index'])->name('lancamentos-diarios.index')->middleware('permissao:despesas,criar');
+    Route::post('/lancamentos-diarios/escanear', [LancamentoDiarioController::class, 'escanear'])->name('lancamentos-diarios.escanear')->middleware('permissao:despesas,criar');
 
     // Despesas
     Route::get('/despesas', [DespesaController::class, 'index'])->name('despesas.index')->middleware('permissao:despesas,ver');

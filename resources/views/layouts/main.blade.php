@@ -519,6 +519,13 @@
         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-label="Dashboard">
             <i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span>
         </a>
+
+        <div class="sidebar-section-label">Lançamentos</div>
+        @if(Auth::user()->temPermissao('despesas', 'criar'))
+        <a href="{{ route('lancamentos-diarios.index') }}" class="sidebar-link {{ request()->routeIs('lancamentos-diarios.*') ? 'active' : '' }}" data-label="Lançamento Diário">
+            <i class="fa-solid fa-bolt"></i> <span>Lançamento Diário</span>
+        </a>
+        @endif
         @if(Auth::user()->temPermissao('despesas', 'ver'))
         <a href="{{ route('despesas.index') }}" class="sidebar-link {{ request()->routeIs('despesas.*') ? 'active' : '' }}" data-label="Despesas">
             <i class="fa-solid fa-arrow-trend-down"></i> <span>Despesas</span>
@@ -658,6 +665,13 @@
                     <i class="fa-solid fa-gauge-high"></i> Dashboard
                 </a>
             </li>
+            @if(Auth::user()->temPermissao('despesas', 'criar'))
+            <li>
+                <a href="{{ route('lancamentos-diarios.index') }}" class="{{ request()->routeIs('lancamentos-diarios.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-bolt"></i> Diário
+                </a>
+            </li>
+            @endif
             @if(Auth::user()->temPermissao('despesas', 'ver'))
             <li>
                 <a href="{{ route('despesas.index') }}" class="{{ request()->routeIs('despesas.*') ? 'active' : '' }}">
@@ -676,13 +690,6 @@
             <li>
                 <a href="{{ route('bancos.index') }}" class="{{ request()->routeIs('bancos.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-building-columns"></i> Contas
-                </a>
-            </li>
-            @endif
-            @if(Auth::user()->temPermissao('investimentos', 'ver'))
-            <li>
-                <a href="{{ route('investimentos.index') }}" class="{{ request()->routeIs('investimentos.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-seedling"></i> Invest.
                 </a>
             </li>
             @endif
