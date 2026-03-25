@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'foto', 'tenant_id', 'revenda_id', 'role', 'permissoes', 'ativo'];
+    protected $fillable = ['name', 'email', 'password', 'foto', 'tenant_id', 'revenda_id', 'familiar_id', 'role', 'permissoes', 'ativo'];
     protected $hidden   = ['password', 'remember_token'];
 
     protected function casts(): array
@@ -68,6 +68,7 @@ class User extends Authenticatable
     }
 
     // ─── Relacionamentos com dados do tenant ────────────────────────────────────
+    public function familiar()     { return $this->belongsTo(Familiar::class); }
     public function familiares()   { return $this->hasMany(Familiar::class); }
     public function categorias()   { return $this->hasMany(Categoria::class); }
     public function fornecedores() { return $this->hasMany(Fornecedor::class); }

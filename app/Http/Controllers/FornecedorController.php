@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fornecedor;
+use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,7 +11,8 @@ class FornecedorController extends Controller
 {
     public function index()
     {
-        $fornecedores = Fornecedor::orderBy('nome')->paginate(20);
+        $fornecedores = Fornecedor::orderBy('grupo')->orderBy('nome')->get()
+            ->groupBy(fn($f) => $f->grupo ?: 'Outros');
         return view('fornecedores.index', compact('fornecedores'));
     }
 
@@ -25,11 +27,13 @@ class FornecedorController extends Controller
         ]);
 
         Fornecedor::create([
-            'user_id' => Auth::id(),
-            'nome' => $request->nome,
-            'contato' => $request->contato,
-            'cnpj' => $request->cnpj,
-            'telefone' => $request->telefone,
+            'user_id'     => Auth::id(),
+            'nome'        => $request->nome,
+            'icone'       => $request->icone ?: 'fa-store',
+            'grupo'       => $request->grupo ?: null,
+            'contato'     => $request->contato,
+            'cnpj'        => $request->cnpj,
+            'telefone'    => $request->telefone,
             'observacoes' => $request->observacoes,
         ]);
 
@@ -48,7 +52,7 @@ class FornecedorController extends Controller
             'observacoes' => 'nullable|string',
         ]);
 
-        $fornecedor->update($request->only(['nome', 'contato', 'cnpj', 'telefone', 'observacoes']));
+        $fornecedor->update($request->only(['nome', 'icone', 'grupo', 'contato', 'cnpj', 'telefone', 'observacoes']));
 
         return back()->with('success', 'Fornecedor atualizado com sucesso!');
     }
@@ -58,5 +62,12 @@ class FornecedorController extends Controller
         $this->authorize('delete', $fornecedor);
         $fornecedor->delete();
         return back()->with('success', 'Fornecedor excluído com sucesso!');
+    }
+
+    public function importarPadrao()
+    {
+        $user = Auth::user();
+        FornecedoresDefaultSeeder::seedParaTenant($user->tenant_id, $user->id);
+        return back()->with('success', 'Fornecedores padrão importados com sucesso!');
     }
 }

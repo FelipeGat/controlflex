@@ -36,6 +36,8 @@ class BancoController extends Controller
             'codigo_banco'    => 'nullable|string|max:10',
             'agencia'         => 'nullable|string|max:20',
             'conta'           => 'nullable|string|max:30',
+            'logo'            => 'nullable|string|max:100',
+            'cor'             => 'nullable|string|max:7',
         ]);
 
         Banco::create([
@@ -51,6 +53,8 @@ class BancoController extends Controller
             'saldo_cheque'    => 0,
             'limite_cartao'   => $request->limite_cartao ?? 0,
             'saldo_cartao'    => 0,
+            'logo'            => $request->logo,
+            'cor'             => $request->cor,
         ]);
 
         return back()->with('success', 'Conta bancária criada com sucesso!');
@@ -72,6 +76,8 @@ class BancoController extends Controller
             'codigo_banco'    => 'nullable|string|max:10',
             'agencia'         => 'nullable|string|max:20',
             'conta'           => 'nullable|string|max:30',
+            'logo'            => 'nullable|string|max:100',
+            'cor'             => 'nullable|string|max:7',
         ]);
 
         $banco->update([
@@ -84,6 +90,8 @@ class BancoController extends Controller
             'saldo'           => $request->saldo ?? 0,
             'cheque_especial' => $request->cheque_especial ?? 0,
             'limite_cartao'   => $request->limite_cartao ?? 0,
+            'logo'            => $request->logo,
+            'cor'             => $request->cor,
         ]);
 
         return back()->with('success', 'Conta atualizada com sucesso!');

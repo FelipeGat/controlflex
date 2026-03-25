@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32">
+  <rect width="60" height="32" rx="6" fill="#242424"/>
+  <!-- Subtle bottom accent line -->
+  <rect x="6" y="27" width="48" height="2" rx="1" fill="#C4FF00" opacity="0.4"/>
+  <text x="30" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700" fill="white" text-anchor="middle">
+    <tspan fill="#C4FF00">C</tspan><tspan fill="white">6</tspan>
+  </text>
+</svg>

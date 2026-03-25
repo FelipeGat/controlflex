@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32">
+  <rect width="60" height="32" rx="6" fill="#16a34a"/>
+  <!-- Wallet body -->
+  <rect x="12" y="10" width="36" height="14" rx="2.5" fill="white" opacity="0.95"/>
+  <!-- Wallet flap / top fold -->
+  <rect x="12" y="10" width="36" height="5" rx="2.5" fill="white"/>
+  <rect x="12" y="13" width="36" height="2" fill="white" opacity="0.6"/>
+  <!-- Coin slot / card slot line -->
+  <rect x="14" y="16.5" width="20" height="1.5" rx="0.75" fill="#16a34a" opacity="0.35"/>
+  <!-- Clasp circle on right -->
+  <circle cx="43" cy="17.5" rx="3" ry="3" fill="#16a34a" opacity="0.25"/>
+  <circle cx="43" cy="17.5" rx="1.5" ry="1.5" fill="#16a34a" opacity="0.4"/>
+</svg>

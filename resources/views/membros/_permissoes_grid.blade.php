@@ -11,7 +11,16 @@ $modulos = [
 $acoes = ['ver' => 'Ver', 'criar' => 'Criar', 'editar' => 'Editar', 'excluir' => 'Excluir'];
 @endphp
 
-<div style="border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
+<div class="perm-grid-wrapper" style="border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fafafa;border-bottom:1px solid var(--color-border);">
+        <span style="font-size:11px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;">Permissões</span>
+        <button type="button"
+            class="perm-toggle-all"
+            onclick="toggleAllPermissoes(this)"
+            style="font-size:11px;font-weight:600;color:var(--color-primary);background:none;border:1px solid var(--color-primary);border-radius:4px;padding:3px 10px;cursor:pointer;line-height:1.4;">
+            <i class="fa-solid fa-check-double" style="margin-right:4px;"></i>Marcar todas
+        </button>
+    </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
             <tr style="background:#fafafa;">
@@ -41,3 +50,15 @@ $acoes = ['ver' => 'Ver', 'criar' => 'Criar', 'editar' => 'Editar', 'excluir' =>
         </tbody>
     </table>
 </div>
+
+<script>
+function toggleAllPermissoes(btn) {
+    const wrapper = btn.closest('.perm-grid-wrapper');
+    const checkboxes = wrapper.querySelectorAll('input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(c => c.checked);
+    checkboxes.forEach(c => c.checked = !allChecked);
+    btn.innerHTML = allChecked
+        ? '<i class="fa-solid fa-check-double" style="margin-right:4px;"></i>Marcar todas'
+        : '<i class="fa-solid fa-xmark" style="margin-right:4px;"></i>Desmarcar todas';
+}
+</script>

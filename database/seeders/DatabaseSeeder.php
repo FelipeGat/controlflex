@@ -14,6 +14,8 @@ use App\Models\Revenda;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
+use Database\Seeders\CategoriasDefaultSeeder;
+use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -102,34 +104,27 @@ class DatabaseSeeder extends Seeder
 
         // ─── Categorias ───────────────────────────────────────────────────────
 
-        $cats = [
-            ['nome' => 'Alimentação',   'tipo' => 'DESPESA', 'icone' => 'fa-utensils'],
-            ['nome' => 'Moradia',        'tipo' => 'DESPESA', 'icone' => 'fa-house'],
-            ['nome' => 'Transporte',     'tipo' => 'DESPESA', 'icone' => 'fa-car'],
-            ['nome' => 'Saúde',          'tipo' => 'DESPESA', 'icone' => 'fa-heart-pulse'],
-            ['nome' => 'Lazer',          'tipo' => 'DESPESA', 'icone' => 'fa-gamepad'],
-            ['nome' => 'Educação',       'tipo' => 'DESPESA', 'icone' => 'fa-graduation-cap'],
-            ['nome' => 'Roupas',         'tipo' => 'DESPESA', 'icone' => 'fa-shirt'],
-            ['nome' => 'Outros',         'tipo' => 'DESPESA', 'icone' => 'fa-ellipsis'],
-            ['nome' => 'Salário',        'tipo' => 'RECEITA', 'icone' => 'fa-briefcase'],
-            ['nome' => 'Freelance',      'tipo' => 'RECEITA', 'icone' => 'fa-laptop'],
-            ['nome' => 'Investimentos',  'tipo' => 'RECEITA', 'icone' => 'fa-chart-line'],
-            ['nome' => 'Outros',         'tipo' => 'RECEITA', 'icone' => 'fa-ellipsis'],
-        ];
+        CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);
 
-        $cm = [];
-        foreach ($cats as $cat) {
-            $c = Categoria::create(array_merge($cat, ['user_id' => $user->id]));
-            $cm[$cat['nome'] . '_' . $cat['tipo']] = $c->id;
-        }
+        // Mapa para uso no seed de despesas/receitas
+        $cm = Categoria::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->get()
+            ->keyBy(fn($c) => $c->nome . '_' . $c->tipo)
+            ->map(fn($c) => $c->id)
+            ->toArray();
 
         // ─── Fornecedores ─────────────────────────────────────────────────────
 
-        $supermercado = Fornecedor::create(['user_id' => $user->id, 'nome' => 'Supermercado Extra',  'telefone' => '(11) 3000-0000']);
-        $farmacia     = Fornecedor::create(['user_id' => $user->id, 'nome' => 'Farmácia Popular',    'telefone' => '(11) 3001-0000']);
-        $restaurante  = Fornecedor::create(['user_id' => $user->id, 'nome' => 'Restaurante do Zé',  'telefone' => '(11) 3002-0000']);
-        $posto        = Fornecedor::create(['user_id' => $user->id, 'nome' => 'Posto Shell',         'telefone' => '(11) 3003-0000']);
-        $academia     = Fornecedor::create(['user_id' => $user->id, 'nome' => 'Smart Fit',           'telefone' => '(11) 3004-0000']);
+        FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $user->id);
+
+        // Aliases para uso nos seeds de despesas
+        $supermercado = Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('nome', 'Extra')->first()
+            ?? Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('grupo', 'Supermercados')->first();
+        $farmacia     = Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('nome', 'Droga Raia')->first();
+        $restaurante  = Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('nome', "McDonald's")->first();
+        $posto        = Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('nome', 'Posto Shell')->first();
+        $academia     = Fornecedor::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('nome', 'Smart Fit')->first();
 
         // ─── Bancos ───────────────────────────────────────────────────────────
 

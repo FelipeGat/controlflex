@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categoria;
+use Database\Seeders\CategoriasDefaultSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,5 +57,12 @@ class CategoriaController extends Controller
         $this->authorize('delete', $categoria);
         $categoria->delete();
         return back()->with('success', 'Categoria excluída com sucesso!');
+    }
+
+    public function importarPadrao()
+    {
+        $user = Auth::user();
+        CategoriasDefaultSeeder::seedParaTenant($user->tenant_id, $user->id);
+        return back()->with('success', 'Categorias padrão importadas com sucesso!');
     }
 }

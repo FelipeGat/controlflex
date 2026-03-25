@@ -10,7 +10,7 @@ class Fornecedor extends Model
     use BelongsToTenant;
 
     protected $table = 'fornecedores';
-    protected $fillable = ['tenant_id', 'user_id', 'nome', 'contato', 'cnpj', 'telefone', 'observacoes'];
+    protected $fillable = ['tenant_id', 'user_id', 'nome', 'icone', 'grupo', 'contato', 'cnpj', 'telefone', 'observacoes'];
 
     public function user()
     {

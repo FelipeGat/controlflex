@@ -6,9 +6,13 @@
 
 <div class="section-header mb-4">
     <span></span>
-    <button class="btn btn-primary" onclick="openModal('modal-nova-categoria')">
-        <i class="fa-solid fa-plus"></i> Nova Categoria
-    </button>
+    <div class="d-flex gap-2">
+        @if(Auth::user()->temPermissao('categorias', 'criar'))
+        <button class="btn btn-primary" onclick="openModal('modal-nova-categoria')">
+            <i class="fa-solid fa-plus"></i> Nova Categoria
+        </button>
+        @endif
+    </div>
 </div>
 
 <div class="grid-2">
@@ -29,7 +33,11 @@
                 <tbody>
                     @foreach($categorias->where('tipo', 'DESPESA') as $cat)
                         <tr>
-                            <td><i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#dc2626;font-size:15px;"></i></td>
+                            <td>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#fee2e2;">
+                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#dc2626;font-size:13px;"></i>
+                                </span>
+                            </td>
                             <td>{{ $cat->nome }}</td>
                             <td>
                                 <div class="d-flex gap-2">
@@ -68,7 +76,11 @@
                 <tbody>
                     @foreach($categorias->where('tipo', 'RECEITA') as $cat)
                         <tr>
-                            <td><i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#16a34a;font-size:15px;"></i></td>
+                            <td>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#dcfce7;">
+                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#16a34a;font-size:13px;"></i>
+                                </span>
+                            </td>
                             <td>{{ $cat->nome }}</td>
                             <td>
                                 <div class="d-flex gap-2">

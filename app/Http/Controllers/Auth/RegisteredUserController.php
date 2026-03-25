@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\BancosDefaultSeeder;
+use Database\Seeders\CategoriasDefaultSeeder;
+use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +48,7 @@ class RegisteredUserController extends Controller
                 'ativo' => true,
             ]);
 
-            return User::create([
+            $user = User::create([
                 'name'      => $request->name,
                 'email'     => $request->email,
                 'password'  => Hash::make($request->password),
@@ -53,6 +56,12 @@ class RegisteredUserController extends Controller
                 'role'      => 'master',
                 'ativo'     => true,
             ]);
+
+            CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);
+            FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $user->id);
+            BancosDefaultSeeder::seedParaTenant($tenant->id, $user->id);
+
+            return $user;
         });
 
         event(new Registered($user));

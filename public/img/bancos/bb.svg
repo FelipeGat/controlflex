@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32">
+  <rect width="60" height="32" rx="6" fill="#003882"/>
+  <rect x="0" y="25" width="60" height="7" rx="0" fill="#F7C500" opacity="0.9"/>
+  <rect x="0" y="25" width="60" height="7" rx="6" fill="#F7C500" opacity="0.9"/>
+  <text x="30" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700" fill="white" text-anchor="middle">BB</text>
+  <text x="30" y="30.5" font-family="system-ui, -apple-system, sans-serif" font-size="5.5" font-weight="600" fill="#003882" text-anchor="middle" letter-spacing="0.2">Banco do Brasil</text>
+</svg>

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Revenda;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\BancosDefaultSeeder;
+use Database\Seeders\CategoriasDefaultSeeder;
+use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +49,7 @@ class ClienteController extends Controller
                 'revenda_id' => $revendaId,
             ]);
 
-            User::create([
+            $master = User::create([
                 'name'      => $request->nome_master,
                 'email'     => $request->email_master,
                 'password'  => Hash::make($request->senha_master),
@@ -54,6 +57,10 @@ class ClienteController extends Controller
                 'role'      => 'master',
                 'ativo'     => true,
             ]);
+
+            CategoriasDefaultSeeder::seedParaTenant($tenant->id, $master->id);
+            FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $master->id);
+            BancosDefaultSeeder::seedParaTenant($tenant->id, $master->id);
         });
 
         return back()->with('success', 'Cliente criado com sucesso!');

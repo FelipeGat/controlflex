@@ -78,7 +78,10 @@
 
         /* Collapse toggle button */
         .sidebar-collapse-btn {
-            position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+            position: fixed;
+            left: calc(var(--sidebar-w) - 12px);
+            top: calc(var(--topbar-h) / 2);
+            transform: translateY(-50%);
             width: 24px; height: 24px;
             background: var(--color-sidebar);
             border: 1px solid rgba(255,255,255,.15);
@@ -86,10 +89,11 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: #94a3b8; font-size: 11px;
             z-index: 210;
-            transition: background .15s, color .15s;
+            transition: background .15s, color .15s, left .25s ease;
             box-shadow: 0 1px 4px rgba(0,0,0,.4);
         }
         .sidebar-collapse-btn:hover { background: var(--color-primary); color: #fff; }
+        .sidebar-collapse-btn.collapsed { left: calc(var(--sidebar-w-collapsed) - 12px); }
 
         .sidebar-section-label {
             padding: 14px 16px 4px;
@@ -147,7 +151,9 @@
         }
         .sidebar-user-details { transition: opacity .2s; min-width: 0; }
         .sidebar.collapsed .sidebar-user-details { opacity: 0; width: 0; overflow: hidden; }
-        .sidebar-user-name { color: #cbd5e1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-name { color: #cbd5e1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+        .sidebar-user-edit { color: #475569; font-size: 11px; flex-shrink: 0; line-height: 1; }
+        .sidebar-user-edit:hover { color: var(--color-primary); }
         .sidebar-user-email { color: #475569; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* ─── Overlay (mobile) ──────────────────────────────────── */
@@ -455,6 +461,7 @@
             .sidebar { transform: translateX(-100%); width: var(--sidebar-w) !important; }
             .sidebar.open { transform: translateX(0); }
             .main-content { margin-left: 0 !important; }
+            .sidebar-collapse-btn { display: none; }
             .topbar-hamburger { display: flex; }
             .sidebar-collapse-btn { display: none; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
@@ -483,9 +490,6 @@
     <div class="sidebar-logo">
         <img src="/alfa-home-logo.png" alt="AlfaHome" class="sidebar-logo-img sidebar-logo-img-full" style="max-width: 140px;">
         <img src="/alfa-home-logo-2.png" alt="AlfaHome" class="sidebar-logo-img sidebar-logo-img-icon" style="height: 34px; width: auto;">
-        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Recolher menu">
-            <i class="fa-solid fa-chevron-left" id="sidebar-collapse-icon"></i>
-        </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -538,8 +542,8 @@
         </a>
         @endif
         @if(Auth::user()->temPermissao('familiares', 'ver'))
-        <a href="{{ route('familiares.index') }}" class="sidebar-link {{ request()->routeIs('familiares.*') ? 'active' : '' }}" data-label="Familiares">
-            <i class="fa-solid fa-users"></i> <span>Familiares</span>
+        <a href="{{ route('familiares.index') }}" class="sidebar-link {{ request()->routeIs('familiares.*') ? 'active' : '' }}" data-label="Membros">
+            <i class="fa-solid fa-users"></i> <span>Membros</span>
         </a>
         @endif
         @if(Auth::user()->temPermissao('fornecedores', 'ver'))
@@ -552,13 +556,6 @@
             <i class="fa-solid fa-tags"></i> <span>Categorias</span>
         </a>
         @endif
-
-        @if(Auth::user()->isMaster())
-        <div class="sidebar-section-label">Configurações</div>
-        <a href="{{ route('membros.index') }}" class="sidebar-link {{ request()->routeIs('membros.*') ? 'active' : '' }}" data-label="Membros">
-            <i class="fa-solid fa-user-shield"></i> <span>Membros</span>
-        </a>
-        @endif
         @endif
     </nav>
 
@@ -566,7 +563,12 @@
         <div class="sidebar-user-info">
             <div class="sidebar-user-avatar"><i class="fa-solid fa-user"></i></div>
             <div class="sidebar-user-details">
-                <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
+                <div class="sidebar-user-name">
+                    {{ Auth::user()->name }}
+                    <a href="{{ route('profile.edit') }}" class="sidebar-user-edit" title="Editar perfil">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                </div>
                 <div class="sidebar-user-email">{{ Auth::user()->email }}</div>
             </div>
         </div>
@@ -579,6 +581,11 @@
     </div>
 </aside>
 
+{{-- ─── Collapse button (outside sidebar to avoid overflow-x clipping) ── --}}
+<button class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Recolher menu">
+    <i class="fa-solid fa-chevron-left" id="sidebar-collapse-icon"></i>
+</button>
+
 {{-- ─── Mobile overlay ────────────────────────────────────────────────── --}}
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
@@ -589,12 +596,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
-        <div class="topbar-actions">
-            <a href="{{ route('profile.edit') }}" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-gear"></i>
-                <span class="hide-mobile" style="display:none">Perfil</span>
-            </a>
-        </div>
+        <div class="topbar-actions"></div>
     </header>
 
     <main class="page-content">
@@ -704,10 +706,12 @@
         if (collapsed) {
             sidebar.classList.add('collapsed');
             mainContent.classList.add('sidebar-collapsed');
+            collapseBtn.classList.add('collapsed');
             collapseIcon.classList.replace('fa-chevron-left', 'fa-chevron-right');
         } else {
             sidebar.classList.remove('collapsed');
             mainContent.classList.remove('sidebar-collapsed');
+            collapseBtn.classList.remove('collapsed');
             collapseIcon.classList.replace('fa-chevron-right', 'fa-chevron-left');
         }
     }

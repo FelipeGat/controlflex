@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32">
+  <defs>
+    <linearGradient id="mpGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0088CC"/>
+      <stop offset="100%" stop-color="#009EE3"/>
+    </linearGradient>
+  </defs>
+  <rect width="60" height="32" rx="6" fill="url(#mpGrad)"/>
+  <text x="30" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="white" text-anchor="middle" letter-spacing="0.2">Mercado</text>
+  <text x="30" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" fill="white" text-anchor="middle" letter-spacing="0.2">Pago</text>
+</svg>

@@ -2,6 +2,27 @@
 @section('title', 'Contas Bancárias')
 @section('page-title', 'Contas Bancárias')
 
+@php
+$bancosTemplate = [
+    ['codigo_banco' => '341',  'nome' => 'Itaú',           'logo' => 'itau.svg',        'cor' => '#FF6600'],
+    ['codigo_banco' => '237',  'nome' => 'Bradesco',        'logo' => 'bradesco.svg',    'cor' => '#CC0000'],
+    ['codigo_banco' => '001',  'nome' => 'Banco do Brasil', 'logo' => 'bb.svg',          'cor' => '#FFCC00'],
+    ['codigo_banco' => '104',  'nome' => 'Caixa',           'logo' => 'caixa.svg',       'cor' => '#0070AF'],
+    ['codigo_banco' => '033',  'nome' => 'Santander',       'logo' => 'santander.svg',   'cor' => '#EC0000'],
+    ['codigo_banco' => '260',  'nome' => 'Nubank',          'logo' => 'nubank.svg',      'cor' => '#8A05BE'],
+    ['codigo_banco' => '077',  'nome' => 'Inter',           'logo' => 'inter.svg',       'cor' => '#FF6600'],
+    ['codigo_banco' => '336',  'nome' => 'C6 Bank',         'logo' => 'c6.svg',          'cor' => '#242424'],
+    ['codigo_banco' => '208',  'nome' => 'BTG Pactual',     'logo' => 'btg.svg',         'cor' => '#0A2240'],
+    ['codigo_banco' => '102',  'nome' => 'XP',              'logo' => 'xp.svg',          'cor' => '#000000'],
+    ['codigo_banco' => '380',  'nome' => 'PicPay',          'logo' => 'picpay.svg',      'cor' => '#21C25E'],
+    ['codigo_banco' => '323',  'nome' => 'Mercado Pago',    'logo' => 'mercadopago.svg', 'cor' => '#009EE3'],
+    ['codigo_banco' => '756',  'nome' => 'Sicoob',          'logo' => 'sicoob.svg',      'cor' => '#008E5A'],
+    ['codigo_banco' => '748',  'nome' => 'Sicredi',         'logo' => 'sicredi.svg',     'cor' => '#5DAA31'],
+    ['codigo_banco' => '422',  'nome' => 'Safra',           'logo' => 'safra.svg',       'cor' => '#1B3A6B'],
+    ['codigo_banco' => null,   'nome' => 'Carteira',        'logo' => 'carteira.svg',    'cor' => '#6B7280'],
+];
+@endphp
+
 @section('content')
 
 <div class="section-header mb-4">
@@ -13,18 +34,30 @@
 
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px;">
     @forelse($bancos as $banco)
-        <div class="card" style="border-top: 3px solid {{ $banco->tipo_conta === 'Cartão de Crédito' ? '#d97706' : 'var(--color-primary)' }};">
+        @php $cor = $banco->cor ?: ($banco->tipo_conta === 'Cartão de Crédito' ? '#d97706' : 'var(--color-primary)'); @endphp
+        <div class="card" style="border-top: 3px solid {{ $cor }};">
             <div class="d-flex justify-between align-center mb-3">
-                <div>
-                    <div class="fw-600" style="font-size:15px;">{{ $banco->nome }}</div>
-                    <span class="badge {{ $banco->tipo_conta === 'Cartão de Crédito' ? 'badge-amber' : 'badge-blue' }}" style="margin-top:3px;">
-                        {{ $banco->tipo_conta }}
-                    </span>
-                    @if($banco->titular)
-                        <div style="font-size:11px;margin-top:3px;" class="text-subtle">
-                            <i class="fa-solid fa-user"></i> {{ $banco->titular->nome }}
+                <div class="d-flex align-center gap-2">
+                    @if($banco->logo)
+                        <div style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f9fa;flex-shrink:0;">
+                            <img src="{{ asset('img/bancos/' . $banco->logo) }}" alt="{{ $banco->nome }}" style="width:32px;height:32px;object-fit:contain;">
+                        </div>
+                    @else
+                        <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ $cor }};flex-shrink:0;">
+                            <i class="fa-solid fa-building-columns" style="color:#fff;font-size:16px;"></i>
                         </div>
                     @endif
+                    <div>
+                        <div class="fw-600" style="font-size:15px;">{{ $banco->nome }}</div>
+                        <span class="badge {{ $banco->tipo_conta === 'Cartão de Crédito' ? 'badge-amber' : 'badge-blue' }}" style="margin-top:3px;">
+                            {{ $banco->tipo_conta }}
+                        </span>
+                        @if($banco->titular)
+                            <div style="font-size:11px;margin-top:2px;" class="text-subtle">
+                                <i class="fa-solid fa-user"></i> {{ $banco->titular->nome }}
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="d-flex gap-2">
                     <button onclick="editarBanco({{ $banco->id }}, {{ $banco->toJson() }})" class="btn btn-ghost btn-icon btn-sm" title="Editar">
@@ -88,19 +121,44 @@
 
 {{-- Modal Nova Conta --}}
 <div class="modal-backdrop" id="modal-novo-banco">
-    <div class="modal">
+    <div class="modal" style="max-width:600px;">
         <div class="modal-header">
             <i class="fa-solid fa-building-columns" style="color:var(--color-primary);"></i>
             <h3>Nova Conta</h3>
             <button class="modal-close" onclick="closeModal('modal-novo-banco')">&times;</button>
         </div>
         <div class="modal-body">
-            <form method="POST" action="{{ route('bancos.store') }}">
+            <form method="POST" action="{{ route('bancos.store') }}" id="form-novo-banco">
                 @csrf
+                <input type="hidden" name="logo" id="novo-logo">
+                <input type="hidden" name="cor" id="novo-cor">
+                <input type="hidden" name="codigo_banco" id="novo-codigo">
+
+                {{-- Banco Picker --}}
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="margin-bottom:8px;">Banco</label>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+                        @foreach($bancosTemplate as $bt)
+                        <button type="button"
+                            class="banco-picker-btn"
+                            data-nome="{{ $bt['nome'] }}"
+                            data-logo="{{ $bt['logo'] }}"
+                            data-cor="{{ $bt['cor'] }}"
+                            data-codigo="{{ $bt['codigo_banco'] ?? '' }}"
+                            onclick="selecionarBanco(this)"
+                            style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:#fff;cursor:pointer;transition:all .15s;">
+                            <img src="{{ asset('img/bancos/' . $bt['logo']) }}" alt="{{ $bt['nome'] }}" style="width:32px;height:32px;object-fit:contain;">
+                            <span style="font-size:10px;font-weight:600;color:var(--color-text);text-align:center;line-height:1.2;">{{ $bt['nome'] }}</span>
+                        </button>
+                        @endforeach
+                    </div>
+                    <div style="margin-top:6px;font-size:11px;" class="text-subtle">Ou preencha o nome manualmente abaixo</div>
+                </div>
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nome *</label>
-                        <input type="text" name="nome" class="form-control" required placeholder="Ex: Sicoob, Carteira...">
+                        <input type="text" name="nome" id="novo-nome" class="form-control" required placeholder="Ex: Nubank, Carteira...">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tipo *</label>
@@ -161,6 +219,8 @@
         <div class="modal-body">
             <form method="POST" action="" id="form-editar-banco">
                 @csrf @method('PUT')
+                <input type="hidden" name="logo" id="b-edit-logo">
+                <input type="hidden" name="cor" id="b-edit-cor">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nome *</label>
@@ -258,14 +318,30 @@
 
 @push('scripts')
 <script>
+function selecionarBanco(btn) {
+    document.querySelectorAll('.banco-picker-btn').forEach(b => {
+        b.style.borderColor = 'var(--color-border)';
+        b.style.background = '#fff';
+    });
+    btn.style.borderColor = btn.dataset.cor || 'var(--color-primary)';
+    btn.style.background = '#f8f9fa';
+
+    document.getElementById('novo-nome').value   = btn.dataset.nome;
+    document.getElementById('novo-logo').value   = btn.dataset.logo;
+    document.getElementById('novo-cor').value    = btn.dataset.cor;
+    document.getElementById('novo-codigo').value = btn.dataset.codigo;
+}
+
 function editarBanco(id, data) {
     document.getElementById('form-editar-banco').action = `/bancos/${id}`;
-    document.getElementById('b-edit-nome').value = data.nome;
-    document.getElementById('b-edit-tipo').value = data.tipo_conta;
+    document.getElementById('b-edit-nome').value    = data.nome;
+    document.getElementById('b-edit-tipo').value    = data.tipo_conta;
     document.getElementById('b-edit-titular').value = data.titular_id || '';
-    document.getElementById('b-edit-saldo').value = data.saldo;
-    document.getElementById('b-edit-cheque').value = data.cheque_especial;
-    document.getElementById('b-edit-limite').value = data.limite_cartao;
+    document.getElementById('b-edit-saldo').value   = data.saldo;
+    document.getElementById('b-edit-cheque').value  = data.cheque_especial;
+    document.getElementById('b-edit-limite').value  = data.limite_cartao;
+    document.getElementById('b-edit-logo').value    = data.logo || '';
+    document.getElementById('b-edit-cor').value     = data.cor || '';
     openModal('modal-editar-banco');
 }
 function ajustarSaldo(id, saldo) {

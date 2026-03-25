@@ -12,7 +12,7 @@ class Banco extends Model
     protected $fillable = [
         'tenant_id', 'user_id', 'titular_id', 'nome', 'tipo_conta', 'codigo_banco',
         'agencia', 'conta', 'saldo', 'cheque_especial', 'saldo_cheque',
-        'limite_cartao', 'saldo_cartao',
+        'limite_cartao', 'saldo_cartao', 'logo', 'cor',
     ];
 
     protected $casts = [

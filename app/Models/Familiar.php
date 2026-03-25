@@ -23,6 +23,11 @@ class Familiar extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function membro()
+    {
+        return $this->hasOne(User::class)->where('role', 'membro');
+    }
+
     public function despesas()
     {
         return $this->hasMany(Despesa::class, 'quem_comprou');
