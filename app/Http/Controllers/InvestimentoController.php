@@ -12,22 +12,22 @@ class InvestimentoController extends Controller
 {
     public function index()
     {
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $investimentos = Investimento::with('banco')
-            ->where('user_id', $userId)
             ->orderByDesc('data_aporte')
             ->paginate(20);
 
-        $bancos         = Banco::where('user_id', $userId)->orderBy('nome')->get();
-        $totalInvestido = Investimento::where('user_id', $userId)->sum('valor_aportado');
+        $bancos         = Banco::orderBy('nome')->get();
+        $totalInvestido = Investimento::sum('valor_aportado');
 
         return view('investimentos.index', compact('investimentos', 'bancos', 'totalInvestido'));
     }
 
     public function store(Request $request)
     {
-        $userId = Auth::id();
+        $userId   = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'nome_ativo'        => 'required|string|max:150',
@@ -35,7 +35,7 @@ class InvestimentoController extends Controller
             'data_aporte'       => 'required|date',
             'valor_aportado'    => 'required|numeric|min:0.01',
             'quantidade_cotas'  => 'nullable|numeric|min:0',
-            'banco_id'          => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'banco_id'          => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         Investimento::create([
@@ -56,7 +56,7 @@ class InvestimentoController extends Controller
     {
         $this->authorize('update', $investimento);
 
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'nome_ativo'        => 'required|string|max:150',
@@ -64,7 +64,7 @@ class InvestimentoController extends Controller
             'data_aporte'       => 'required|date',
             'valor_aportado'    => 'required|numeric|min:0.01',
             'quantidade_cotas'  => 'nullable|numeric|min:0',
-            'banco_id'          => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'banco_id'          => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         $investimento->update($request->only([

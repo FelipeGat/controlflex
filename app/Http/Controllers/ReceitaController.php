@@ -14,40 +14,39 @@ class ReceitaController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
         $inicio = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
         $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
 
-        $totalValor = Receita::where('user_id', $userId)
-            ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
+        $totalValor = Receita::whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->sum('valor');
 
         $receitas = Receita::with(['familiar', 'categoria', 'banco'])
-            ->where('user_id', $userId)
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->orderByDesc('data_prevista_recebimento')
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        $categorias = Categoria::where('user_id', $userId)->where('tipo', 'RECEITA')->orderBy('nome')->get();
-        $familiares = Familiar::where('user_id', $userId)->orderBy('nome')->get();
-        $bancos     = Banco::where('user_id', $userId)->orderBy('nome')->get();
+        $categorias = Categoria::where('tipo', 'RECEITA')->orderBy('nome')->get();
+        $familiares = Familiar::orderBy('nome')->get();
+        $bancos     = Banco::orderBy('nome')->get();
 
         return view('receitas.index', compact('receitas', 'totalValor', 'categorias', 'familiares', 'bancos', 'inicio', 'fim'));
     }
 
     public function store(Request $request)
     {
-        $userId = Auth::id();
+        $userId   = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'valor'                     => 'required|numeric|min:0.01',
             'data_prevista_recebimento' => 'required|date',
             'data_recebimento'          => 'nullable|date',
-            'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('user_id', $userId)],
-            'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
-            'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
+            'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
             'parcelas'                  => 'nullable|integer|min:0|max:360',
             'frequencia'                => 'nullable|in:diaria,semanal,quinzenal,mensal,trimestral,semestral,anual',
         ]);
@@ -61,22 +60,22 @@ class ReceitaController extends Controller
     {
         $this->authorize('update', $receita);
 
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'valor'                     => 'required|numeric|min:0.01',
             'data_prevista_recebimento' => 'required|date',
             'data_recebimento'          => 'nullable|date',
-            'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('user_id', $userId)],
-            'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
-            'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
+            'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
             'observacoes'               => 'nullable|string|max:2000',
         ]);
 
         $escopo = $request->get('escopo', 'apenas_esta');
 
         if ($escopo === 'esta_e_futuras' && $receita->grupo_recorrencia_id) {
-            Receita::where('user_id', $userId)
+            Receita::where('tenant_id', $tenantId)
                 ->where('grupo_recorrencia_id', $receita->grupo_recorrencia_id)
                 ->where('data_prevista_recebimento', '>=', $receita->data_prevista_recebimento)
                 ->update([
@@ -106,11 +105,11 @@ class ReceitaController extends Controller
     {
         $this->authorize('delete', $receita);
 
-        $userId = Auth::id();
-        $escopo = $request->get('escopo', 'apenas_esta');
+        $tenantId = Auth::user()->tenant_id;
+        $escopo   = $request->get('escopo', 'apenas_esta');
 
         if ($escopo === 'esta_e_futuras' && $receita->grupo_recorrencia_id) {
-            $count = Receita::where('user_id', $userId)
+            $count = Receita::where('tenant_id', $tenantId)
                 ->where('grupo_recorrencia_id', $receita->grupo_recorrencia_id)
                 ->where('data_prevista_recebimento', '>=', $receita->data_prevista_recebimento)
                 ->delete();

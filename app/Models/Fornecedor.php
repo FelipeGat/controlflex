@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Fornecedor extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'fornecedores';
-    protected $fillable = ['user_id', 'nome', 'contato', 'cnpj', 'telefone', 'observacoes'];
+    protected $fillable = ['tenant_id', 'user_id', 'nome', 'contato', 'cnpj', 'telefone', 'observacoes'];
 
     public function user()
     {

@@ -9,58 +9,102 @@ use App\Http\Controllers\FamiliarController;
 use App\Http\Controllers\FornecedorController;
 use App\Http\Controllers\BancoController;
 use App\Http\Controllers\InvestimentoController;
+use App\Http\Controllers\MembroController;
+use App\Http\Controllers\Admin\SaasDashboardController;
+use App\Http\Controllers\Admin\PlanoController;
+use App\Http\Controllers\Admin\RevendaAdminController;
+use App\Http\Controllers\Revenda\ClienteController;
 use Illuminate\Support\Facades\Route;
 
+// Redirect dinâmico baseado em role
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route(auth()->user()->homeRoute());
+    }
+    return redirect()->route('login');
 });
 
-Route::middleware(['auth'])->group(function () {
+// ─── Super Admin ────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [SaasDashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Planos
+    Route::get('/planos', [PlanoController::class, 'index'])->name('admin.planos.index');
+    Route::post('/planos', [PlanoController::class, 'store'])->name('admin.planos.store');
+    Route::put('/planos/{plano}', [PlanoController::class, 'update'])->name('admin.planos.update');
+    Route::delete('/planos/{plano}', [PlanoController::class, 'destroy'])->name('admin.planos.destroy');
+
+    // Revendas
+    Route::get('/revendas', [RevendaAdminController::class, 'index'])->name('admin.revendas.index');
+    Route::post('/revendas', [RevendaAdminController::class, 'store'])->name('admin.revendas.store');
+    Route::put('/revendas/{revenda}', [RevendaAdminController::class, 'update'])->name('admin.revendas.update');
+    Route::delete('/revendas/{revenda}', [RevendaAdminController::class, 'destroy'])->name('admin.revendas.destroy');
+    Route::post('/revendas/provisionar', [RevendaAdminController::class, 'provisionar'])->name('admin.revendas.provisionar');
+    Route::post('/revendas/{revenda}/reset-senha', [RevendaAdminController::class, 'resetSenha'])->name('admin.revendas.resetSenha');
+});
+
+// ─── Admin Revenda ──────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(function () {
+    Route::get('/clientes', [ClienteController::class, 'index'])->name('revenda.clientes.index');
+    Route::post('/clientes', [ClienteController::class, 'store'])->name('revenda.clientes.store');
+    Route::put('/clientes/{tenant}', [ClienteController::class, 'update'])->name('revenda.clientes.update');
+    Route::delete('/clientes/{tenant}', [ClienteController::class, 'destroy'])->name('revenda.clientes.destroy');
+    Route::post('/clientes/{tenant}/reset-senha', [ClienteController::class, 'resetSenha'])->name('revenda.clientes.resetSenha');
+});
+
+// ─── Tenant (Master / Membro) ───────────────────────────────────────────────
+Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Despesas
-    Route::get('/despesas', [DespesaController::class, 'index'])->name('despesas.index');
-    Route::post('/despesas', [DespesaController::class, 'store'])->name('despesas.store');
-    Route::put('/despesas/{despesa}', [DespesaController::class, 'update'])->name('despesas.update');
-    Route::delete('/despesas/{despesa}', [DespesaController::class, 'destroy'])->name('despesas.destroy');
+    Route::get('/despesas', [DespesaController::class, 'index'])->name('despesas.index')->middleware('permissao:despesas,ver');
+    Route::post('/despesas', [DespesaController::class, 'store'])->name('despesas.store')->middleware('permissao:despesas,criar');
+    Route::put('/despesas/{despesa}', [DespesaController::class, 'update'])->name('despesas.update')->middleware('permissao:despesas,editar');
+    Route::delete('/despesas/{despesa}', [DespesaController::class, 'destroy'])->name('despesas.destroy')->middleware('permissao:despesas,excluir');
 
     // Receitas
-    Route::get('/receitas', [ReceitaController::class, 'index'])->name('receitas.index');
-    Route::post('/receitas', [ReceitaController::class, 'store'])->name('receitas.store');
-    Route::put('/receitas/{receita}', [ReceitaController::class, 'update'])->name('receitas.update');
-    Route::delete('/receitas/{receita}', [ReceitaController::class, 'destroy'])->name('receitas.destroy');
+    Route::get('/receitas', [ReceitaController::class, 'index'])->name('receitas.index')->middleware('permissao:receitas,ver');
+    Route::post('/receitas', [ReceitaController::class, 'store'])->name('receitas.store')->middleware('permissao:receitas,criar');
+    Route::put('/receitas/{receita}', [ReceitaController::class, 'update'])->name('receitas.update')->middleware('permissao:receitas,editar');
+    Route::delete('/receitas/{receita}', [ReceitaController::class, 'destroy'])->name('receitas.destroy')->middleware('permissao:receitas,excluir');
 
     // Categorias
-    Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
-    Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
-    Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
-    Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
+    Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index')->middleware('permissao:categorias,ver');
+    Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store')->middleware('permissao:categorias,criar');
+    Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update')->middleware('permissao:categorias,editar');
+    Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy')->middleware('permissao:categorias,excluir');
 
     // Familiares
-    Route::get('/familiares', [FamiliarController::class, 'index'])->name('familiares.index');
-    Route::post('/familiares', [FamiliarController::class, 'store'])->name('familiares.store');
-    Route::put('/familiares/{familiar}', [FamiliarController::class, 'update'])->name('familiares.update');
-    Route::delete('/familiares/{familiar}', [FamiliarController::class, 'destroy'])->name('familiares.destroy');
+    Route::get('/familiares', [FamiliarController::class, 'index'])->name('familiares.index')->middleware('permissao:familiares,ver');
+    Route::post('/familiares', [FamiliarController::class, 'store'])->name('familiares.store')->middleware('permissao:familiares,criar');
+    Route::put('/familiares/{familiar}', [FamiliarController::class, 'update'])->name('familiares.update')->middleware('permissao:familiares,editar');
+    Route::delete('/familiares/{familiar}', [FamiliarController::class, 'destroy'])->name('familiares.destroy')->middleware('permissao:familiares,excluir');
 
     // Fornecedores
-    Route::get('/fornecedores', [FornecedorController::class, 'index'])->name('fornecedores.index');
-    Route::post('/fornecedores', [FornecedorController::class, 'store'])->name('fornecedores.store');
-    Route::put('/fornecedores/{fornecedor}', [FornecedorController::class, 'update'])->name('fornecedores.update');
-    Route::delete('/fornecedores/{fornecedor}', [FornecedorController::class, 'destroy'])->name('fornecedores.destroy');
+    Route::get('/fornecedores', [FornecedorController::class, 'index'])->name('fornecedores.index')->middleware('permissao:fornecedores,ver');
+    Route::post('/fornecedores', [FornecedorController::class, 'store'])->name('fornecedores.store')->middleware('permissao:fornecedores,criar');
+    Route::put('/fornecedores/{fornecedor}', [FornecedorController::class, 'update'])->name('fornecedores.update')->middleware('permissao:fornecedores,editar');
+    Route::delete('/fornecedores/{fornecedor}', [FornecedorController::class, 'destroy'])->name('fornecedores.destroy')->middleware('permissao:fornecedores,excluir');
 
     // Bancos
-    Route::get('/bancos', [BancoController::class, 'index'])->name('bancos.index');
-    Route::post('/bancos', [BancoController::class, 'store'])->name('bancos.store');
-    Route::put('/bancos/{banco}', [BancoController::class, 'update'])->name('bancos.update');
-    Route::post('/bancos/{banco}/ajustar-saldo', [BancoController::class, 'ajustarSaldo'])->name('bancos.ajustar-saldo');
-    Route::post('/bancos/{banco}/ajustar-saldo-cartao', [BancoController::class, 'ajustarSaldoCartao'])->name('bancos.ajustar-saldo-cartao');
-    Route::delete('/bancos/{banco}', [BancoController::class, 'destroy'])->name('bancos.destroy');
+    Route::get('/bancos', [BancoController::class, 'index'])->name('bancos.index')->middleware('permissao:bancos,ver');
+    Route::post('/bancos', [BancoController::class, 'store'])->name('bancos.store')->middleware('permissao:bancos,criar');
+    Route::put('/bancos/{banco}', [BancoController::class, 'update'])->name('bancos.update')->middleware('permissao:bancos,editar');
+    Route::post('/bancos/{banco}/ajustar-saldo', [BancoController::class, 'ajustarSaldo'])->name('bancos.ajustar-saldo')->middleware('permissao:bancos,editar');
+    Route::post('/bancos/{banco}/ajustar-saldo-cartao', [BancoController::class, 'ajustarSaldoCartao'])->name('bancos.ajustar-saldo-cartao')->middleware('permissao:bancos,editar');
+    Route::delete('/bancos/{banco}', [BancoController::class, 'destroy'])->name('bancos.destroy')->middleware('permissao:bancos,excluir');
 
     // Investimentos
-    Route::get('/investimentos', [InvestimentoController::class, 'index'])->name('investimentos.index');
-    Route::post('/investimentos', [InvestimentoController::class, 'store'])->name('investimentos.store');
-    Route::put('/investimentos/{investimento}', [InvestimentoController::class, 'update'])->name('investimentos.update');
-    Route::delete('/investimentos/{investimento}', [InvestimentoController::class, 'destroy'])->name('investimentos.destroy');
+    Route::get('/investimentos', [InvestimentoController::class, 'index'])->name('investimentos.index')->middleware('permissao:investimentos,ver');
+    Route::post('/investimentos', [InvestimentoController::class, 'store'])->name('investimentos.store')->middleware('permissao:investimentos,criar');
+    Route::put('/investimentos/{investimento}', [InvestimentoController::class, 'update'])->name('investimentos.update')->middleware('permissao:investimentos,editar');
+    Route::delete('/investimentos/{investimento}', [InvestimentoController::class, 'destroy'])->name('investimentos.destroy')->middleware('permissao:investimentos,excluir');
+
+    // Membros
+    Route::get('/membros', [MembroController::class, 'index'])->name('membros.index');
+    Route::post('/membros', [MembroController::class, 'store'])->name('membros.store');
+    Route::put('/membros/{membro}', [MembroController::class, 'update'])->name('membros.update');
+    Route::delete('/membros/{membro}', [MembroController::class, 'destroy'])->name('membros.destroy');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

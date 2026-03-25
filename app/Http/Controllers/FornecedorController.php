@@ -10,7 +10,7 @@ class FornecedorController extends Controller
 {
     public function index()
     {
-        $fornecedores = Fornecedor::where('user_id', Auth::id())->orderBy('nome')->paginate(20);
+        $fornecedores = Fornecedor::orderBy('nome')->paginate(20);
         return view('fornecedores.index', compact('fornecedores'));
     }
 

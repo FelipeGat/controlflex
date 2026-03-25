@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Categoria extends Model
 {
-    protected $fillable = ['user_id', 'nome', 'tipo', 'icone'];
+    use BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'user_id', 'nome', 'tipo', 'icone'];
 
     public function user()
     {

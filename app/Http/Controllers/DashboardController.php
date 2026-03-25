@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
         $inicio = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
         $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
         $ano    = Carbon::parse($inicio)->year;
@@ -19,13 +19,13 @@ class DashboardController extends Controller
         // ─── KPIs do período ──────────────────────────────────────────────────
 
         $totalReceitas = DB::table('receitas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->sum('valor');
 
         $totalDespesas = DB::table('despesas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicio, $fim])
             ->sum('valor');
@@ -38,13 +38,13 @@ class DashboardController extends Controller
         $fimAnterior    = Carbon::parse($fim)->subMonth()->format('Y-m-d');
 
         $receitasAnterior = DB::table('receitas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicioAnterior, $fimAnterior])
             ->sum('valor');
 
         $despesasAnterior = DB::table('despesas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicioAnterior, $fimAnterior])
             ->sum('valor');
@@ -66,14 +66,14 @@ class DashboardController extends Controller
         // ─── Realizados do período ────────────────────────────────────────────
 
         $receitasRealizadas = DB::table('receitas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$inicio, $fim])
             ->sum('valor');
 
         $despesasRealizadas = DB::table('despesas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$inicio, $fim])
@@ -87,7 +87,7 @@ class DashboardController extends Controller
 
         $receitasAnuais = DB::table('receitas')
             ->selectRaw('MONTH(data_prevista_recebimento) as mes, SUM(valor) as total')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_prevista_recebimento', $ano)
             ->groupBy('mes')
@@ -99,7 +99,7 @@ class DashboardController extends Controller
 
         $despesasAnuais = DB::table('despesas')
             ->selectRaw('MONTH(data_compra) as mes, SUM(valor) as total')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_compra', $ano)
             ->groupBy('mes')
@@ -114,7 +114,7 @@ class DashboardController extends Controller
         $despesasPorCategoria = DB::table('despesas')
             ->join('categorias', 'despesas.categoria_id', '=', 'categorias.id')
             ->selectRaw('categorias.nome, SUM(despesas.valor) as total')
-            ->where('despesas.user_id', $userId)
+            ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereBetween('despesas.data_compra', [$inicio, $fim])
             ->groupBy('categorias.nome')
@@ -127,7 +127,7 @@ class DashboardController extends Controller
         $receitasPorCategoria = DB::table('receitas')
             ->join('categorias', 'receitas.categoria_id', '=', 'categorias.id')
             ->selectRaw('categorias.nome, SUM(receitas.valor) as total')
-            ->where('receitas.user_id', $userId)
+            ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
             ->whereBetween('receitas.data_prevista_recebimento', [$inicio, $fim])
             ->groupBy('categorias.nome')
@@ -140,7 +140,7 @@ class DashboardController extends Controller
         $despesasPorFamiliar = DB::table('despesas')
             ->leftJoin('familiares', 'despesas.quem_comprou', '=', 'familiares.id')
             ->selectRaw('COALESCE(familiares.nome, "Não especificado") as nome, SUM(despesas.valor) as total')
-            ->where('despesas.user_id', $userId)
+            ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereBetween('despesas.data_compra', [$inicio, $fim])
             ->groupBy('familiares.nome')
@@ -153,13 +153,13 @@ class DashboardController extends Controller
         $ultimosLancamentos = DB::table('receitas')
             ->leftJoin('categorias', 'receitas.categoria_id', '=', 'categorias.id')
             ->selectRaw("receitas.id, 'receita' as tipo, receitas.valor, receitas.data_prevista_recebimento as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
-            ->where('receitas.user_id', $userId)
+            ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
             ->union(
                 DB::table('despesas')
                     ->leftJoin('categorias', 'despesas.categoria_id', '=', 'categorias.id')
                     ->selectRaw("despesas.id, 'despesa' as tipo, despesas.valor, despesas.data_compra as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
-                    ->where('despesas.user_id', $userId)
+                    ->where('despesas.tenant_id', $tenantId)
                     ->whereNull('despesas.deleted_at')
             )
             ->orderByDesc('data')
@@ -168,19 +168,19 @@ class DashboardController extends Controller
 
         // ─── Saldos bancários ─────────────────────────────────────────────────
 
-        $bancos = DB::table('bancos')->where('user_id', $userId)->orderBy('nome')->get();
+        $bancos = DB::table('bancos')->where('tenant_id', $tenantId)->orderBy('nome')->get();
 
         // ─── Investimentos ────────────────────────────────────────────────────
 
         $totalInvestido = DB::table('investimentos')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->sum('valor_aportado');
 
         $investMes  = array_fill(0, 12, 0);
         $investAnual = DB::table('investimentos')
             ->selectRaw('MONTH(data_aporte) as mes, SUM(valor_aportado) as total')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_aporte', $ano)
             ->groupBy('mes')
@@ -208,27 +208,27 @@ class DashboardController extends Controller
         $ultimoDiaProximoMes   = now()->addMonth()->endOfMonth()->format('Y-m-d');
 
         $pagamentoUltimoMes = DB::table('despesas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
             ->sum('valor');
 
         $recebidoUltimoMes = DB::table('receitas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
             ->sum('valor');
 
         $previsaoDespesasProxMes = DB::table('despesas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
             ->sum('valor');
 
         $previsaoReceitasProxMes = DB::table('receitas')
-            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
             ->sum('valor');

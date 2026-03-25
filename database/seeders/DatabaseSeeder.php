@@ -8,21 +8,92 @@ use App\Models\Despesa;
 use App\Models\Familiar;
 use App\Models\Fornecedor;
 use App\Models\Investimento;
+use App\Models\Plano;
 use App\Models\Receita;
+use App\Models\Revenda;
+use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::create([
-            'name'     => 'Felipe',
-            'email'    => 'felipe@controleflex.com',
-            'password' => Hash::make('password'),
+        // ─── Planos ──────────────────────────────────────────────────────────
+        $planoBasico = Plano::create([
+            'nome'           => 'Básico',
+            'slug'           => 'basico',
+            'descricao'      => 'Plano básico para famílias pequenas',
+            'preco_mensal'   => 29.90,
+            'preco_anual'    => 299.00,
+            'max_clientes'   => 50,
+            'max_usuarios'   => 5,
+            'ativo'          => true,
         ]);
+
+        $planoPro = Plano::create([
+            'nome'           => 'Pro',
+            'slug'           => 'pro',
+            'descricao'      => 'Plano profissional com recursos ilimitados',
+            'preco_mensal'   => 59.90,
+            'preco_anual'    => 599.00,
+            'max_clientes'   => -1,
+            'max_usuarios'   => -1,
+            'ativo'          => true,
+        ]);
+
+        // ─── Super Admin ─────────────────────────────────────────────────────
+        User::create([
+            'name'      => 'Super Admin',
+            'email'     => 'admin@alfahome.com',
+            'password'  => Hash::make('password'),
+            'role'      => 'super_admin',
+            'ativo'     => true,
+        ]);
+
+        // ─── Revenda de exemplo ──────────────────────────────────────────────
+        $revenda = Revenda::create([
+            'nome'     => 'Revenda Demo',
+            'cnpj'     => '12.345.678/0001-00',
+            'email'    => 'contato@revendademo.com',
+            'telefone' => '(11) 99999-0000',
+            'status'   => 'ativo',
+            'plano_id' => $planoPro->id,
+        ]);
+
+        User::create([
+            'name'       => 'Admin Revenda',
+            'email'      => 'revenda@alfahome.com',
+            'password'   => Hash::make('password'),
+            'role'       => 'admin_revenda',
+            'revenda_id' => $revenda->id,
+            'ativo'      => true,
+        ]);
+
+        // ─── Tenant (cliente da revenda) ─────────────────────────────────────
+        $tenant = Tenant::create([
+            'nome'       => 'Família Felipe',
+            'plano'      => 'pro',
+            'ativo'      => true,
+            'revenda_id' => $revenda->id,
+            'plano_id'   => $planoPro->id,
+            'status'     => 'ativo',
+        ]);
+
+        $user = User::create([
+            'name'      => 'Felipe',
+            'email'     => 'felipe@controleflex.com',
+            'password'  => Hash::make('password'),
+            'tenant_id' => $tenant->id,
+            'role'      => 'master',
+            'ativo'     => true,
+        ]);
+
+        // Login para que o trait BelongsToTenant auto-preencha tenant_id
+        Auth::login($user);
 
         // ─── Familiares ───────────────────────────────────────────────────────
 

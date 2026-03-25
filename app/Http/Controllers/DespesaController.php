@@ -15,41 +15,41 @@ class DespesaController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
         $inicio = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
         $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
 
-        $baseQuery  = Despesa::where('user_id', $userId)->whereBetween('data_compra', [$inicio, $fim]);
+        $baseQuery  = Despesa::whereBetween('data_compra', [$inicio, $fim]);
         $totalValor = (clone $baseQuery)->sum('valor');
 
         $despesas = Despesa::with(['familiar', 'fornecedor', 'categoria', 'banco'])
-            ->where('user_id', $userId)
             ->whereBetween('data_compra', [$inicio, $fim])
             ->orderByDesc('data_compra')
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        $categorias   = Categoria::where('user_id', $userId)->where('tipo', 'DESPESA')->orderBy('nome')->get();
-        $familiares   = Familiar::where('user_id', $userId)->orderBy('nome')->get();
-        $fornecedores = Fornecedor::where('user_id', $userId)->orderBy('nome')->get();
-        $bancos       = Banco::where('user_id', $userId)->orderBy('nome')->get();
+        $categorias   = Categoria::where('tipo', 'DESPESA')->orderBy('nome')->get();
+        $familiares   = Familiar::orderBy('nome')->get();
+        $fornecedores = Fornecedor::orderBy('nome')->get();
+        $bancos       = Banco::orderBy('nome')->get();
 
         return view('despesas.index', compact('despesas', 'totalValor', 'categorias', 'familiares', 'fornecedores', 'bancos', 'inicio', 'fim'));
     }
 
     public function store(Request $request)
     {
-        $userId = Auth::id();
+        $userId   = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'valor'           => 'required|numeric|min:0.01',
             'data_compra'     => 'required|date',
             'data_pagamento'  => 'nullable|date',
-            'categoria_id'    => ['nullable', Rule::exists('categorias', 'id')->where('user_id', $userId)],
-            'quem_comprou'    => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
-            'onde_comprou'    => ['nullable', Rule::exists('fornecedores', 'id')->where('user_id', $userId)],
-            'forma_pagamento' => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'categoria_id'    => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
+            'quem_comprou'    => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'onde_comprou'    => ['nullable', Rule::exists('fornecedores', 'id')->where('tenant_id', $tenantId)],
+            'forma_pagamento' => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
             'parcelas'        => 'nullable|integer|min:0|max:360',
             'frequencia'      => 'nullable|in:diaria,semanal,quinzenal,mensal,trimestral,semestral,anual',
         ]);
@@ -63,23 +63,23 @@ class DespesaController extends Controller
     {
         $this->authorize('update', $despesa);
 
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'valor'           => 'required|numeric|min:0.01',
             'data_compra'     => 'required|date',
             'data_pagamento'  => 'nullable|date',
-            'categoria_id'    => ['nullable', Rule::exists('categorias', 'id')->where('user_id', $userId)],
-            'quem_comprou'    => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
-            'onde_comprou'    => ['nullable', Rule::exists('fornecedores', 'id')->where('user_id', $userId)],
-            'forma_pagamento' => ['nullable', Rule::exists('bancos', 'id')->where('user_id', $userId)],
+            'categoria_id'    => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
+            'quem_comprou'    => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'onde_comprou'    => ['nullable', Rule::exists('fornecedores', 'id')->where('tenant_id', $tenantId)],
+            'forma_pagamento' => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
             'observacoes'     => 'nullable|string|max:2000',
         ]);
 
         $escopo = $request->get('escopo', 'apenas_esta');
 
         if ($escopo === 'esta_e_futuras' && $despesa->grupo_recorrencia_id) {
-            Despesa::where('user_id', $userId)
+            Despesa::where('tenant_id', $tenantId)
                 ->where('grupo_recorrencia_id', $despesa->grupo_recorrencia_id)
                 ->where('data_compra', '>=', $despesa->data_compra)
                 ->update([
@@ -111,11 +111,11 @@ class DespesaController extends Controller
     {
         $this->authorize('delete', $despesa);
 
-        $userId = Auth::id();
-        $escopo = $request->get('escopo', 'apenas_esta');
+        $tenantId = Auth::user()->tenant_id;
+        $escopo   = $request->get('escopo', 'apenas_esta');
 
         if ($escopo === 'esta_e_futuras' && $despesa->grupo_recorrencia_id) {
-            $count = Despesa::where('user_id', $userId)
+            $count = Despesa::where('tenant_id', $tenantId)
                 ->where('grupo_recorrencia_id', $despesa->grupo_recorrencia_id)
                 ->where('data_compra', '>=', $despesa->data_compra)
                 ->delete();

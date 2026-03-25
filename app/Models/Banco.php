@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Banco extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
-        'user_id', 'titular_id', 'nome', 'tipo_conta', 'codigo_banco',
+        'tenant_id', 'user_id', 'titular_id', 'nome', 'tipo_conta', 'codigo_banco',
         'agencia', 'conta', 'saldo', 'cheque_especial', 'saldo_cheque',
         'limite_cartao', 'saldo_cartao',
     ];

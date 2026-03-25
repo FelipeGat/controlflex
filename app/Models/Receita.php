@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -10,10 +11,10 @@ use Carbon\Carbon;
 
 class Receita extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
-        'user_id', 'quem_recebeu', 'categoria_id', 'forma_recebimento',
+        'tenant_id', 'user_id', 'quem_recebeu', 'categoria_id', 'forma_recebimento',
         'valor', 'data_prevista_recebimento', 'data_recebimento', 'observacoes',
         'recorrente', 'parcelas', 'frequencia', 'grupo_recorrencia_id',
     ];

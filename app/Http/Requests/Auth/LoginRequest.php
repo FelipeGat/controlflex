@@ -50,6 +50,47 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        if (!$user->ativo) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Sua conta está desativada. Entre em contato com o administrador.',
+            ]);
+        }
+
+        // Super Admin — só precisa estar ativo
+        if ($user->role === 'super_admin') {
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        // Admin Revenda — verificar revenda
+        if ($user->role === 'admin_revenda') {
+            if (!$user->revenda_id || !$user->revenda?->isAtivo()) {
+                Auth::logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'Sua revenda está desativada. Entre em contato com o administrador.',
+                ]);
+            }
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        // Master/Membro — verificar tenant
+        if (!$user->tenant_id || !$user->tenant?->ativo) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Sua conta está desativada. Entre em contato com o administrador.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

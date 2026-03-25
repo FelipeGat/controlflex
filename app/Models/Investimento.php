@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Investimento extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
-        'user_id', 'banco_id', 'nome_ativo', 'tipo_investimento',
+        'tenant_id', 'user_id', 'banco_id', 'nome_ativo', 'tipo_investimento',
         'data_aporte', 'valor_aportado', 'quantidade_cotas', 'observacoes',
     ];
 

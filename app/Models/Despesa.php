@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -10,10 +11,10 @@ use Carbon\Carbon;
 
 class Despesa extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
-        'user_id', 'quem_comprou', 'onde_comprou', 'categoria_id', 'forma_pagamento',
+        'tenant_id', 'user_id', 'quem_comprou', 'onde_comprou', 'categoria_id', 'forma_pagamento',
         'valor', 'data_compra', 'data_pagamento', 'observacoes',
         'recorrente', 'parcelas', 'frequencia', 'grupo_recorrencia_id',
     ];

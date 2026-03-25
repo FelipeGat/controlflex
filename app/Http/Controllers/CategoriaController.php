@@ -10,7 +10,7 @@ class CategoriaController extends Controller
 {
     public function index()
     {
-        $categorias = Categoria::where('user_id', Auth::id())->orderBy('tipo')->orderBy('nome')->get();
+        $categorias = Categoria::orderBy('tipo')->orderBy('nome')->get();
         return view('categorias.index', compact('categorias'));
     }
 

@@ -11,7 +11,7 @@ class FamiliarController extends Controller
 {
     public function index()
     {
-        $familiares = Familiar::where('user_id', Auth::id())->orderBy('nome')->get();
+        $familiares = Familiar::orderBy('nome')->get();
         return view('familiares.index', compact('familiares'));
     }
 

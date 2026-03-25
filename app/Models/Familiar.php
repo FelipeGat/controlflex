@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Familiar extends Model
 {
+    use BelongsToTenant;
+
     protected $table = 'familiares';
-    protected $fillable = ['user_id', 'nome', 'foto', 'salario', 'limite_cartao', 'limite_cheque'];
+    protected $fillable = ['tenant_id', 'user_id', 'nome', 'foto', 'salario', 'limite_cartao', 'limite_cheque'];
 
     protected $casts = [
         'salario' => 'decimal:2',

@@ -9,63 +9,70 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'foto',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'foto', 'tenant_id', 'revenda_id', 'role', 'permissoes', 'ativo'];
+    protected $hidden   = ['password', 'remember_token'];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'permissoes'        => 'array',
+            'ativo'             => 'boolean',
         ];
     }
 
-    // ─── Relacionamentos ──────────────────────────────────────────────────────
-
-    public function familiares()
+    public function tenant()
     {
-        return $this->hasMany(Familiar::class);
+        return $this->belongsTo(Tenant::class);
     }
 
-    public function categorias()
+    public function revenda()
     {
-        return $this->hasMany(Categoria::class);
+        return $this->belongsTo(Revenda::class);
     }
 
-    public function fornecedores()
+    // ─── Role checks ────────────────────────────────────────────────────────────
+
+    public function isSuperAdmin(): bool
     {
-        return $this->hasMany(Fornecedor::class);
+        return $this->role === 'super_admin';
     }
 
-    public function bancos()
+    public function isAdminRevenda(): bool
     {
-        return $this->hasMany(Banco::class);
+        return $this->role === 'admin_revenda';
     }
 
-    public function despesas()
+    public function isMaster(): bool
     {
-        return $this->hasMany(Despesa::class);
+        return $this->role === 'master';
     }
 
-    public function receitas()
+    public function temPermissao(string $modulo, string $acao): bool
     {
-        return $this->hasMany(Receita::class);
+        if (in_array($this->role, ['super_admin', 'admin_revenda', 'master'])) return true;
+        $perms = $this->permissoes ?? [];
+        return ($perms[$modulo][$acao] ?? false) === true;
     }
 
-    public function investimentos()
+    public function homeRoute(): string
     {
-        return $this->hasMany(Investimento::class);
+        return match ($this->role) {
+            'super_admin'   => 'admin.dashboard',
+            'admin_revenda' => 'revenda.clientes.index',
+            default         => 'dashboard',
+        };
     }
+
+    // ─── Relacionamentos com dados do tenant ────────────────────────────────────
+    public function familiares()   { return $this->hasMany(Familiar::class); }
+    public function categorias()   { return $this->hasMany(Categoria::class); }
+    public function fornecedores() { return $this->hasMany(Fornecedor::class); }
+    public function bancos()       { return $this->hasMany(Banco::class); }
+    public function despesas()     { return $this->hasMany(Despesa::class); }
+    public function receitas()     { return $this->hasMany(Receita::class); }
+    public function investimentos(){ return $this->hasMany(Investimento::class); }
 }

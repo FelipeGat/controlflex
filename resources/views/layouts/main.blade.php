@@ -489,33 +489,77 @@
     </div>
 
     <nav class="sidebar-nav">
+        @if(Auth::user()->isSuperAdmin())
+        {{-- ─── Sidebar Super Admin ──────────────────────────────────────── --}}
+        <div class="sidebar-section-label">Painel SaaS</div>
+        <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-label="Dashboard">
+            <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+        </a>
+        <a href="{{ route('admin.revendas.index') }}" class="sidebar-link {{ request()->routeIs('admin.revendas.*') ? 'active' : '' }}" data-label="Revendas">
+            <i class="fa-solid fa-building"></i> <span>Revendas</span>
+        </a>
+        <a href="{{ route('admin.planos.index') }}" class="sidebar-link {{ request()->routeIs('admin.planos.*') ? 'active' : '' }}" data-label="Planos">
+            <i class="fa-solid fa-credit-card"></i> <span>Planos</span>
+        </a>
+
+        @elseif(Auth::user()->isAdminRevenda())
+        {{-- ─── Sidebar Admin Revenda ────────────────────────────────────── --}}
+        <div class="sidebar-section-label">Minha Revenda</div>
+        <a href="{{ route('revenda.clientes.index') }}" class="sidebar-link {{ request()->routeIs('revenda.clientes.*') ? 'active' : '' }}" data-label="Clientes">
+            <i class="fa-solid fa-store"></i> <span>Clientes</span>
+        </a>
+
+        @else
+        {{-- ─── Sidebar Tenant (Master/Membro) ──────────────────────────── --}}
         <div class="sidebar-section-label">Visão Geral</div>
         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-label="Dashboard">
             <i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span>
         </a>
+        @if(Auth::user()->temPermissao('despesas', 'ver'))
         <a href="{{ route('despesas.index') }}" class="sidebar-link {{ request()->routeIs('despesas.*') ? 'active' : '' }}" data-label="Despesas">
             <i class="fa-solid fa-arrow-trend-down"></i> <span>Despesas</span>
         </a>
+        @endif
+        @if(Auth::user()->temPermissao('receitas', 'ver'))
         <a href="{{ route('receitas.index') }}" class="sidebar-link {{ request()->routeIs('receitas.*') ? 'active' : '' }}" data-label="Receitas">
             <i class="fa-solid fa-arrow-trend-up"></i> <span>Receitas</span>
         </a>
+        @endif
+        @if(Auth::user()->temPermissao('investimentos', 'ver'))
         <a href="{{ route('investimentos.index') }}" class="sidebar-link {{ request()->routeIs('investimentos.*') ? 'active' : '' }}" data-label="Investimentos">
             <i class="fa-solid fa-seedling"></i> <span>Investimentos</span>
         </a>
+        @endif
 
         <div class="sidebar-section-label">Cadastros</div>
+        @if(Auth::user()->temPermissao('bancos', 'ver'))
         <a href="{{ route('bancos.index') }}" class="sidebar-link {{ request()->routeIs('bancos.*') ? 'active' : '' }}" data-label="Contas Bancárias">
             <i class="fa-solid fa-building-columns"></i> <span>Contas Bancárias</span>
         </a>
+        @endif
+        @if(Auth::user()->temPermissao('familiares', 'ver'))
         <a href="{{ route('familiares.index') }}" class="sidebar-link {{ request()->routeIs('familiares.*') ? 'active' : '' }}" data-label="Familiares">
             <i class="fa-solid fa-users"></i> <span>Familiares</span>
         </a>
+        @endif
+        @if(Auth::user()->temPermissao('fornecedores', 'ver'))
         <a href="{{ route('fornecedores.index') }}" class="sidebar-link {{ request()->routeIs('fornecedores.*') ? 'active' : '' }}" data-label="Fornecedores">
             <i class="fa-solid fa-store"></i> <span>Fornecedores</span>
         </a>
+        @endif
+        @if(Auth::user()->temPermissao('categorias', 'ver'))
         <a href="{{ route('categorias.index') }}" class="sidebar-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}" data-label="Categorias">
             <i class="fa-solid fa-tags"></i> <span>Categorias</span>
         </a>
+        @endif
+
+        @if(Auth::user()->isMaster())
+        <div class="sidebar-section-label">Configurações</div>
+        <a href="{{ route('membros.index') }}" class="sidebar-link {{ request()->routeIs('membros.*') ? 'active' : '' }}" data-label="Membros">
+            <i class="fa-solid fa-user-shield"></i> <span>Membros</span>
+        </a>
+        @endif
+        @endif
     </nav>
 
     <div class="sidebar-user">
@@ -584,31 +628,63 @@
 {{-- ─── Bottom navigation (mobile) ───────────────────────────────────── --}}
 <nav class="bottom-nav" aria-label="Navegação mobile">
     <ul>
-        <li>
-            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fa-solid fa-gauge-high"></i> Dashboard
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('despesas.index') }}" class="{{ request()->routeIs('despesas.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-arrow-trend-down"></i> Despesas
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('receitas.index') }}" class="{{ request()->routeIs('receitas.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-arrow-trend-up"></i> Receitas
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('bancos.index') }}" class="{{ request()->routeIs('bancos.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-building-columns"></i> Contas
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('investimentos.index') }}" class="{{ request()->routeIs('investimentos.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-seedling"></i> Invest.
-            </a>
-        </li>
+        @if(Auth::user()->isSuperAdmin())
+            <li>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.revendas.index') }}" class="{{ request()->routeIs('admin.revendas.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-building"></i> Revendas
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.planos.index') }}" class="{{ request()->routeIs('admin.planos.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-tags"></i> Planos
+                </a>
+            </li>
+        @elseif(Auth::user()->isAdminRevenda())
+            <li>
+                <a href="{{ route('revenda.clientes.index') }}" class="{{ request()->routeIs('revenda.clientes.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-store"></i> Clientes
+                </a>
+            </li>
+        @else
+            <li>
+                <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+            </li>
+            @if(Auth::user()->temPermissao('despesas', 'ver'))
+            <li>
+                <a href="{{ route('despesas.index') }}" class="{{ request()->routeIs('despesas.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-arrow-trend-down"></i> Despesas
+                </a>
+            </li>
+            @endif
+            @if(Auth::user()->temPermissao('receitas', 'ver'))
+            <li>
+                <a href="{{ route('receitas.index') }}" class="{{ request()->routeIs('receitas.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Receitas
+                </a>
+            </li>
+            @endif
+            @if(Auth::user()->temPermissao('bancos', 'ver'))
+            <li>
+                <a href="{{ route('bancos.index') }}" class="{{ request()->routeIs('bancos.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-building-columns"></i> Contas
+                </a>
+            </li>
+            @endif
+            @if(Auth::user()->temPermissao('investimentos', 'ver'))
+            <li>
+                <a href="{{ route('investimentos.index') }}" class="{{ request()->routeIs('investimentos.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-seedling"></i> Invest.
+                </a>
+            </li>
+            @endif
+        @endif
     </ul>
 </nav>
 

@@ -13,18 +13,18 @@ class BancoController extends Controller
     public function index()
     {
         $bancos = Banco::with('titular')
-            ->where('user_id', Auth::id())
             ->orderBy('nome')
             ->get();
 
-        $familiares = Familiar::where('user_id', Auth::id())->orderBy('nome')->get();
+        $familiares = Familiar::orderBy('nome')->get();
 
         return view('bancos.index', compact('bancos', 'familiares'));
     }
 
     public function store(Request $request)
     {
-        $userId = Auth::id();
+        $userId   = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'nome'            => 'required|string|max:150',
@@ -32,7 +32,7 @@ class BancoController extends Controller
             'saldo'           => 'nullable|numeric',
             'cheque_especial' => 'nullable|numeric|min:0',
             'limite_cartao'   => 'nullable|numeric|min:0',
-            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
+            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
             'codigo_banco'    => 'nullable|string|max:10',
             'agencia'         => 'nullable|string|max:20',
             'conta'           => 'nullable|string|max:30',
@@ -60,7 +60,7 @@ class BancoController extends Controller
     {
         $this->authorize('update', $banco);
 
-        $userId = Auth::id();
+        $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
             'nome'            => 'required|string|max:150',
@@ -68,7 +68,7 @@ class BancoController extends Controller
             'saldo'           => 'nullable|numeric',
             'cheque_especial' => 'nullable|numeric|min:0',
             'limite_cartao'   => 'nullable|numeric|min:0',
-            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('user_id', $userId)],
+            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
             'codigo_banco'    => 'nullable|string|max:10',
             'agencia'         => 'nullable|string|max:20',
             'conta'           => 'nullable|string|max:30',
