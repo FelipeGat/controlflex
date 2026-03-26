@@ -47,6 +47,7 @@ services:
         condition: service_healthy
     networks:
       - alfa-network
+      - external
     restart: unless-stopped
 
   db:
@@ -94,6 +95,9 @@ services:
 networks:
   alfa-network:
     driver: bridge
+  external:
+    external: true
+    name: gestoralfa_gestor-network
 
 volumes:
   dbdata:
