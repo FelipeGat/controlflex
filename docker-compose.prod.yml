@@ -27,6 +27,7 @@ services:
       - app-storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
       - ./.env:/var/www/.env
+      - ./public:/var/www/public
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
