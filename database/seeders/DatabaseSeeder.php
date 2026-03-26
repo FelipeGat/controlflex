@@ -136,13 +136,13 @@ class DatabaseSeeder extends Seeder
         // ─── Despesas (6 meses) ───────────────────────────────────────────────
 
         $modelosDespesas = [
-            ['for' => $supermercado->id, 'cat' => $cm['Alimentação_DESPESA'],  'valor' => 450,  'fam' => $felipe->id, 'banco' => $nubank->id,   'dia' => 5],
-            ['for' => $restaurante->id,  'cat' => $cm['Alimentação_DESPESA'],  'valor' => 180,  'fam' => $maria->id,  'banco' => $nubank->id,   'dia' => 12],
-            ['for' => $farmacia->id,     'cat' => $cm['Saúde_DESPESA'],        'valor' => 95,   'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 8],
-            ['for' => $posto->id,        'cat' => $cm['Transporte_DESPESA'],   'valor' => 220,  'fam' => $felipe->id, 'banco' => $nubank->id,   'dia' => 15],
-            ['for' => null,              'cat' => $cm['Moradia_DESPESA'],       'valor' => 1500, 'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 1],
-            ['for' => $academia->id,     'cat' => $cm['Saúde_DESPESA'],        'valor' => 110,  'fam' => $maria->id,  'banco' => $nubank->id,   'dia' => 3],
-            ['for' => null,              'cat' => $cm['Educação_DESPESA'],      'valor' => 350,  'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 10],
+            ['for' => $supermercado->id, 'cat' => $cm['Supermercado / Feira_DESPESA'],    'valor' => 450,  'fam' => $felipe->id, 'banco' => $nubank->id,   'dia' => 5],
+            ['for' => $restaurante->id,  'cat' => $cm['Restaurante / Delivery_DESPESA'],  'valor' => 180,  'fam' => $maria->id,  'banco' => $nubank->id,   'dia' => 12],
+            ['for' => $farmacia->id,     'cat' => $cm['Farmácia / Remédios_DESPESA'],     'valor' => 95,   'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 8],
+            ['for' => $posto->id,        'cat' => $cm['Combustível_DESPESA'],             'valor' => 220,  'fam' => $felipe->id, 'banco' => $nubank->id,   'dia' => 15],
+            ['for' => null,              'cat' => $cm['Aluguel / Financiamento_DESPESA'], 'valor' => 1500, 'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 1],
+            ['for' => $academia->id,     'cat' => $cm['Academia / Esportes_DESPESA'],     'valor' => 110,  'fam' => $maria->id,  'banco' => $nubank->id,   'dia' => 3],
+            ['for' => null,              'cat' => $cm['Escola / Faculdade_DESPESA'],       'valor' => 350,  'fam' => $felipe->id, 'banco' => $itau->id,    'dia' => 10],
         ];
 
         for ($m = 0; $m < 6; $m++) {
@@ -172,7 +172,7 @@ class DatabaseSeeder extends Seeder
             'user_id'         => $user->id,
             'quem_comprou'    => $felipe->id,
             'onde_comprou'    => $farmacia->id,
-            'categoria_id'    => $cm['Saúde_DESPESA'],
+            'categoria_id'    => $cm['Farmácia / Remédios_DESPESA'],
             'forma_pagamento' => $nubank->id,
             'valor'           => 75.00,
             'data_compra'     => Carbon::now()->subDays(10)->format('Y-m-d'),
@@ -224,7 +224,7 @@ class DatabaseSeeder extends Seeder
                 Receita::create([
                     'user_id'                   => $user->id,
                     'quem_recebeu'              => $felipe->id,
-                    'categoria_id'              => $cm['Freelance_RECEITA'],
+                    'categoria_id'              => $cm['Freelance / Bico_RECEITA'],
                     'forma_recebimento'          => $nubank->id,
                     'valor'                     => rand(800, 2000),
                     'data_prevista_recebimento' => $dataFreelance,
