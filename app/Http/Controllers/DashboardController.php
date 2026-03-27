@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Models\Familiar;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $tenantId = Auth::user()->tenant_id;
-        $inicio = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
-        $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
-        $ano    = Carbon::parse($inicio)->year;
+        $tenantId   = Auth::user()->tenant_id;
+        $inicio     = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
+        $fim        = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $ano        = Carbon::parse($inicio)->year;
+        $familiarId = $request->get('familiar_id') ? (int) $request->get('familiar_id') : null;
 
         // ─── Navegação por mês ──────────────────────────────────────────────
         $mesAtual      = Carbon::parse($inicio);
@@ -22,8 +25,12 @@ class DashboardController extends Controller
         $mesProximo    = $mesAtual->copy()->addMonth();
         $nomeMes       = ucfirst($mesAtual->translatedFormat('F'));
         $anoMes        = $mesAtual->year;
-        $linkMesAnt    = route('dashboard', ['inicio' => $mesAnterior->startOfMonth()->format('Y-m-d'), 'fim' => $mesAnterior->endOfMonth()->format('Y-m-d')]);
-        $linkMesProx   = route('dashboard', ['inicio' => $mesProximo->startOfMonth()->format('Y-m-d'), 'fim' => $mesProximo->endOfMonth()->format('Y-m-d')]);
+        $linkMesAnt    = route('dashboard', array_filter(['inicio' => $mesAnterior->startOfMonth()->format('Y-m-d'), 'fim' => $mesAnterior->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId]));
+        $linkMesProx   = route('dashboard', array_filter(['inicio' => $mesProximo->startOfMonth()->format('Y-m-d'), 'fim' => $mesProximo->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId]));
+
+        // ─── Familiares (para o seletor de avatar) ────────────────────────────
+        $familiares = Familiar::orderBy('nome')->get();
+        $familiarSelecionado = $familiarId ? $familiares->firstWhere('id', $familiarId) : null;
 
         // ─── KPIs do período ──────────────────────────────────────────────────
 
@@ -31,12 +38,14 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->sum('valor');
 
         $totalDespesas = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->sum('valor');
 
         $saldo = $totalReceitas - $totalDespesas;
@@ -50,12 +59,14 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicioAnterior, $fimAnterior])
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->sum('valor');
 
         $despesasAnterior = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicioAnterior, $fimAnterior])
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->sum('valor');
 
         $saldoAnterior = $receitasAnterior - $despesasAnterior;
@@ -79,6 +90,7 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->sum('valor');
 
         $despesasRealizadas = DB::table('despesas')
@@ -86,6 +98,7 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->sum('valor');
 
         // ─── Gráfico anual ────────────────────────────────────────────────────
@@ -99,6 +112,7 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_prevista_recebimento', $ano)
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->groupBy('mes')
             ->get();
 
@@ -111,6 +125,7 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_compra', $ano)
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->groupBy('mes')
             ->get();
 
@@ -126,6 +141,7 @@ class DashboardController extends Controller
             ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereBetween('despesas.data_compra', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('despesas.quem_comprou', $familiarId))
             ->groupBy('categorias.nome')
             ->having('total', '>', 0)
             ->orderByDesc('total')
@@ -139,6 +155,7 @@ class DashboardController extends Controller
             ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
             ->whereBetween('receitas.data_prevista_recebimento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where('receitas.quem_recebeu', $familiarId))
             ->groupBy('categorias.nome')
             ->having('total', '>', 0)
             ->orderByDesc('total')
@@ -164,12 +181,14 @@ class DashboardController extends Controller
             ->selectRaw("receitas.id, 'receita' as tipo, receitas.valor, receitas.data_prevista_recebimento as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
             ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
+            ->when($familiarId, fn($q) => $q->where('receitas.quem_recebeu', $familiarId))
             ->union(
                 DB::table('despesas')
                     ->leftJoin('categorias', 'despesas.categoria_id', '=', 'categorias.id')
                     ->selectRaw("despesas.id, 'despesa' as tipo, despesas.valor, despesas.data_compra as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
                     ->where('despesas.tenant_id', $tenantId)
                     ->whereNull('despesas.deleted_at')
+                    ->when($familiarId, fn($q) => $q->where('despesas.quem_comprou', $familiarId))
             )
             ->orderByDesc('data')
             ->limit(10)
@@ -177,13 +196,18 @@ class DashboardController extends Controller
 
         // ─── Saldos bancários ─────────────────────────────────────────────────
 
-        $bancos = DB::table('bancos')->where('tenant_id', $tenantId)->orderBy('nome')->get();
+        $bancos = DB::table('bancos')
+            ->where('tenant_id', $tenantId)
+            ->when($familiarId, fn($q) => $q->where('titular_id', $familiarId))
+            ->orderBy('nome')
+            ->get();
 
         // ─── Cartões de crédito ─────────────────────────────────────────────
 
         $cartoes = DB::table('bancos')
             ->where('tenant_id', $tenantId)
             ->where('tem_cartao_credito', true)
+            ->when($familiarId, fn($q) => $q->where('titular_id', $familiarId))
             ->orderBy('nome')
             ->get()
             ->map(function ($cartao) use ($tenantId, $inicio, $fim) {
@@ -246,6 +270,7 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->sum('valor');
 
         $recebidoUltimoMes = DB::table('receitas')
@@ -253,18 +278,21 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->sum('valor');
 
         $previsaoDespesasProxMes = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
+            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
             ->sum('valor');
 
         $previsaoReceitasProxMes = DB::table('receitas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
+            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
             ->sum('valor');
 
         return view('dashboard', compact(
@@ -281,7 +309,8 @@ class DashboardController extends Controller
             'cartoes', 'totalGastosCartoes', 'totalLimiteCartoes', 'totalFaturaCartoes',
             'totalInvestido', 'patrimonioAcumulado',
             'pagamentoUltimoMes', 'recebidoUltimoMes',
-            'previsaoDespesasProxMes', 'previsaoReceitasProxMes'
+            'previsaoDespesasProxMes', 'previsaoReceitasProxMes',
+            'familiares', 'familiarId', 'familiarSelecionado'
         ));
     }
 }
