@@ -22,7 +22,8 @@ $config = [
     <div class="d-flex gap-2 flex-wrap">
         @foreach(['urgente','atencao','info','dica','positivo'] as $tipo)
         @if($contadores[$tipo] > 0)
-        <span style="background:{{ $config[$tipo]['bg'] }}; color:{{ $config[$tipo]['cor'] }}; border:1px solid {{ $config[$tipo]['borda'] }}; padding:3px 10px; border-radius:99px; font-size:12px; font-weight:600;">
+        <span onclick="filtrarAlertas('{{ $tipo }}')" id="filtro-{{ $tipo }}"
+              style="background:{{ $config[$tipo]['bg'] }}; color:{{ $config[$tipo]['cor'] }}; border:1px solid {{ $config[$tipo]['borda'] }}; padding:3px 10px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition: all .2s; user-select:none;">
             {{ $config[$tipo]['label'] }}: {{ $contadores[$tipo] }}
         </span>
         @endif
@@ -43,7 +44,7 @@ $config = [
     @foreach($alertas as $i => $alerta)
     @php $c = $config[$alerta['tipo']]; $temDetalhe = !empty($alerta['detalhe']); @endphp
 
-    <div style="
+    <div data-tipo="{{ $alerta['tipo'] }}" style="
         background: #fff;
         border: 1px solid {{ $c['borda'] }};
         border-top: 3px solid {{ $c['cor'] }};
@@ -117,6 +118,49 @@ $config = [
 </div>
 
 <script>
+let filtroAtivo = null;
+
+const configCores = @json($config);
+
+function filtrarAlertas(tipo) {
+    const cards = document.querySelectorAll('[data-tipo]');
+    const pills = ['urgente','atencao','info','dica','positivo'];
+
+    if (filtroAtivo === tipo) {
+        // desativa filtro
+        filtroAtivo = null;
+        cards.forEach(c => c.style.display = '');
+        pills.forEach(t => {
+            const el = document.getElementById('filtro-' + t);
+            if (!el) return;
+            const cfg = configCores[t];
+            el.style.background = cfg.bg;
+            el.style.color = cfg.cor;
+            el.style.opacity = '1';
+        });
+    } else {
+        // ativa filtro
+        filtroAtivo = tipo;
+        cards.forEach(c => {
+            c.style.display = c.getAttribute('data-tipo') === tipo ? '' : 'none';
+        });
+        pills.forEach(t => {
+            const el = document.getElementById('filtro-' + t);
+            if (!el) return;
+            const cfg = configCores[t];
+            if (t === tipo) {
+                el.style.background = cfg.cor;
+                el.style.color = '#fff';
+                el.style.opacity = '1';
+            } else {
+                el.style.background = cfg.bg;
+                el.style.color = cfg.cor;
+                el.style.opacity = '0.4';
+            }
+        });
+    }
+}
+
 function toggleAlerta(i) {
     const detalhe  = document.getElementById('detalhe-' + i);
     const chevron  = document.getElementById('chevron-' + i);
