@@ -17,6 +17,7 @@ class Despesa extends Model
         'tenant_id', 'user_id', 'quem_comprou', 'onde_comprou', 'categoria_id', 'forma_pagamento',
         'valor', 'data_compra', 'data_pagamento', 'observacoes',
         'recorrente', 'parcelas', 'frequencia', 'grupo_recorrencia_id',
+        'origem', 'numero_documento',
     ];
 
     protected $casts = [

@@ -5,18 +5,28 @@
 @section('content')
 
 {{-- Filtro de Período --}}
-<form method="GET" action="{{ route('dashboard') }}" class="d-flex flex-wrap align-center gap-2 mb-5">
-    <div class="d-flex align-center gap-2" style="flex:1;min-width:0;">
-        <label class="form-label" style="margin:0;white-space:nowrap;">De</label>
-        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:160px;">
+<div class="d-flex flex-wrap align-center gap-3 mb-5">
+    {{-- Navegação rápida por mês --}}
+    <div class="d-flex align-center gap-1">
+        <a href="{{ $linkMesAnt }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:16px;line-height:1;" title="Mês anterior">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <a href="{{ route('dashboard') }}" class="btn btn-primary" style="min-width:180px;text-align:center;font-weight:700;font-size:15px;letter-spacing:.5px;">
+            {{ $nomeMes }} {{ $anoMes }}
+        </a>
+        <a href="{{ $linkMesProx }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:16px;line-height:1;" title="Próximo mês">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
     </div>
-    <div class="d-flex align-center gap-2" style="flex:1;min-width:0;">
-        <label class="form-label" style="margin:0;white-space:nowrap;">Até</label>
-        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:160px;">
-    </div>
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filtrar</button>
-    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Mês Atual</a>
-</form>
+
+    {{-- Filtro personalizado --}}
+    <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2" style="margin-left:auto;">
+        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:145px;font-size:13px;">
+        <span style="color:#94a3b8;">—</span>
+        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:145px;font-size:13px;">
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i></button>
+    </form>
+</div>
 
 {{-- KPI Cards Principais --}}
 <div class="grid-3 mb-5">
@@ -112,8 +122,8 @@
     </div>
 </div>
 
-{{-- Gráficos: Fluxo de caixa + Patrimônio --}}
-<div class="grid-2 mb-5">
+{{-- Gráfico: Fluxo de caixa (100%) --}}
+<div class="mb-5">
     <div class="card">
         <div class="card-title">
             <i class="fa-solid fa-chart-column" style="color:#4f46e5;"></i>
@@ -123,7 +133,73 @@
             <canvas id="annualChart"></canvas>
         </div>
     </div>
-    <div class="card">
+</div>
+
+{{-- Gastos com Cartões + Patrimônio Acumulado --}}
+<div class="d-flex gap-4 mb-5" style="flex-wrap:wrap;">
+    <div class="card" style="flex:7;min-width:0;">
+        <div class="card-title">
+            <i class="fa-solid fa-credit-card" style="color:#7c3aed;"></i>
+            Gastos com Cartões
+        </div>
+
+        {{-- Resumo geral --}}
+        <div class="d-flex justify-between align-center" style="padding:10px 12px;background:#f8fafc;border-radius:8px;margin-bottom:12px;">
+            <div style="text-align:center;flex:1;">
+                <div style="font-size:11px;color:#64748b;">Fatura Total</div>
+                <div class="fw-600 text-red" style="font-size:15px;">R$ {{ number_format($totalFaturaCartoes, 2, ',', '.') }}</div>
+            </div>
+            <div style="width:1px;height:30px;background:#e2e8f0;"></div>
+            <div style="text-align:center;flex:1;">
+                <div style="font-size:11px;color:#64748b;">Gastos no Período</div>
+                <div class="fw-600" style="font-size:15px;color:#d97706;">R$ {{ number_format($totalGastosCartoes, 2, ',', '.') }}</div>
+            </div>
+            <div style="width:1px;height:30px;background:#e2e8f0;"></div>
+            <div style="text-align:center;flex:1;">
+                <div style="font-size:11px;color:#64748b;">Limite Total</div>
+                <div class="fw-600" style="font-size:15px;color:#4f46e5;">R$ {{ number_format($totalLimiteCartoes, 2, ',', '.') }}</div>
+            </div>
+        </div>
+
+        {{-- Lista de cartões --}}
+        @forelse($cartoes as $cartao)
+            <div style="padding:10px 0;{{ !$loop->last ? 'border-bottom:1px solid #f1f5f9;' : '' }}">
+                <div class="d-flex justify-between align-center mb-1">
+                    <div class="d-flex align-center gap-2">
+                        <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ $cartao->cor ?? '#7c3aed' }}20;">
+                            <i class="fa-solid fa-credit-card" style="font-size:13px;color:{{ $cartao->cor ?? '#7c3aed' }};"></i>
+                        </div>
+                        <div>
+                            <div class="fw-600" style="font-size:13px;">{{ $cartao->nome }}</div>
+                            <div style="font-size:11px;color:#94a3b8;">Limite: R$ {{ number_format($cartao->limite_cartao, 2, ',', '.') }}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="fw-600 text-red" style="font-size:13px;">R$ {{ number_format($cartao->saldo_cartao, 2, ',', '.') }}</div>
+                        <div style="font-size:11px;color:#64748b;">Período: R$ {{ number_format($cartao->gastos_periodo, 2, ',', '.') }}</div>
+                    </div>
+                </div>
+                {{-- Barra de uso do limite --}}
+                <div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden;margin-top:6px;">
+                    <div style="height:100%;border-radius:4px;width:{{ min($cartao->percentual_uso, 100) }}%;background:{{ $cartao->percentual_uso > 80 ? '#dc2626' : ($cartao->percentual_uso > 50 ? '#d97706' : '#16a34a') }};"></div>
+                </div>
+                <div class="d-flex justify-between" style="margin-top:3px;">
+                    <span style="font-size:10px;color:#94a3b8;">{{ $cartao->percentual_uso }}% usado</span>
+                    <span style="font-size:10px;color:#16a34a;">Disponível: R$ {{ number_format($cartao->limite_disponivel, 2, ',', '.') }}</span>
+                </div>
+                @if($cartao->dia_fechamento_cartao)
+                    @php $melhorDia = $cartao->dia_fechamento_cartao >= 28 ? 1 : $cartao->dia_fechamento_cartao + 1; @endphp
+                    <div style="font-size:10px;margin-top:4px;padding:3px 6px;background:#ede9fe;border-radius:3px;color:#7c3aed;text-align:center;">
+                        <i class="fa-solid fa-lightbulb" style="font-size:9px;"></i> Melhor compra: dia <strong>{{ $melhorDia }}</strong>
+                    </div>
+                @endif
+            </div>
+        @empty
+            <div class="empty-state"><i class="fa-solid fa-credit-card"></i><p>Nenhum cartão cadastrado</p></div>
+        @endforelse
+    </div>
+
+    <div class="card" style="flex:3;min-width:0;">
         <div class="card-title">
             <i class="fa-solid fa-chart-line" style="color:#d97706;"></i>
             Patrimônio Acumulado {{ $ano }}
@@ -170,7 +246,7 @@
             <div class="d-flex justify-between align-center" style="padding:9px 0; border-bottom:1px solid #f8fafc;">
                 <div>
                     <div class="fw-600" style="font-size:13px;">{{ $banco->nome }}</div>
-                    <div style="font-size:11px;" class="text-subtle">{{ $banco->tipo_conta }}</div>
+                    <div style="font-size:11px;" class="text-subtle">{{ implode(', ', array_filter([$banco->eh_dinheiro ? 'Dinheiro' : '', $banco->tem_conta_corrente ? 'Conta Corrente' : '', $banco->tem_poupanca ? 'Poupança' : '', $banco->tem_cartao_credito ? 'Cartão de Crédito' : ''])) ?: 'Nenhum' }}</div>
                 </div>
                 <div class="text-right">
                     <div class="fw-600 {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}" style="font-size:14px;">

@@ -16,6 +16,15 @@ class DashboardController extends Controller
         $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
         $ano    = Carbon::parse($inicio)->year;
 
+        // ─── Navegação por mês ──────────────────────────────────────────────
+        $mesAtual      = Carbon::parse($inicio);
+        $mesAnterior   = $mesAtual->copy()->subMonth();
+        $mesProximo    = $mesAtual->copy()->addMonth();
+        $nomeMes       = ucfirst($mesAtual->translatedFormat('F'));
+        $anoMes        = $mesAtual->year;
+        $linkMesAnt    = route('dashboard', ['inicio' => $mesAnterior->startOfMonth()->format('Y-m-d'), 'fim' => $mesAnterior->endOfMonth()->format('Y-m-d')]);
+        $linkMesProx   = route('dashboard', ['inicio' => $mesProximo->startOfMonth()->format('Y-m-d'), 'fim' => $mesProximo->endOfMonth()->format('Y-m-d')]);
+
         // ─── KPIs do período ──────────────────────────────────────────────────
 
         $totalReceitas = DB::table('receitas')
@@ -170,6 +179,31 @@ class DashboardController extends Controller
 
         $bancos = DB::table('bancos')->where('tenant_id', $tenantId)->orderBy('nome')->get();
 
+        // ─── Cartões de crédito ─────────────────────────────────────────────
+
+        $cartoes = DB::table('bancos')
+            ->where('tenant_id', $tenantId)
+            ->where('tem_cartao_credito', true)
+            ->orderBy('nome')
+            ->get()
+            ->map(function ($cartao) use ($tenantId, $inicio, $fim) {
+                $cartao->gastos_periodo = (float) DB::table('despesas')
+                    ->where('tenant_id', $tenantId)
+                    ->whereNull('deleted_at')
+                    ->where('forma_pagamento', $cartao->id)
+                    ->whereBetween('data_compra', [$inicio, $fim])
+                    ->sum('valor');
+                $cartao->limite_disponivel = (float) $cartao->limite_cartao - $cartao->gastos_periodo;
+                $cartao->percentual_uso = $cartao->limite_cartao > 0
+                    ? round(($cartao->gastos_periodo / (float) $cartao->limite_cartao) * 100, 1)
+                    : 0;
+                return $cartao;
+            });
+
+        $totalGastosCartoes = $cartoes->sum('gastos_periodo');
+        $totalLimiteCartoes = $cartoes->sum('limite_cartao');
+        $totalFaturaCartoes = $cartoes->sum('saldo_cartao');
+
         // ─── Investimentos ────────────────────────────────────────────────────
 
         $totalInvestido = DB::table('investimentos')
@@ -235,6 +269,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'inicio', 'fim', 'ano',
+            'nomeMes', 'anoMes', 'linkMesAnt', 'linkMesProx',
             'totalReceitas', 'totalDespesas', 'saldo',
             'variacaoReceitas', 'variacaoDespesas', 'variacaoSaldo',
             'receitasRealizadas', 'despesasRealizadas',
@@ -243,6 +278,7 @@ class DashboardController extends Controller
             'despesasPorFamiliar',
             'ultimosLancamentos',
             'bancos',
+            'cartoes', 'totalGastosCartoes', 'totalLimiteCartoes', 'totalFaturaCartoes',
             'totalInvestido', 'patrimonioAcumulado',
             'pagamentoUltimoMes', 'recebidoUltimoMes',
             'previsaoDespesasProxMes', 'previsaoReceitasProxMes'

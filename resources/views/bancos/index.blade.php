@@ -32,10 +32,11 @@ $bancosTemplate = [
     </button>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px;">
     @forelse($bancos as $banco)
-        @php $cor = $banco->cor ?: ($banco->tipo_conta === 'Cartão de Crédito' ? '#d97706' : 'var(--color-primary)'); @endphp
+        @php $cor = $banco->cor ?: 'var(--color-primary)'; @endphp
         <div class="card" style="border-top: 3px solid {{ $cor }};">
+            {{-- Header: Logo + Nome + Badges --}}
             <div class="d-flex justify-between align-center mb-3">
                 <div class="d-flex align-center gap-2">
                     @if($banco->logo)
@@ -49,9 +50,20 @@ $bancosTemplate = [
                     @endif
                     <div>
                         <div class="fw-600" style="font-size:15px;">{{ $banco->nome }}</div>
-                        <span class="badge {{ $banco->tipo_conta === 'Cartão de Crédito' ? 'badge-amber' : 'badge-blue' }}" style="margin-top:3px;">
-                            {{ $banco->tipo_conta }}
-                        </span>
+                        <div class="d-flex flex-wrap gap-1" style="margin-top:3px;">
+                            @if($banco->eh_dinheiro)
+                                <span class="badge" style="background:#f1f5f9;color:#64748b;font-size:10px;">Dinheiro</span>
+                            @endif
+                            @if($banco->tem_conta_corrente)
+                                <span class="badge badge-blue" style="font-size:10px;">Conta Corrente</span>
+                            @endif
+                            @if($banco->tem_poupanca)
+                                <span class="badge badge-green" style="font-size:10px;">Poupança</span>
+                            @endif
+                            @if($banco->tem_cartao_credito)
+                                <span class="badge badge-amber" style="font-size:10px;">Cartão de Crédito</span>
+                            @endif
+                        </div>
                         @if($banco->titular)
                             <div style="font-size:11px;margin-top:2px;" class="text-subtle">
                                 <i class="fa-solid fa-user"></i> {{ $banco->titular->nome }}
@@ -72,37 +84,77 @@ $bancosTemplate = [
                 </div>
             </div>
 
-            <div style="background:var(--color-bg);border-radius:6px;padding:10px 12px;margin-bottom:10px;">
-                <div class="kpi-label">Saldo</div>
-                <div class="fw-700 {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}" style="font-size:1.4rem;">
-                    R$ {{ number_format($banco->saldo, 2, ',', '.') }}
+            {{-- Saldo Conta Corrente / Dinheiro --}}
+            @if($banco->tem_conta_corrente || $banco->eh_dinheiro)
+                <div style="background:var(--color-bg);border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:#64748b;">{{ $banco->eh_dinheiro ? 'Dinheiro' : 'Conta Corrente' }}</div>
+                    <div class="fw-700 {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}" style="font-size:1.2rem;">
+                        R$ {{ number_format($banco->saldo, 2, ',', '.') }}
+                    </div>
                 </div>
-            </div>
+            @endif
 
-            @if($banco->cheque_especial > 0)
+            {{-- Saldo Poupança --}}
+            @if($banco->tem_poupanca)
+                <div style="background:#f0fdf4;border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:#16a34a;">Poupança</div>
+                    <div class="fw-700 text-green" style="font-size:1.2rem;">
+                        R$ {{ number_format($banco->saldo_poupanca, 2, ',', '.') }}
+                    </div>
+                </div>
+            @endif
+
+            {{-- Cheque Especial --}}
+            @if($banco->tem_conta_corrente && $banco->cheque_especial > 0)
                 <div style="font-size:12px;margin-bottom:8px;" class="text-muted">
                     Cheque especial: R$ {{ number_format($banco->cheque_especial, 2, ',', '.') }}
                 </div>
             @endif
 
-            @if($banco->limite_cartao > 0)
+            {{-- Cartão de Crédito --}}
+            @if($banco->tem_cartao_credito && $banco->limite_cartao > 0)
                 @php $perc = $banco->limite_cartao > 0 ? ($banco->saldo_cartao / $banco->limite_cartao) * 100 : 0; @endphp
-                <div style="margin-bottom:10px;">
+                <div style="background:#fefce8;border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:#d97706;margin-bottom:4px;">Cartão de Crédito</div>
                     <div class="d-flex justify-between" style="font-size:12px;margin-bottom:4px;">
-                        <span class="text-muted">Cartão utilizado</span>
+                        <span class="text-muted">Utilizado</span>
                         <span class="fw-600">R$ {{ number_format($banco->saldo_cartao, 2, ',', '.') }} / {{ number_format($banco->limite_cartao, 2, ',', '.') }}</span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-bar-fill" style="width:{{ min($perc,100) }}%;background:{{ $perc > 80 ? '#dc2626' : ($perc > 50 ? '#d97706' : '#16a34a') }};"></div>
                     </div>
+                    @if($banco->dia_vencimento_cartao || $banco->dia_fechamento_cartao)
+                        <div class="d-flex justify-between" style="font-size:11px;margin-top:6px;color:#64748b;">
+                            @if($banco->dia_fechamento_cartao)
+                                <span>Fecha dia <strong>{{ $banco->dia_fechamento_cartao }}</strong></span>
+                            @endif
+                            @if($banco->dia_vencimento_cartao)
+                                <span>Vence dia <strong>{{ $banco->dia_vencimento_cartao }}</strong></span>
+                            @endif
+                        </div>
+                        @if($banco->dia_fechamento_cartao)
+                            @php $melhorDia = $banco->dia_fechamento_cartao >= 28 ? 1 : $banco->dia_fechamento_cartao + 1; @endphp
+                            <div style="font-size:11px;margin-top:4px;padding:4px 8px;background:#ede9fe;border-radius:4px;color:#7c3aed;text-align:center;">
+                                <i class="fa-solid fa-lightbulb"></i> Melhor dia de compra: <strong>{{ $melhorDia }}</strong>
+                            </div>
+                        @endif
+                    @endif
                 </div>
             @endif
 
-            <div class="d-flex gap-2">
-                <button onclick="ajustarSaldo({{ $banco->id }}, {{ $banco->saldo }})" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">
-                    <i class="fa-solid fa-sliders"></i> Saldo
-                </button>
-                @if($banco->limite_cartao > 0)
+            {{-- Botões de Ação --}}
+            <div class="d-flex gap-2 flex-wrap">
+                @if($banco->tem_conta_corrente || $banco->eh_dinheiro)
+                    <button onclick="ajustarSaldo({{ $banco->id }}, {{ $banco->saldo }})" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">
+                        <i class="fa-solid fa-sliders"></i> Saldo
+                    </button>
+                @endif
+                @if($banco->tem_poupanca)
+                    <button onclick="ajustarPoupanca({{ $banco->id }}, {{ $banco->saldo_poupanca }})" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">
+                        <i class="fa-solid fa-piggy-bank"></i> Poupança
+                    </button>
+                @endif
+                @if($banco->tem_cartao_credito && $banco->limite_cartao > 0)
                     <button onclick="ajustarSaldoCartao({{ $banco->id }}, {{ $banco->saldo_cartao }})" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;">
                         <i class="fa-solid fa-credit-card"></i> Cartão
                     </button>
@@ -161,15 +213,6 @@ $bancosTemplate = [
                         <input type="text" name="nome" id="novo-nome" class="form-control" required placeholder="Ex: Nubank, Carteira...">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Tipo *</label>
-                        <select name="tipo_conta" class="form-control" required>
-                            <option value="Conta Corrente">Conta Corrente</option>
-                            <option value="Poupança">Poupança</option>
-                            <option value="Dinheiro">Dinheiro (Carteira)</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Titular</label>
                         <select name="titular_id" class="form-control">
                             <option value="">— Nenhum —</option>
@@ -178,18 +221,59 @@ $bancosTemplate = [
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
+                </div>
+
+                {{-- Produtos ativos --}}
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="margin-bottom:8px;">Produtos ativos</label>
+                    <div class="d-flex flex-wrap gap-3">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_conta_corrente" value="1" checked onchange="toggleCamposNovo()"> Conta Corrente
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_poupanca" value="1" onchange="toggleCamposNovo()"> Poupança
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_cartao_credito" value="1" onchange="toggleCamposNovo()"> Cartão de Crédito
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="eh_dinheiro" value="1" onchange="toggleCamposNovo()"> Dinheiro (Carteira)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    {{-- Campos Conta Corrente / Dinheiro --}}
+                    <div class="form-group" id="novo-grupo-saldo">
                         <label class="form-label">Saldo Inicial</label>
                         <input type="number" name="saldo" step="0.01" value="0" class="form-control">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="novo-grupo-cheque">
                         <label class="form-label">Cheque Especial</label>
                         <input type="number" name="cheque_especial" step="0.01" value="0" min="0" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Limite Cartão</label>
+
+                    {{-- Campos Poupança --}}
+                    <div class="form-group" id="novo-grupo-poupanca" style="display:none;">
+                        <label class="form-label">Saldo Poupança</label>
+                        <input type="number" name="saldo_poupanca" step="0.01" value="0" class="form-control">
+                    </div>
+
+                    {{-- Campos Cartão --}}
+                    <div class="form-group" id="novo-grupo-limite" style="display:none;">
+                        <label class="form-label">Limite do Cartão</label>
                         <input type="number" name="limite_cartao" step="0.01" value="0" min="0" class="form-control">
                     </div>
+                    <div class="form-group" id="novo-grupo-vencimento" style="display:none;">
+                        <label class="form-label">Dia Vencimento</label>
+                        <input type="number" name="dia_vencimento_cartao" min="1" max="31" class="form-control" placeholder="Ex: 15">
+                    </div>
+                    <div class="form-group" id="novo-grupo-fechamento" style="display:none;">
+                        <label class="form-label">Dia Fechamento</label>
+                        <input type="number" name="dia_fechamento_cartao" min="1" max="31" class="form-control" placeholder="Ex: 5">
+                    </div>
+
+                    {{-- Agência e Conta --}}
                     <div class="form-group">
                         <label class="form-label">Agência</label>
                         <input type="text" name="agencia" class="form-control" placeholder="0000">
@@ -210,7 +294,7 @@ $bancosTemplate = [
 
 {{-- Modal Editar --}}
 <div class="modal-backdrop" id="modal-editar-banco">
-    <div class="modal">
+    <div class="modal" style="max-width:600px;">
         <div class="modal-header">
             <i class="fa-solid fa-pen" style="color:var(--color-primary);"></i>
             <h3>Editar Conta</h3>
@@ -221,19 +305,12 @@ $bancosTemplate = [
                 @csrf @method('PUT')
                 <input type="hidden" name="logo" id="b-edit-logo">
                 <input type="hidden" name="cor" id="b-edit-cor">
+                <input type="hidden" name="codigo_banco" id="b-edit-codigo">
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nome *</label>
                         <input type="text" name="nome" id="b-edit-nome" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tipo *</label>
-                        <select name="tipo_conta" id="b-edit-tipo" class="form-control" required>
-                            <option value="Conta Corrente">Conta Corrente</option>
-                            <option value="Poupança">Poupança</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Titular</label>
@@ -244,17 +321,59 @@ $bancosTemplate = [
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
+                </div>
+
+                {{-- Produtos ativos --}}
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="margin-bottom:8px;">Produtos ativos</label>
+                    <div class="d-flex flex-wrap gap-3">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_conta_corrente" value="1" id="b-edit-cc" onchange="toggleCamposEditar()"> Conta Corrente
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_poupanca" value="1" id="b-edit-poup" onchange="toggleCamposEditar()"> Poupança
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="tem_cartao_credito" value="1" id="b-edit-cartao" onchange="toggleCamposEditar()"> Cartão de Crédito
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+                            <input type="checkbox" name="eh_dinheiro" value="1" id="b-edit-dinheiro" onchange="toggleCamposEditar()"> Dinheiro (Carteira)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group" id="edit-grupo-saldo">
                         <label class="form-label">Saldo</label>
                         <input type="number" name="saldo" id="b-edit-saldo" step="0.01" class="form-control">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="edit-grupo-cheque">
                         <label class="form-label">Cheque Especial</label>
                         <input type="number" name="cheque_especial" id="b-edit-cheque" step="0.01" min="0" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Limite Cartão</label>
+                    <div class="form-group" id="edit-grupo-poupanca" style="display:none;">
+                        <label class="form-label">Saldo Poupança</label>
+                        <input type="number" name="saldo_poupanca" id="b-edit-saldo-poup" step="0.01" class="form-control">
+                    </div>
+                    <div class="form-group" id="edit-grupo-limite" style="display:none;">
+                        <label class="form-label">Limite do Cartão</label>
                         <input type="number" name="limite_cartao" id="b-edit-limite" step="0.01" min="0" class="form-control">
+                    </div>
+                    <div class="form-group" id="edit-grupo-vencimento" style="display:none;">
+                        <label class="form-label">Dia Vencimento</label>
+                        <input type="number" name="dia_vencimento_cartao" id="b-edit-vencimento" min="1" max="31" class="form-control">
+                    </div>
+                    <div class="form-group" id="edit-grupo-fechamento" style="display:none;">
+                        <label class="form-label">Dia Fechamento</label>
+                        <input type="number" name="dia_fechamento_cartao" id="b-edit-fechamento" min="1" max="31" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Agência</label>
+                        <input type="text" name="agencia" id="b-edit-agencia" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Conta</label>
+                        <input type="text" name="conta" id="b-edit-conta" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -283,6 +402,30 @@ $bancosTemplate = [
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeModal('modal-ajustar-saldo')" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Ajustar Poupança --}}
+<div class="modal-backdrop" id="modal-ajustar-poupanca">
+    <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+            <i class="fa-solid fa-piggy-bank" style="color:#16a34a;"></i>
+            <h3>Ajustar Saldo Poupança</h3>
+            <button class="modal-close" onclick="closeModal('modal-ajustar-poupanca')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="" id="form-ajustar-poupanca">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Novo Saldo</label>
+                    <input type="number" name="saldo_poupanca" id="ajuste-poupanca-val" step="0.01" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('modal-ajustar-poupanca')" class="btn btn-secondary">Cancelar</button>
                     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
                 </div>
             </form>
@@ -332,23 +475,75 @@ function selecionarBanco(btn) {
     document.getElementById('novo-codigo').value = btn.dataset.codigo;
 }
 
+// Toggle campos no modal NOVO
+function toggleCamposNovo() {
+    const form = document.getElementById('form-novo-banco');
+    const cc       = form.querySelector('[name="tem_conta_corrente"]').checked;
+    const poup     = form.querySelector('[name="tem_poupanca"]').checked;
+    const cartao   = form.querySelector('[name="tem_cartao_credito"]').checked;
+    const dinheiro = form.querySelector('[name="eh_dinheiro"]').checked;
+
+    document.getElementById('novo-grupo-saldo').style.display   = (cc || dinheiro) ? '' : 'none';
+    document.getElementById('novo-grupo-cheque').style.display   = cc ? '' : 'none';
+    document.getElementById('novo-grupo-poupanca').style.display = poup ? '' : 'none';
+    document.getElementById('novo-grupo-limite').style.display   = cartao ? '' : 'none';
+    document.getElementById('novo-grupo-vencimento').style.display = cartao ? '' : 'none';
+    document.getElementById('novo-grupo-fechamento').style.display = cartao ? '' : 'none';
+}
+
+// Toggle campos no modal EDITAR
+function toggleCamposEditar() {
+    const cc       = document.getElementById('b-edit-cc').checked;
+    const poup     = document.getElementById('b-edit-poup').checked;
+    const cartao   = document.getElementById('b-edit-cartao').checked;
+    const dinheiro = document.getElementById('b-edit-dinheiro').checked;
+
+    document.getElementById('edit-grupo-saldo').style.display   = (cc || dinheiro) ? '' : 'none';
+    document.getElementById('edit-grupo-cheque').style.display   = cc ? '' : 'none';
+    document.getElementById('edit-grupo-poupanca').style.display = poup ? '' : 'none';
+    document.getElementById('edit-grupo-limite').style.display   = cartao ? '' : 'none';
+    document.getElementById('edit-grupo-vencimento').style.display = cartao ? '' : 'none';
+    document.getElementById('edit-grupo-fechamento').style.display = cartao ? '' : 'none';
+}
+
 function editarBanco(id, data) {
     document.getElementById('form-editar-banco').action = `/bancos/${id}`;
-    document.getElementById('b-edit-nome').value    = data.nome;
-    document.getElementById('b-edit-tipo').value    = data.tipo_conta;
-    document.getElementById('b-edit-titular').value = data.titular_id || '';
-    document.getElementById('b-edit-saldo').value   = data.saldo;
-    document.getElementById('b-edit-cheque').value  = data.cheque_especial;
-    document.getElementById('b-edit-limite').value  = data.limite_cartao;
-    document.getElementById('b-edit-logo').value    = data.logo || '';
-    document.getElementById('b-edit-cor').value     = data.cor || '';
+    document.getElementById('b-edit-nome').value      = data.nome;
+    document.getElementById('b-edit-titular').value   = data.titular_id || '';
+    document.getElementById('b-edit-saldo').value     = data.saldo;
+    document.getElementById('b-edit-cheque').value    = data.cheque_especial;
+    document.getElementById('b-edit-saldo-poup').value = data.saldo_poupanca || 0;
+    document.getElementById('b-edit-limite').value    = data.limite_cartao;
+    document.getElementById('b-edit-vencimento').value = data.dia_vencimento_cartao || '';
+    document.getElementById('b-edit-fechamento').value = data.dia_fechamento_cartao || '';
+    document.getElementById('b-edit-agencia').value   = data.agencia || '';
+    document.getElementById('b-edit-conta').value     = data.conta || '';
+    document.getElementById('b-edit-logo').value      = data.logo || '';
+    document.getElementById('b-edit-cor').value       = data.cor || '';
+    document.getElementById('b-edit-codigo').value    = data.codigo_banco || '';
+
+    // Checkboxes
+    document.getElementById('b-edit-cc').checked       = !!data.tem_conta_corrente;
+    document.getElementById('b-edit-poup').checked     = !!data.tem_poupanca;
+    document.getElementById('b-edit-cartao').checked   = !!data.tem_cartao_credito;
+    document.getElementById('b-edit-dinheiro').checked = !!data.eh_dinheiro;
+
+    toggleCamposEditar();
     openModal('modal-editar-banco');
 }
+
 function ajustarSaldo(id, saldo) {
     document.getElementById('form-ajustar-saldo').action = `/bancos/${id}/ajustar-saldo`;
     document.getElementById('ajuste-saldo-val').value = saldo;
     openModal('modal-ajustar-saldo');
 }
+
+function ajustarPoupanca(id, saldo) {
+    document.getElementById('form-ajustar-poupanca').action = `/bancos/${id}/ajustar-saldo-poupanca`;
+    document.getElementById('ajuste-poupanca-val').value = saldo;
+    openModal('modal-ajustar-poupanca');
+}
+
 function ajustarSaldoCartao(id, saldo) {
     document.getElementById('form-ajustar-cartao').action = `/bancos/${id}/ajustar-saldo-cartao`;
     document.getElementById('ajuste-cartao-val').value = saldo;
