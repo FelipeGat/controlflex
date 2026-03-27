@@ -4,9 +4,9 @@
 
 @section('content')
 
-<div style="display:flex;flex-direction:column;gap:18px;max-width:600px;">
+<div style="display:flex;flex-direction:column;gap:18px;max-width:600px;width:100%;">
 
-    {{-- Informações do Perfil --}}
+    {{-- Foto + Informações do Perfil --}}
     <div class="card">
         <div class="card-title">
             <i class="fa-solid fa-user" style="color:var(--color-primary);"></i> Informações do Perfil
@@ -16,10 +16,29 @@
             <div class="alert-success mb-3">Perfil atualizado com sucesso!</div>
         @endif
 
-        <form method="POST" action="{{ route('profile.update') }}">
+        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
             <div style="display:flex;flex-direction:column;gap:12px;">
+                {{-- Foto --}}
+                <div class="form-group" style="display:flex;align-items:center;gap:16px;">
+                    <div id="foto-preview" style="width:72px;height:72px;border-radius:50%;background:var(--color-bg-subtle);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:2px solid var(--color-border);">
+                        @if($user->foto)
+                            <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <i class="fa-solid fa-camera" style="font-size:24px;color:var(--color-text-subtle);"></i>
+                        @endif
+                    </div>
+                    <div>
+                        <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                            <i class="fa-solid fa-upload"></i> Alterar Foto
+                            <input type="file" name="foto" accept="image/*" style="display:none;" onchange="previewFoto(this)">
+                        </label>
+                        <div style="font-size:11px;color:var(--color-text-subtle);margin-top:4px;">JPG, PNG ou GIF. Max 2MB.</div>
+                        @error('foto') <div class="form-error">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Nome *</label>
                     <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required autofocus>
@@ -36,6 +55,97 @@
             </div>
         </form>
     </div>
+
+    {{-- Minha Licença --}}
+    @if($licenca)
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-id-badge" style="color:var(--color-primary);"></i> Minha Licença
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            {{-- Plano --}}
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:12px;color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;">Plano</div>
+                    <div style="font-size:16px;font-weight:600;">{{ $licenca['plano_nome'] }}</div>
+                    @if($licenca['plano_descricao'])
+                        <div style="font-size:12px;color:var(--color-text-subtle);">{{ $licenca['plano_descricao'] }}</div>
+                    @endif
+                </div>
+                <div>
+                    @if($licenca['vencido'])
+                        <span class="badge badge-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Vencido</span>
+                    @else
+                        <span class="badge badge-green"><i class="fa-solid fa-circle" style="font-size:7px"></i> Ativo</span>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Cobrança e período --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <div style="font-size:12px;color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;">Cobrança</div>
+                    <div style="font-weight:500;">{{ $licenca['tipo_cobranca'] === 'anual' ? 'Anual' : 'Mensal' }}</div>
+                </div>
+                <div>
+                    <div style="font-size:12px;color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;">Período</div>
+                    <div style="font-weight:500;">
+                        @if($licenca['data_inicio'] && $licenca['data_fim'])
+                            {{ $licenca['data_inicio']->format('d/m/Y') }} — {{ $licenca['data_fim']->format('d/m/Y') }}
+                        @else
+                            —
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Dias restantes --}}
+            @if($licenca['dias_restantes'] !== null)
+            <div>
+                <div style="font-size:12px;color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Dias Restantes</div>
+                @if($licenca['dias_restantes'] <= 0)
+                    <span class="badge badge-red" style="font-size:14px;padding:6px 14px;">Vencido</span>
+                @elseif($licenca['dias_restantes'] <= 5)
+                    <span class="badge badge-red" style="font-size:14px;padding:6px 14px;">{{ $licenca['dias_restantes'] }} dias</span>
+                @elseif($licenca['dias_restantes'] <= 15)
+                    <span class="badge badge-yellow" style="font-size:14px;padding:6px 14px;">{{ $licenca['dias_restantes'] }} dias</span>
+                @else
+                    <span class="badge badge-green" style="font-size:14px;padding:6px 14px;">{{ $licenca['dias_restantes'] }} dias</span>
+                @endif
+            </div>
+            @endif
+
+            {{-- Uso: Usuários --}}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;">Usuários</span>
+                    <span style="font-weight:600;">{{ $licenca['uso_usuarios'] }} / {{ $licenca['max_usuarios'] == -1 ? 'Ilimitado' : $licenca['max_usuarios'] }}</span>
+                </div>
+                @if($licenca['max_usuarios'] != -1)
+                    @php $pctUsuarios = $licenca['max_usuarios'] > 0 ? min(100, round(($licenca['uso_usuarios'] / $licenca['max_usuarios']) * 100)) : 0; @endphp
+                    <div style="background:var(--color-bg-subtle);border-radius:6px;height:8px;overflow:hidden;">
+                        <div style="width:{{ $pctUsuarios }}%;height:100%;border-radius:6px;background:{{ $pctUsuarios >= 90 ? '#dc2626' : ($pctUsuarios >= 70 ? '#eab308' : 'var(--color-primary)') }};transition:width .3s;"></div>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Uso: Bancos --}}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="color:var(--color-text-subtle);text-transform:uppercase;font-weight:700;">Contas Bancárias</span>
+                    <span style="font-weight:600;">{{ $licenca['uso_bancos'] }} / {{ $licenca['max_bancos'] == -1 ? 'Ilimitado' : $licenca['max_bancos'] }}</span>
+                </div>
+                @if($licenca['max_bancos'] != -1)
+                    @php $pctBancos = $licenca['max_bancos'] > 0 ? min(100, round(($licenca['uso_bancos'] / $licenca['max_bancos']) * 100)) : 0; @endphp
+                    <div style="background:var(--color-bg-subtle);border-radius:6px;height:8px;overflow:hidden;">
+                        <div style="width:{{ $pctBancos }}%;height:100%;border-radius:6px;background:{{ $pctBancos >= 90 ? '#dc2626' : ($pctBancos >= 70 ? '#eab308' : 'var(--color-primary)') }};transition:width .3s;"></div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Trocar Senha --}}
     <div class="card">
@@ -121,7 +231,16 @@
 
 @push('scripts')
 <script>
-// Reopen delete modal if there are deletion errors
+function previewFoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('foto-preview').innerHTML = '<img src="' + e.target.result + '" alt="Foto" style="width:100%;height:100%;object-fit:cover;">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 @if($errors->userDeletion->isNotEmpty())
     document.addEventListener('DOMContentLoaded', () => openModal('modal-excluir-conta'));
 @endif

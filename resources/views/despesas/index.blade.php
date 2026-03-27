@@ -7,8 +7,8 @@
 {{-- Toolbar --}}
 <div class="section-header mb-4">
     <form method="GET" action="{{ route('despesas.index') }}" class="d-flex flex-wrap align-center gap-2">
-        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="width:135px;">
-        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="width:135px;">
+        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:140px;">
+        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:140px;">
         <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Filtrar</button>
         <a href="{{ route('despesas.index') }}" class="btn btn-secondary btn-sm">Mês Atual</a>
     </form>

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plano;
 use App\Models\Tenant;
 use App\Models\User;
-use Database\Seeders\BancosDefaultSeeder;
 use Database\Seeders\CategoriasDefaultSeeder;
 use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Auth\Events\Registered;
@@ -42,10 +42,13 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = DB::transaction(function () use ($request) {
+            $planoDefault = Plano::where('slug', 'individual')->first();
+
             $tenant = Tenant::create([
-                'nome'  => $request->name,
-                'plano' => 'basic',
-                'ativo' => true,
+                'nome'     => $request->name,
+                'ativo'    => true,
+                'status'   => 'ativo',
+                'plano_id' => $planoDefault?->id,
             ]);
 
             $user = User::create([
@@ -59,7 +62,6 @@ class RegisteredUserController extends Controller
 
             CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);
             FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $user->id);
-            BancosDefaultSeeder::seedParaTenant($tenant->id, $user->id);
 
             return $user;
         });

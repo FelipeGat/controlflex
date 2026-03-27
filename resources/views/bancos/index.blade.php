@@ -32,7 +32,7 @@ $bancosTemplate = [
     </button>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px;">
     @forelse($bancos as $banco)
         @php $cor = $banco->cor ?: ($banco->tipo_conta === 'Cartão de Crédito' ? '#d97706' : 'var(--color-primary)'); @endphp
         <div class="card" style="border-top: 3px solid {{ $cor }};">

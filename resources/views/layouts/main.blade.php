@@ -453,6 +453,9 @@
         .empty-state i { font-size: 36px; display: block; margin-bottom: 12px; opacity: .5; }
         .empty-state p { font-size: 13px; }
 
+        /* ─── Badge yellow (alias) ───────────────────────────────── */
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+
         /* ─── Responsive ──────────────────────────────────────────── */
         @media (max-width: 1024px) {
             .grid-4 { grid-template-columns: repeat(2, 1fr); }
@@ -463,7 +466,6 @@
             .main-content { margin-left: 0 !important; }
             .sidebar-collapse-btn { display: none; }
             .topbar-hamburger { display: flex; }
-            .sidebar-collapse-btn { display: none; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .grid-4 { grid-template-columns: 1fr 1fr; }
             .page-content { padding: 14px 12px calc(var(--bottom-nav-h) + 14px); }
@@ -473,12 +475,33 @@
             /* Hide some table columns on mobile */
             .table .hide-mobile { display: none; }
             .modal-backdrop { padding: 0; align-items: flex-end; }
-            .modal { border-radius: 14px 14px 0 0; max-width: 100%; }
+            .modal { border-radius: 14px 14px 0 0; max-width: 100%; max-height: 92vh; overflow-y: auto; }
+            .modal-body { padding: 16px; }
+            /* Section header stack vertically on mobile */
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .section-header h2 { font-size: 14px; }
+            .section-header .btn { width: 100%; justify-content: center; }
+            /* Table action buttons wrap on mobile */
+            .table .actions-cell { flex-wrap: wrap; }
+            /* Date inputs shrink on mobile */
+            input[type="date"].form-control { min-width: 0; width: 100%; }
+            /* KPI smaller on mobile */
+            .kpi-value { font-size: 1.3rem; }
+            /* Permissions grid scroll */
+            .perm-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .perm-grid-wrapper table { min-width: 480px; }
         }
         @media (max-width: 480px) {
             .grid-4 { grid-template-columns: 1fr; }
             .topbar { padding: 0 12px; gap: 10px; }
-            .kpi-value { font-size: 1.35rem; }
+            .kpi-value { font-size: 1.2rem; }
+            .card { padding: 12px; }
+            .btn { padding: 8px 12px; font-size: 12px; }
+            .btn-sm { padding: 6px 10px; font-size: 11px; }
         }
     </style>
     @stack('styles')
@@ -509,6 +532,9 @@
         @elseif(Auth::user()->isAdminRevenda())
         {{-- ─── Sidebar Admin Revenda ────────────────────────────────────── --}}
         <div class="sidebar-section-label">Minha Revenda</div>
+        <a href="{{ route('revenda.dashboard') }}" class="sidebar-link {{ request()->routeIs('revenda.dashboard') ? 'active' : '' }}" data-label="Dashboard">
+            <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+        </a>
         <a href="{{ route('revenda.clientes.index') }}" class="sidebar-link {{ request()->routeIs('revenda.clientes.*') ? 'active' : '' }}" data-label="Clientes">
             <i class="fa-solid fa-store"></i> <span>Clientes</span>
         </a>
@@ -571,7 +597,13 @@
 
     <div class="sidebar-user">
         <div class="sidebar-user-info">
-            <div class="sidebar-user-avatar"><i class="fa-solid fa-user"></i></div>
+            <div class="sidebar-user-avatar">
+                @if(Auth::user()->foto)
+                    <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                @else
+                    <i class="fa-solid fa-user"></i>
+                @endif
+            </div>
             <div class="sidebar-user-details">
                 <div class="sidebar-user-name">
                     {{ Auth::user()->name }}
@@ -658,8 +690,18 @@
             </li>
         @elseif(Auth::user()->isAdminRevenda())
             <li>
+                <a href="{{ route('revenda.dashboard') }}" class="{{ request()->routeIs('revenda.dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('revenda.clientes.index') }}" class="{{ request()->routeIs('revenda.clientes.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-store"></i> Clientes
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-user"></i> Perfil
                 </a>
             </li>
         @else

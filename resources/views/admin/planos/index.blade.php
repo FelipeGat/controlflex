@@ -22,24 +22,24 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Slug</th>
-                    <th>Mensal</th>
-                    <th>Anual</th>
-                    <th>Max Clientes</th>
-                    <th>Max Usuários</th>
+                    <th class="hide-mobile">Slug</th>
+                    <th class="hide-mobile">Mensal</th>
+                    <th class="hide-mobile">Anual</th>
+                    <th>Usuários</th>
+                    <th>Bancos</th>
                     <th>Status</th>
-                    <th style="width:100px">Ações</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($planos as $plano)
                 <tr>
                     <td class="fw-600">{{ $plano->nome }}</td>
-                    <td class="text-muted">{{ $plano->slug }}</td>
-                    <td>R$ {{ number_format($plano->preco_mensal, 2, ',', '.') }}</td>
-                    <td>R$ {{ number_format($plano->preco_anual, 2, ',', '.') }}</td>
-                    <td>{{ $plano->max_clientes == -1 ? 'Ilimitado' : $plano->max_clientes }}</td>
+                    <td class="text-muted hide-mobile">{{ $plano->slug }}</td>
+                    <td class="hide-mobile">R$ {{ number_format($plano->preco_mensal, 2, ',', '.') }}</td>
+                    <td class="hide-mobile">R$ {{ number_format($plano->preco_anual, 2, ',', '.') }}</td>
                     <td>{{ $plano->max_usuarios == -1 ? 'Ilimitado' : $plano->max_usuarios }}</td>
+                    <td>{{ $plano->max_bancos == -1 ? 'Ilimitado' : $plano->max_bancos }}</td>
                     <td>
                         @if($plano->ativo)
                             <span class="badge badge-green">Ativo</span>
@@ -50,7 +50,7 @@
                     <td>
                         <div class="d-flex gap-2">
                             <button class="btn btn-secondary btn-sm btn-icon"
-                                onclick="editarPlano({{ $plano->id }}, '{{ addslashes($plano->nome) }}', '{{ $plano->slug }}', '{{ addslashes($plano->descricao ?? '') }}', '{{ $plano->preco_mensal }}', '{{ $plano->preco_anual }}', '{{ $plano->max_clientes }}', '{{ $plano->max_usuarios }}', {{ $plano->ativo ? 'true' : 'false' }})"
+                                onclick="editarPlano({{ $plano->id }}, '{{ addslashes($plano->nome) }}', '{{ $plano->slug }}', '{{ addslashes($plano->descricao ?? '') }}', '{{ $plano->preco_mensal }}', '{{ $plano->preco_anual }}', '{{ $plano->max_usuarios }}', '{{ $plano->max_bancos }}', {{ $plano->ativo ? 'true' : 'false' }})"
                                 title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
@@ -99,12 +99,12 @@
                         <input type="number" name="preco_anual" class="form-control" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Max Clientes (-1 = ilimitado) *</label>
-                        <input type="number" name="max_clientes" class="form-control" value="-1" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Max Usuários (-1 = ilimitado) *</label>
                         <input type="number" name="max_usuarios" class="form-control" value="-1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Bancos (-1 = ilimitado) *</label>
+                        <input type="number" name="max_bancos" class="form-control" value="-1" required>
                     </div>
                     <div class="form-group span-2">
                         <label class="form-label">Descrição</label>
@@ -149,12 +149,12 @@
                         <input type="number" name="preco_anual" id="edit-plano-preco-anual" class="form-control" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Max Clientes *</label>
-                        <input type="number" name="max_clientes" id="edit-plano-max-clientes" class="form-control" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Max Usuários *</label>
                         <input type="number" name="max_usuarios" id="edit-plano-max-usuarios" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Max Bancos *</label>
+                        <input type="number" name="max_bancos" id="edit-plano-max-bancos" class="form-control" required>
                     </div>
                     <div class="form-group span-2">
                         <label class="form-label">Descrição</label>
@@ -178,14 +178,14 @@
 
 @push('scripts')
 <script>
-function editarPlano(id, nome, slug, descricao, precoMensal, precoAnual, maxClientes, maxUsuarios, ativo) {
+function editarPlano(id, nome, slug, descricao, precoMensal, precoAnual, maxUsuarios, maxBancos, ativo) {
     document.getElementById('edit-plano-nome').value = nome;
     document.getElementById('edit-plano-slug').value = slug;
     document.getElementById('edit-plano-descricao').value = descricao;
     document.getElementById('edit-plano-preco-mensal').value = precoMensal;
     document.getElementById('edit-plano-preco-anual').value = precoAnual;
-    document.getElementById('edit-plano-max-clientes').value = maxClientes;
     document.getElementById('edit-plano-max-usuarios').value = maxUsuarios;
+    document.getElementById('edit-plano-max-bancos').value = maxBancos;
     document.getElementById('edit-plano-ativo').checked = ativo;
     document.getElementById('form-editar-plano').action = '/admin/planos/' + id;
     openModal('modal-editar');

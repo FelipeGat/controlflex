@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plano;
 use App\Models\Revenda;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,14 +14,12 @@ class RevendaAdminController extends Controller
 {
     public function index()
     {
-        $revendas = Revenda::with('plano', 'admin')
+        $revendas = Revenda::with('admin')
             ->withCount('tenants')
             ->orderByDesc('created_at')
             ->get();
 
-        $planos = Plano::where('ativo', true)->orderBy('nome')->get();
-
-        return view('admin.revendas.index', compact('revendas', 'planos'));
+        return view('admin.revendas.index', compact('revendas'));
     }
 
     public function store(Request $request)
@@ -32,10 +29,9 @@ class RevendaAdminController extends Controller
             'cnpj'     => 'nullable|string|max:20',
             'email'    => 'nullable|email|max:255',
             'telefone' => 'nullable|string|max:20',
-            'plano_id' => 'nullable|exists:planos,id',
         ]);
 
-        Revenda::create($request->only(['nome', 'cnpj', 'email', 'telefone', 'status', 'plano_id']));
+        Revenda::create($request->only(['nome', 'cnpj', 'email', 'telefone', 'status']));
 
         return back()->with('success', 'Revenda criada com sucesso!');
     }
@@ -48,10 +44,9 @@ class RevendaAdminController extends Controller
             'email'    => 'nullable|email|max:255',
             'telefone' => 'nullable|string|max:20',
             'status'   => 'required|in:ativo,inativo',
-            'plano_id' => 'nullable|exists:planos,id',
         ]);
 
-        $revenda->update($request->only(['nome', 'cnpj', 'email', 'telefone', 'status', 'plano_id']));
+        $revenda->update($request->only(['nome', 'cnpj', 'email', 'telefone', 'status']));
 
         return back()->with('success', 'Revenda atualizada com sucesso!');
     }
@@ -69,7 +64,6 @@ class RevendaAdminController extends Controller
             'cnpj'          => 'nullable|string|max:20',
             'email_revenda' => 'nullable|email|max:255',
             'telefone'      => 'nullable|string|max:20',
-            'plano_id'      => 'nullable|exists:planos,id',
             'nome_admin'    => 'required|string|max:255',
             'email_admin'   => 'required|email|unique:users,email',
             'senha_admin'   => ['required', Rules\Password::defaults()],
@@ -82,7 +76,6 @@ class RevendaAdminController extends Controller
                 'email'    => $request->email_revenda,
                 'telefone' => $request->telefone,
                 'status'   => 'ativo',
-                'plano_id' => $request->plano_id,
             ]);
 
             User::create([

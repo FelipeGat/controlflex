@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Banco;
 use App\Models\Familiar;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,14 @@ class BancoController extends Controller
     {
         $userId   = Auth::id();
         $tenantId = Auth::user()->tenant_id;
+
+        // Verificar limite de contas bancárias do plano
+        $tenant = Tenant::with('plano')->find($tenantId);
+        if ($tenant && $tenant->limiteBancosAtingido()) {
+            return back()->withErrors([
+                'nome' => 'Limite de contas bancárias do plano atingido. Faça upgrade do plano para adicionar mais contas.',
+            ]);
+        }
 
         $request->validate([
             'nome'            => 'required|string|max:150',

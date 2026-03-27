@@ -1,11 +1,24 @@
 <?php
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
-    protected $fillable = ['nome', 'plano', 'ativo', 'revenda_id', 'plano_id', 'status'];
+    protected $fillable = [
+        'nome', 'ativo', 'revenda_id', 'plano_id', 'status',
+        'tipo_cobranca', 'data_inicio_plano', 'data_fim_plano',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'ativo'             => 'boolean',
+            'data_inicio_plano' => 'date',
+            'data_fim_plano'    => 'date',
+        ];
+    }
 
     public function users()
     {
@@ -22,7 +35,7 @@ class Tenant extends Model
         return $this->belongsTo(Revenda::class);
     }
 
-    public function planoObj()
+    public function plano()
     {
         return $this->belongsTo(Plano::class, 'plano_id');
     }
@@ -30,5 +43,39 @@ class Tenant extends Model
     public function isAtivo(): bool
     {
         return $this->status === 'ativo' && $this->ativo;
+    }
+
+    public function diasRestantes(): ?int
+    {
+        if (!$this->data_fim_plano) {
+            return null;
+        }
+
+        return (int) Carbon::today()->diffInDays($this->data_fim_plano, false);
+    }
+
+    public function planoVencido(): bool
+    {
+        return $this->data_fim_plano && $this->data_fim_plano->isPast();
+    }
+
+    public function limiteUsuariosAtingido(): bool
+    {
+        $plano = $this->plano;
+        if (!$plano) {
+            return false;
+        }
+
+        return $plano->limiteUsuariosAtingido($this);
+    }
+
+    public function limiteBancosAtingido(): bool
+    {
+        $plano = $this->plano;
+        if (!$plano) {
+            return false;
+        }
+
+        return $plano->limiteBancosAtingido($this);
     }
 }

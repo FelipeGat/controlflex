@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Revenda;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plano;
 use App\Models\Tenant;
 use App\Models\User;
-use Database\Seeders\BancosDefaultSeeder;
 use Database\Seeders\CategoriasDefaultSeeder;
 use Database\Seeders\FornecedoresDefaultSeeder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,14 @@ class ClienteController extends Controller
         $revendaId = Auth::user()->revenda_id;
 
         $clientes = Tenant::where('revenda_id', $revendaId)
-            ->with('master')
+            ->with('master', 'plano')
             ->withCount('users')
             ->orderByDesc('created_at')
             ->get();
 
-        return view('revenda.clientes.index', compact('clientes'));
+        $planos = Plano::where('ativo', true)->orderBy('preco_mensal')->get();
+
+        return view('revenda.clientes.index', compact('clientes', 'planos'));
     }
 
     public function store(Request $request)
@@ -34,19 +37,26 @@ class ClienteController extends Controller
         $revendaId = Auth::user()->revenda_id;
 
         $request->validate([
-            'nome_cliente'  => 'required|string|max:255',
-            'nome_master'   => 'required|string|max:255',
-            'email_master'  => 'required|email|unique:users,email',
-            'senha_master'  => ['required', Rules\Password::defaults()],
+            'nome_cliente'   => 'required|string|max:255',
+            'nome_master'    => 'required|string|max:255',
+            'email_master'   => 'required|email|unique:users,email',
+            'senha_master'   => ['required', Rules\Password::defaults()],
+            'plano_id'       => 'required|exists:planos,id',
+            'tipo_cobranca'  => 'required|in:mensal,anual',
         ]);
 
-        DB::transaction(function () use ($request, $revendaId) {
+        $diasPlano = $request->tipo_cobranca === 'anual' ? 365 : 30;
+
+        DB::transaction(function () use ($request, $revendaId, $diasPlano) {
             $tenant = Tenant::create([
-                'nome'       => $request->nome_cliente,
-                'plano'      => 'basic',
-                'ativo'      => true,
-                'status'     => 'ativo',
-                'revenda_id' => $revendaId,
+                'nome'              => $request->nome_cliente,
+                'ativo'             => true,
+                'status'            => 'ativo',
+                'revenda_id'        => $revendaId,
+                'plano_id'          => $request->plano_id,
+                'tipo_cobranca'     => $request->tipo_cobranca,
+                'data_inicio_plano' => Carbon::today(),
+                'data_fim_plano'    => Carbon::today()->addDays($diasPlano),
             ]);
 
             $master = User::create([
@@ -60,7 +70,6 @@ class ClienteController extends Controller
 
             CategoriasDefaultSeeder::seedParaTenant($tenant->id, $master->id);
             FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $master->id);
-            BancosDefaultSeeder::seedParaTenant($tenant->id, $master->id);
         });
 
         return back()->with('success', 'Cliente criado com sucesso!');
@@ -75,14 +84,18 @@ class ClienteController extends Controller
         }
 
         $request->validate([
-            'nome'   => 'required|string|max:255',
-            'status' => 'required|in:ativo,inativo',
+            'nome'          => 'required|string|max:255',
+            'status'        => 'required|in:ativo,inativo',
+            'plano_id'      => 'nullable|exists:planos,id',
+            'tipo_cobranca' => 'nullable|in:mensal,anual',
         ]);
 
         $tenant->update([
-            'nome'   => $request->nome,
-            'status' => $request->status,
-            'ativo'  => $request->status === 'ativo',
+            'nome'          => $request->nome,
+            'status'        => $request->status,
+            'ativo'         => $request->status === 'ativo',
+            'plano_id'      => $request->plano_id ?? $tenant->plano_id,
+            'tipo_cobranca' => $request->tipo_cobranca ?? $tenant->tipo_cobranca,
         ]);
 
         return back()->with('success', 'Cliente atualizado com sucesso!');
@@ -122,5 +135,23 @@ class ClienteController extends Controller
         $master->update(['password' => Hash::make($request->nova_senha)]);
 
         return back()->with('success', 'Senha do master redefinida com sucesso!');
+    }
+
+    public function renovar(Tenant $tenant)
+    {
+        $revendaId = Auth::user()->revenda_id;
+
+        if ($tenant->revenda_id !== $revendaId) {
+            abort(403);
+        }
+
+        $diasPlano = $tenant->tipo_cobranca === 'anual' ? 365 : 30;
+
+        $tenant->update([
+            'data_inicio_plano' => Carbon::today(),
+            'data_fim_plano'    => Carbon::today()->addDays($diasPlano),
+        ]);
+
+        return back()->with('success', 'Licença renovada com sucesso!');
     }
 }

@@ -32,6 +32,14 @@ class MembroController extends Controller
     {
         $this->somenteMaster();
 
+        // Verificar limite de usuários do plano
+        $tenant = Tenant::with('plano')->find(Auth::user()->tenant_id);
+        if ($tenant && $tenant->limiteUsuariosAtingido()) {
+            return back()->withErrors([
+                'name' => 'Limite de usuários do plano atingido. Faça upgrade do plano para adicionar mais membros.',
+            ]);
+        }
+
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',

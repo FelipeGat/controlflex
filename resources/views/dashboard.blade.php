@@ -6,13 +6,13 @@
 
 {{-- Filtro de Período --}}
 <form method="GET" action="{{ route('dashboard') }}" class="d-flex flex-wrap align-center gap-2 mb-5">
-    <div class="d-flex align-center gap-2">
+    <div class="d-flex align-center gap-2" style="flex:1;min-width:0;">
         <label class="form-label" style="margin:0;white-space:nowrap;">De</label>
-        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="width:140px;">
+        <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:160px;">
     </div>
-    <div class="d-flex align-center gap-2">
+    <div class="d-flex align-center gap-2" style="flex:1;min-width:0;">
         <label class="form-label" style="margin:0;white-space:nowrap;">Até</label>
-        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="width:140px;">
+        <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:160px;">
     </div>
     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filtrar</button>
     <a href="{{ route('dashboard') }}" class="btn btn-secondary">Mês Atual</a>

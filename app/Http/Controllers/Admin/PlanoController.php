@@ -21,13 +21,13 @@ class PlanoController extends Controller
             'slug'         => 'required|string|max:100|unique:planos,slug',
             'preco_mensal' => 'required|numeric|min:0',
             'preco_anual'  => 'required|numeric|min:0',
-            'max_clientes' => 'required|integer',
             'max_usuarios' => 'required|integer',
+            'max_bancos'   => 'required|integer',
         ]);
 
         Plano::create($request->only([
             'nome', 'slug', 'descricao', 'preco_mensal', 'preco_anual',
-            'max_clientes', 'max_usuarios', 'ativo',
+            'max_usuarios', 'max_bancos', 'ativo',
         ]));
 
         return back()->with('success', 'Plano criado com sucesso!');
@@ -40,13 +40,13 @@ class PlanoController extends Controller
             'slug'         => 'required|string|max:100|unique:planos,slug,' . $plano->id,
             'preco_mensal' => 'required|numeric|min:0',
             'preco_anual'  => 'required|numeric|min:0',
-            'max_clientes' => 'required|integer',
             'max_usuarios' => 'required|integer',
+            'max_bancos'   => 'required|integer',
         ]);
 
         $plano->update($request->only([
             'nome', 'slug', 'descricao', 'preco_mensal', 'preco_anual',
-            'max_clientes', 'max_usuarios', 'ativo',
+            'max_usuarios', 'max_bancos', 'ativo',
         ]));
 
         return back()->with('success', 'Plano atualizado com sucesso!');

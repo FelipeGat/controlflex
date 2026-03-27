@@ -28,9 +28,9 @@
 
         <input type="hidden" name="periodo" value="custom">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="width:140px;font-size:12px;">
+            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:140px;font-size:12px;">
             <span style="color:var(--color-text-muted);font-size:12px;">até</span>
-            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="width:140px;font-size:12px;">
+            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:140px;font-size:12px;">
             <button type="submit" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-filter"></i> Filtrar
             </button>

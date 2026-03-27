@@ -22,19 +22,38 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Master</th>
-                    <th>Usuários</th>
+                    <th class="hide-mobile">Plano</th>
+                    <th class="hide-mobile">Cobrança</th>
+                    <th>Vencimento</th>
+                    <th class="hide-mobile">Master</th>
                     <th>Status</th>
-                    <th>Criado em</th>
-                    <th style="width:130px">Ações</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($clientes as $cliente)
                 <tr>
                     <td class="fw-600">{{ $cliente->nome }}</td>
-                    <td class="text-muted">{{ $cliente->master?->email ?? '—' }}</td>
-                    <td>{{ $cliente->users_count }}</td>
+                    <td class="hide-mobile">{{ $cliente->plano?->nome ?? '—' }}</td>
+                    <td class="hide-mobile">{{ $cliente->tipo_cobranca === 'anual' ? 'Anual' : 'Mensal' }}</td>
+                    <td>
+                        @if($cliente->data_fim_plano)
+                            @php $dias = $cliente->diasRestantes(); @endphp
+                            {{ $cliente->data_fim_plano->format('d/m/Y') }}
+                            @if($dias <= 0)
+                                <span class="badge badge-red">Vencido</span>
+                            @elseif($dias <= 5)
+                                <span class="badge badge-red">{{ $dias }}d</span>
+                            @elseif($dias <= 15)
+                                <span class="badge badge-yellow">{{ $dias }}d</span>
+                            @else
+                                <span class="badge badge-green">{{ $dias }}d</span>
+                            @endif
+                        @else
+                            —
+                        @endif
+                    </td>
+                    <td class="text-muted hide-mobile">{{ $cliente->master?->email ?? '—' }}</td>
                     <td>
                         @if($cliente->status === 'ativo')
                             <span class="badge badge-green"><i class="fa-solid fa-circle" style="font-size:7px"></i> Ativo</span>
@@ -42,14 +61,19 @@
                             <span class="badge badge-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Inativo</span>
                         @endif
                     </td>
-                    <td class="text-muted">{{ $cliente->created_at->format('d/m/Y') }}</td>
                     <td>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2" style="flex-wrap:wrap;">
                             <button class="btn btn-secondary btn-sm btn-icon"
-                                onclick="editarCliente({{ $cliente->id }}, '{{ addslashes($cliente->nome) }}', '{{ $cliente->status }}')"
+                                onclick="editarCliente({{ $cliente->id }}, '{{ addslashes($cliente->nome) }}', '{{ $cliente->status }}', '{{ $cliente->plano_id }}', '{{ $cliente->tipo_cobranca }}')"
                                 title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
+                            <form method="POST" action="{{ route('revenda.clientes.renovar', $cliente) }}" onsubmit="return confirm('Renovar licença de {{ addslashes($cliente->nome) }}?')">
+                                @csrf
+                                <button type="submit" class="btn btn-secondary btn-sm btn-icon" title="Renovar Licença" style="color:#16a34a;">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </form>
                             <button class="btn btn-secondary btn-sm btn-icon"
                                 onclick="resetSenhaCliente({{ $cliente->id }}, '{{ addslashes($cliente->nome) }}')"
                                 title="Reset Senha">
@@ -86,6 +110,26 @@
                 <div class="form-group mb-3">
                     <label class="form-label">Nome do Cliente *</label>
                     <input type="text" name="nome_cliente" class="form-control" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Plano *</label>
+                    <select name="plano_id" class="form-control" required>
+                        <option value="">Selecione um plano</option>
+                        @foreach($planos as $plano)
+                            <option value="{{ $plano->id }}">
+                                {{ $plano->nome }} — R$ {{ number_format($plano->preco_mensal, 2, ',', '.') }}/mês
+                                ({{ $plano->max_usuarios == -1 ? 'Ilimitado' : $plano->max_usuarios }} usuários,
+                                 {{ $plano->max_bancos == -1 ? 'Ilimitado' : $plano->max_bancos }} bancos)
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Tipo de Cobrança *</label>
+                    <select name="tipo_cobranca" class="form-control" required>
+                        <option value="mensal">Mensal</option>
+                        <option value="anual">Anual</option>
+                    </select>
                 </div>
 
                 <div style="font-size:12px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;margin:16px 0 8px;">Usuário Master</div>
@@ -126,6 +170,21 @@
                 <div class="form-group mb-3">
                     <label class="form-label">Nome *</label>
                     <input type="text" name="nome" id="edit-cliente-nome" class="form-control" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Plano</label>
+                    <select name="plano_id" id="edit-cliente-plano" class="form-control">
+                        @foreach($planos as $plano)
+                            <option value="{{ $plano->id }}">{{ $plano->nome }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="form-label">Cobrança</label>
+                    <select name="tipo_cobranca" id="edit-cliente-cobranca" class="form-control">
+                        <option value="mensal">Mensal</option>
+                        <option value="anual">Anual</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Status</label>
@@ -171,9 +230,11 @@
 
 @push('scripts')
 <script>
-function editarCliente(id, nome, status) {
+function editarCliente(id, nome, status, planoId, tipoCobranca) {
     document.getElementById('edit-cliente-nome').value = nome;
     document.getElementById('edit-cliente-status').value = status;
+    document.getElementById('edit-cliente-plano').value = planoId;
+    document.getElementById('edit-cliente-cobranca').value = tipoCobranca;
     document.getElementById('form-editar-cliente').action = '/revenda/clientes/' + id;
     openModal('modal-editar-cliente');
 }

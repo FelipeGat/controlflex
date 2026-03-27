@@ -62,18 +62,18 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Admin</th>
+                    <th class="hide-mobile">Admin</th>
                     <th>Status</th>
-                    <th>Plano</th>
-                    <th>Clientes</th>
-                    <th>Criada em</th>
+                    <th class="hide-mobile">Plano</th>
+                    <th class="hide-mobile">Clientes</th>
+                    <th class="hide-mobile">Criada em</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($ultimasRevendas as $revenda)
                 <tr>
                     <td class="fw-600">{{ $revenda->nome }}</td>
-                    <td class="text-muted">{{ $revenda->admin?->email ?? '—' }}</td>
+                    <td class="text-muted hide-mobile">{{ $revenda->admin?->email ?? '—' }}</td>
                     <td>
                         @if($revenda->status === 'ativo')
                             <span class="badge badge-green"><i class="fa-solid fa-circle" style="font-size:7px"></i> Ativo</span>
@@ -81,9 +81,9 @@
                             <span class="badge badge-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Inativo</span>
                         @endif
                     </td>
-                    <td>{{ $revenda->plano?->nome ?? '—' }}</td>
-                    <td>{{ $revenda->tenants_count }}</td>
-                    <td class="text-muted">{{ $revenda->created_at->format('d/m/Y') }}</td>
+                    <td class="hide-mobile">{{ $revenda->plano?->nome ?? '—' }}</td>
+                    <td class="hide-mobile">{{ $revenda->tenants_count }}</td>
+                    <td class="text-muted hide-mobile">{{ $revenda->created_at->format('d/m/Y') }}</td>
                 </tr>
                 @endforeach
             </tbody>

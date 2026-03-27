@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
 use App\Http\Controllers\Admin\RevendaAdminController;
 use App\Http\Controllers\Revenda\ClienteController;
+use App\Http\Controllers\Revenda\RevendaDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect dinâmico baseado em role
@@ -47,11 +48,13 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function
 
 // ─── Admin Revenda ──────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(function () {
+    Route::get('/dashboard', [RevendaDashboardController::class, 'index'])->name('revenda.dashboard');
     Route::get('/clientes', [ClienteController::class, 'index'])->name('revenda.clientes.index');
     Route::post('/clientes', [ClienteController::class, 'store'])->name('revenda.clientes.store');
     Route::put('/clientes/{tenant}', [ClienteController::class, 'update'])->name('revenda.clientes.update');
     Route::delete('/clientes/{tenant}', [ClienteController::class, 'destroy'])->name('revenda.clientes.destroy');
     Route::post('/clientes/{tenant}/reset-senha', [ClienteController::class, 'resetSenha'])->name('revenda.clientes.resetSenha');
+    Route::post('/clientes/{tenant}/renovar', [ClienteController::class, 'renovar'])->name('revenda.clientes.renovar');
 });
 
 // ─── Tenant (Master / Membro) ───────────────────────────────────────────────

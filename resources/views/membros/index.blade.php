@@ -24,17 +24,17 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>E-mail</th>
+                    <th class="hide-mobile">E-mail</th>
                     <th>Status</th>
-                    <th>Permissões</th>
-                    <th style="width:100px">Ações</th>
+                    <th class="hide-mobile">Permissões</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($membros as $membro)
                 <tr>
                     <td class="fw-600">{{ $membro->name }}</td>
-                    <td class="text-muted">{{ $membro->email }}</td>
+                    <td class="text-muted hide-mobile">{{ $membro->email }}</td>
                     <td>
                         @if($membro->ativo)
                             <span class="badge badge-green"><i class="fa-solid fa-circle" style="font-size:7px"></i> Ativo</span>
@@ -42,7 +42,7 @@
                             <span class="badge badge-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Inativo</span>
                         @endif
                     </td>
-                    <td>
+                    <td class="hide-mobile">
                         @php $perms = $membro->permissoes ?? []; @endphp
                         <span class="text-subtle" style="font-size:12px">
                             {{ collect($perms)->filter(fn($p) => collect($p)->contains(true))->keys()->map(fn($k) => ucfirst($k))->implode(', ') ?: 'Sem permissões' }}

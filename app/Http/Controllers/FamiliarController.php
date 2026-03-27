@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Familiar;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,14 @@ class FamiliarController extends Controller
 
         if ($request->boolean('tem_acesso')) {
             $this->somenteMaster();
+
+            $tenant = Tenant::with('plano')->find(Auth::user()->tenant_id);
+            if ($tenant && $tenant->limiteUsuariosAtingido()) {
+                return back()->withErrors([
+                    'tem_acesso' => 'Limite de usuários do plano atingido. Faça upgrade do plano para adicionar mais membros.',
+                ]);
+            }
+
             $rules['email']    = 'required|email|unique:users,email';
             $rules['password'] = ['required', Rules\Password::defaults()];
         }
@@ -124,7 +133,14 @@ class FamiliarController extends Controller
                 }
                 $membro->update($membroData);
             } else {
-                // Cria nova conta
+                // Cria nova conta — verificar limite do plano
+                $tenant = Tenant::with('plano')->find(Auth::user()->tenant_id);
+                if ($tenant && $tenant->limiteUsuariosAtingido()) {
+                    return back()->withErrors([
+                        'tem_acesso' => 'Limite de usuários do plano atingido. Faça upgrade do plano para adicionar mais membros.',
+                    ]);
+                }
+
                 User::create([
                     'name'        => $request->nome,
                     'email'       => $request->email,

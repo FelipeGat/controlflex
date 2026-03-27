@@ -22,22 +22,20 @@
             <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>CNPJ</th>
-                    <th>E-mail</th>
-                    <th>Plano</th>
+                    <th class="hide-mobile">CNPJ</th>
+                    <th class="hide-mobile">E-mail</th>
                     <th>Status</th>
-                    <th>Clientes</th>
-                    <th>Admin</th>
-                    <th style="width:130px">Ações</th>
+                    <th class="hide-mobile">Clientes</th>
+                    <th class="hide-mobile">Admin</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($revendas as $revenda)
                 <tr>
                     <td class="fw-600">{{ $revenda->nome }}</td>
-                    <td class="text-muted">{{ $revenda->cnpj ?? '—' }}</td>
-                    <td class="text-muted">{{ $revenda->email ?? '—' }}</td>
-                    <td>{{ $revenda->plano?->nome ?? '—' }}</td>
+                    <td class="text-muted hide-mobile">{{ $revenda->cnpj ?? '—' }}</td>
+                    <td class="text-muted hide-mobile">{{ $revenda->email ?? '—' }}</td>
                     <td>
                         <form method="POST" action="{{ route('admin.revendas.update', $revenda) }}" style="display:inline;">
                             @csrf @method('PUT')
@@ -48,12 +46,12 @@
                             </select>
                         </form>
                     </td>
-                    <td>{{ $revenda->tenants_count }}</td>
-                    <td class="text-muted">{{ $revenda->admin?->email ?? '—' }}</td>
+                    <td class="hide-mobile">{{ $revenda->tenants_count }}</td>
+                    <td class="text-muted hide-mobile">{{ $revenda->admin?->email ?? '—' }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <button class="btn btn-secondary btn-sm btn-icon"
-                                onclick="editarRevenda({{ $revenda->id }}, '{{ addslashes($revenda->nome) }}', '{{ addslashes($revenda->cnpj ?? '') }}', '{{ addslashes($revenda->email ?? '') }}', '{{ addslashes($revenda->telefone ?? '') }}', '{{ $revenda->plano_id ?? '' }}')"
+                                onclick="editarRevenda({{ $revenda->id }}, '{{ addslashes($revenda->nome) }}', '{{ addslashes($revenda->cnpj ?? '') }}', '{{ addslashes($revenda->email ?? '') }}', '{{ addslashes($revenda->telefone ?? '') }}')"
                                 title="Editar">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
@@ -107,16 +105,6 @@
                         <label class="form-label">Telefone</label>
                         <input type="text" name="telefone" class="form-control">
                     </div>
-                    <div class="form-group span-2">
-                        <label class="form-label">Plano</label>
-                        <select name="plano_id" class="form-control">
-                            <option value="">Sem plano</option>
-                            @foreach($planos as $plano)
-                                <option value="{{ $plano->id }}">{{ $plano->nome }} — R$ {{ number_format($plano->preco_mensal, 2, ',', '.') }}/mês</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
 
                 <div style="font-size:12px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;margin:16px 0 8px;">Administrador da Revenda</div>
                 <div class="form-grid">
@@ -177,15 +165,6 @@
                             <option value="inativo">Inativo</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Plano</label>
-                        <select name="plano_id" id="edit-revenda-plano" class="form-control">
-                            <option value="">Sem plano</option>
-                            @foreach($planos as $plano)
-                                <option value="{{ $plano->id }}">{{ $plano->nome }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -224,12 +203,11 @@
 
 @push('scripts')
 <script>
-function editarRevenda(id, nome, cnpj, email, telefone, planoId) {
+function editarRevenda(id, nome, cnpj, email, telefone) {
     document.getElementById('edit-revenda-nome').value = nome;
     document.getElementById('edit-revenda-cnpj').value = cnpj;
     document.getElementById('edit-revenda-email').value = email;
     document.getElementById('edit-revenda-telefone').value = telefone;
-    document.getElementById('edit-revenda-plano').value = planoId;
     document.getElementById('form-editar-revenda').action = '/admin/revendas/' + id;
     openModal('modal-editar-revenda');
 }

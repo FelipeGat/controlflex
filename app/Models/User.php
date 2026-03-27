@@ -62,7 +62,7 @@ class User extends Authenticatable
     {
         return match ($this->role) {
             'super_admin'   => 'admin.dashboard',
-            'admin_revenda' => 'revenda.clientes.index',
+            'admin_revenda' => 'revenda.dashboard',
             default         => 'dashboard',
         };
     }

@@ -6,12 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Revenda extends Model
 {
-    protected $fillable = ['nome', 'cnpj', 'email', 'telefone', 'status', 'plano_id'];
-
-    public function plano()
-    {
-        return $this->belongsTo(Plano::class);
-    }
+    protected $fillable = ['nome', 'cnpj', 'email', 'telefone', 'status'];
 
     public function tenants()
     {

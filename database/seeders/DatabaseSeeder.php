@@ -25,26 +25,37 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ─── Planos ──────────────────────────────────────────────────────────
-        $planoBasico = Plano::create([
-            'nome'           => 'Básico',
-            'slug'           => 'basico',
-            'descricao'      => 'Plano básico para famílias pequenas',
-            'preco_mensal'   => 29.90,
-            'preco_anual'    => 299.00,
-            'max_clientes'   => 50,
-            'max_usuarios'   => 5,
-            'ativo'          => true,
+        $planoIndividual = Plano::create([
+            'nome'         => 'Individual',
+            'slug'         => 'individual',
+            'descricao'    => 'Para uso individual',
+            'preco_mensal' => 19.90,
+            'preco_anual'  => 199.00,
+            'max_usuarios' => 1,
+            'max_bancos'   => 1,
+            'ativo'        => true,
         ]);
 
-        $planoPro = Plano::create([
-            'nome'           => 'Pro',
-            'slug'           => 'pro',
-            'descricao'      => 'Plano profissional com recursos ilimitados',
-            'preco_mensal'   => 59.90,
-            'preco_anual'    => 599.00,
-            'max_clientes'   => -1,
-            'max_usuarios'   => -1,
-            'ativo'          => true,
+        $planoCasal = Plano::create([
+            'nome'         => 'Casal',
+            'slug'         => 'casal',
+            'descricao'    => 'Para casais',
+            'preco_mensal' => 29.90,
+            'preco_anual'  => 299.00,
+            'max_usuarios' => 2,
+            'max_bancos'   => 4,
+            'ativo'        => true,
+        ]);
+
+        $planoFamilia = Plano::create([
+            'nome'         => 'Família',
+            'slug'         => 'familia',
+            'descricao'    => 'Para famílias — recursos ilimitados',
+            'preco_mensal' => 49.90,
+            'preco_anual'  => 499.00,
+            'max_usuarios' => -1,
+            'max_bancos'   => -1,
+            'ativo'        => true,
         ]);
 
         // ─── Super Admin ─────────────────────────────────────────────────────
@@ -63,7 +74,6 @@ class DatabaseSeeder extends Seeder
             'email'    => 'contato@revendademo.com',
             'telefone' => '(11) 99999-0000',
             'status'   => 'ativo',
-            'plano_id' => $planoPro->id,
         ]);
 
         User::create([
@@ -78,10 +88,9 @@ class DatabaseSeeder extends Seeder
         // ─── Tenant (cliente da revenda) ─────────────────────────────────────
         $tenant = Tenant::create([
             'nome'       => 'Família Felipe',
-            'plano'      => 'pro',
             'ativo'      => true,
             'revenda_id' => $revenda->id,
-            'plano_id'   => $planoPro->id,
+            'plano_id'   => $planoFamilia->id,
             'status'     => 'ativo',
         ]);
 
