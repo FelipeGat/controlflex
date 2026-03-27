@@ -154,6 +154,8 @@
         .sidebar-user-name { color: #cbd5e1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
         .sidebar-user-edit { color: #475569; font-size: 11px; flex-shrink: 0; line-height: 1; }
         .sidebar-user-edit:hover { color: var(--color-primary); }
+        .sidebar-user-logout { color: #475569; font-size: 11px; flex-shrink: 0; line-height: 1; background:none; border:none; cursor:pointer; padding:0; }
+        .sidebar-user-logout:hover { color: #ef4444; }
         .sidebar-user-email { color: #475569; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* ─── Overlay (mobile) ──────────────────────────────────── */
@@ -614,16 +616,16 @@
                     <a href="{{ route('profile.edit') }}" class="sidebar-user-edit" title="Editar perfil">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
+                    <form method="POST" action="{{ route('logout') }}" style="display:inline; margin-left:2px;">
+                        @csrf
+                        <button type="submit" class="sidebar-user-logout" title="Sair">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
                 </div>
                 <div class="sidebar-user-email">{{ Auth::user()->email }}</div>
             </div>
         </div>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="sidebar-logout">
-                <i class="fa-solid fa-right-from-bracket"></i> Sair
-            </button>
-        </form>
     </div>
 </aside>
 
