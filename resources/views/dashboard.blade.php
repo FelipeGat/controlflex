@@ -30,6 +30,19 @@
             <button type="submit" class="btn btn-secondary btn-sm" title="Filtrar período"><i class="fa-solid fa-filter"></i></button>
         </form>
 
+        {{-- Botão Limpar Filtros (aparece sempre que há algum filtro ativo) --}}
+        @php
+            $mesAtualInicio = now()->startOfMonth()->format('Y-m-d');
+            $mesAtualFim    = now()->endOfMonth()->format('Y-m-d');
+            $filtroAtivo    = $familiarId || $inicio !== $mesAtualInicio || $fim !== $mesAtualFim;
+        @endphp
+        @if($filtroAtivo)
+        <a href="{{ route('dashboard') }}" class="btn btn-sm" title="Limpar todos os filtros"
+           style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; white-space:nowrap; font-size:12px; font-weight:600;">
+            <i class="fa-solid fa-xmark me-1"></i> Limpar filtros
+        </a>
+        @endif
+
         {{-- Divisor --}}
         <div style="width:1px; height:36px; background:#e2e8f0; margin: 0 4px;"></div>
 
