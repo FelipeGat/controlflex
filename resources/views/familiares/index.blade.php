@@ -13,7 +13,7 @@
     @endif
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:14px;">
     @forelse($familiares as $familiar)
     @php
         $userVinculado = $familiar->userVinculado;

@@ -16,7 +16,7 @@ $config = [
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 {{-- 1. RESUMO EXECUTIVO --}}
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
-<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(180px,100%), 1fr)); gap:12px; margin-bottom:20px;">
     {{-- Saldo projetado --}}
     <div style="background:#fff; border-radius:12px; padding:16px 20px; border:1px solid {{ $resumo['saldo_projetado'] < 0 ? '#fca5a5' : '#e2e8f0' }};">
         <div style="font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Saldo projetado</div>
@@ -82,7 +82,9 @@ $config = [
     margin-bottom: 20px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
 ">
     <div style="width:56px; height:56px; border-radius:14px; background:{{ $cp['cor'] }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
         <i class="fa-solid {{ $alertaPrincipal['icone'] }}" style="font-size:22px; color:#fff;"></i>
@@ -110,7 +112,7 @@ $config = [
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 {{-- 3. FILTROS POR INTENÇÃO --}}
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
-<div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+<div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; justify-content:center;">
     <span style="font-size:12px; color:#94a3b8; font-weight:600; margin-right:4px;">FILTRAR:</span>
 
     <button onclick="filtrar('todos')" id="filtro-todos"
@@ -156,7 +158,7 @@ $config = [
 </div>
 @else
 
-<div id="alertas-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap:12px;">
+<div id="alertas-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap:12px;">
     @foreach($alertas->slice(1) as $i => $alerta)
     @php
         $c = $config[$alerta['tipo']] ?? $config['info'];

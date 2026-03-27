@@ -37,7 +37,7 @@
 @endphp
 
 <div class="card" style="padding:14px 16px;margin-bottom:18px;">
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;">
 
         {{-- Navegação de mês --}}
         <div style="display:flex;align-items:center;gap:0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;flex-shrink:0;">
@@ -61,7 +61,7 @@
         <div style="width:1px;height:28px;background:#e2e8f0;flex-shrink:0;" class="hide-mobile"></div>
 
         {{-- Filtros --}}
-        <form method="GET" action="{{ route('lancamentos.index') }}" id="form-filtro" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1;">
+        <form method="GET" action="{{ route('lancamentos.index') }}" id="form-filtro" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1;justify-content:center;">
             <input type="hidden" name="inicio" id="f-inicio" value="{{ $inicio }}">
             <input type="hidden" name="fim"    id="f-fim"    value="{{ $fim }}">
 

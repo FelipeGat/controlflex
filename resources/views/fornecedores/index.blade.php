@@ -5,7 +5,7 @@
 @section('content')
 
 <div class="section-header mb-4">
-    <div style="position:relative;flex:1;max-width:320px;min-width:0;">
+    <div style="position:relative;flex:1;max-width:320px;min-width:0;width:100%;">
         <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-subtle);font-size:13px;pointer-events:none;"></i>
         <input type="text" id="busca-fornecedor" placeholder="Buscar fornecedor..." autocomplete="off"
             style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--color-border);border-radius:var(--radius-btn);font-size:13px;background:#fff;color:var(--color-text);">

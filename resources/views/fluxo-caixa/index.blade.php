@@ -7,7 +7,7 @@
 {{-- ─── Filtro de período ─────────────────────────────────────────────────── --}}
 <form method="GET" action="{{ route('fluxo-caixa.index') }}" id="form-periodo">
 <div class="card" style="margin-bottom:18px;padding:12px 16px;">
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;">
 
         {{-- Atalhos de período --}}
         <div style="display:flex;gap:6px;flex-wrap:wrap;">

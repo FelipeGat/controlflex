@@ -6,7 +6,7 @@
 
 {{-- Filtros: datas à esquerda, membros à direita — tudo em uma linha --}}
 <div class="card mb-5" style="padding: 10px 16px;">
-    <div class="d-flex align-center gap-2 flex-wrap" style="min-height:56px;">
+    <div class="d-flex align-center gap-2 flex-wrap" style="min-height:56px;justify-content:center;">
 
         {{-- Esquerda: navegação por mês + período personalizado --}}
         <div class="d-flex align-center gap-1" style="flex-shrink:0;">
@@ -22,7 +22,7 @@
             </a>
         </div>
 
-        <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap" style="min-width:0;">
+        <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap" style="min-width:0;justify-content:center;">
             @if($familiarId)<input type="hidden" name="familiar_id" value="{{ $familiarId }}">@endif
             <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
             <span style="color:#94a3b8;">—</span>
@@ -44,10 +44,10 @@
         @endif
 
         {{-- Divisor --}}
-        <div style="width:1px; height:36px; background:#e2e8f0; margin: 0 4px;"></div>
+        <div class="hide-mobile" style="width:1px; height:36px; background:#e2e8f0; margin: 0 4px;"></div>
 
         {{-- Direita: avatares dos membros --}}
-        <div class="d-flex align-center gap-2" style="margin-left:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;">
+        <div class="d-flex align-center gap-2" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;justify-content:center;">
             @foreach($familiares as $fam)
             @php
                 $isSelected = $familiarId === $fam->id;
