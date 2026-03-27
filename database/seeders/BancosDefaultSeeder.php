@@ -38,19 +38,25 @@ class BancosDefaultSeeder
                 continue;
             }
 
+            $ehCarteira = $b['codigo_banco'] === null;
+
             Banco::withoutGlobalScopes()->create([
-                'tenant_id'    => $tenantId,
-                'user_id'      => $userId,
-                'nome'         => $b['nome'],
-                'tipo_conta'   => 'Conta Corrente',
-                'codigo_banco' => $b['codigo_banco'],
-                'logo'         => $b['logo'],
-                'cor'          => $b['cor'],
-                'saldo'        => 0,
-                'cheque_especial' => 0,
-                'saldo_cheque' => 0,
-                'limite_cartao' => 0,
-                'saldo_cartao' => 0,
+                'tenant_id'          => $tenantId,
+                'user_id'            => $userId,
+                'nome'               => $b['nome'],
+                'codigo_banco'       => $b['codigo_banco'],
+                'logo'               => $b['logo'],
+                'cor'                => $b['cor'],
+                'tem_conta_corrente' => !$ehCarteira,
+                'tem_poupanca'       => false,
+                'tem_cartao_credito' => false,
+                'eh_dinheiro'        => $ehCarteira,
+                'saldo'              => 0,
+                'saldo_poupanca'     => 0,
+                'cheque_especial'    => 0,
+                'saldo_cheque'       => 0,
+                'limite_cartao'      => 0,
+                'saldo_cartao'       => 0,
             ]);
         }
     }

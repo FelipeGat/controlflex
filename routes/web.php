@@ -11,6 +11,7 @@ use App\Http\Controllers\BancoController;
 use App\Http\Controllers\InvestimentoController;
 use App\Http\Controllers\FluxoCaixaController;
 use App\Http\Controllers\LancamentoDiarioController;
+use App\Http\Controllers\LancamentoController;
 use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
@@ -68,9 +69,14 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::post('/fluxo-caixa/baixar-receita/{receita}', [FluxoCaixaController::class, 'baixarReceita'])->name('fluxo-caixa.baixar-receita');
     Route::post('/fluxo-caixa/estornar-receita/{receita}', [FluxoCaixaController::class, 'estornarReceita'])->name('fluxo-caixa.estornar-receita');
 
-    // Lançamento Diário
-    Route::get('/lancamentos-diarios', [LancamentoDiarioController::class, 'index'])->name('lancamentos-diarios.index')->middleware('permissao:despesas,criar');
-    Route::post('/lancamentos-diarios/escanear', [LancamentoDiarioController::class, 'escanear'])->name('lancamentos-diarios.escanear')->middleware('permissao:despesas,criar');
+    // Lançamentos (extrato bancário)
+    Route::get('/lancamentos', [LancamentoController::class, 'index'])->name('lancamentos.index')->middleware('permissao:despesas,criar');
+    Route::post('/lancamentos/escanear', [LancamentoController::class, 'escanear'])->name('lancamentos.escanear')->middleware('permissao:despesas,criar');
+    Route::post('/lancamentos/importar-extrato', [LancamentoController::class, 'importarExtrato'])->name('lancamentos.importar-extrato')->middleware('permissao:despesas,criar');
+    Route::post('/lancamentos/confirmar-importacao', [LancamentoController::class, 'confirmarImportacao'])->name('lancamentos.confirmar-importacao')->middleware('permissao:despesas,criar');
+    // Retrocompatibilidade
+    Route::get('/lancamentos-diarios', fn() => redirect()->route('lancamentos.index'))->name('lancamentos-diarios.index');
+    Route::post('/lancamentos-diarios/escanear', [LancamentoDiarioController::class, 'escanear'])->name('lancamentos-diarios.escanear');
 
     // Despesas
     Route::get('/despesas', [DespesaController::class, 'index'])->name('despesas.index')->middleware('permissao:despesas,ver');
@@ -110,6 +116,7 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::put('/bancos/{banco}', [BancoController::class, 'update'])->name('bancos.update')->middleware('permissao:bancos,editar');
     Route::post('/bancos/{banco}/ajustar-saldo', [BancoController::class, 'ajustarSaldo'])->name('bancos.ajustar-saldo')->middleware('permissao:bancos,editar');
     Route::post('/bancos/{banco}/ajustar-saldo-cartao', [BancoController::class, 'ajustarSaldoCartao'])->name('bancos.ajustar-saldo-cartao')->middleware('permissao:bancos,editar');
+    Route::post('/bancos/{banco}/ajustar-saldo-poupanca', [BancoController::class, 'ajustarSaldoPoupanca'])->name('bancos.ajustar-saldo-poupanca')->middleware('permissao:bancos,editar');
     Route::delete('/bancos/{banco}', [BancoController::class, 'destroy'])->name('bancos.destroy')->middleware('permissao:bancos,excluir');
 
     // Investimentos

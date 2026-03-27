@@ -551,8 +551,8 @@
 
         <div class="sidebar-section-label">Lançamentos</div>
         @if(Auth::user()->temPermissao('despesas', 'criar'))
-        <a href="{{ route('lancamentos-diarios.index') }}" class="sidebar-link {{ request()->routeIs('lancamentos-diarios.*') ? 'active' : '' }}" data-label="Lançamento Diário">
-            <i class="fa-solid fa-bolt"></i> <span>Lançamento Diário</span>
+        <a href="{{ route('lancamentos.index') }}" class="sidebar-link {{ request()->routeIs('lancamentos.*') ? 'active' : '' }}" data-label="Lançamentos">
+            <i class="fa-solid fa-list-ul"></i> <span>Lançamentos</span>
         </a>
         @endif
         @if(Auth::user()->temPermissao('despesas', 'ver'))
@@ -712,8 +712,8 @@
             </li>
             @if(Auth::user()->temPermissao('despesas', 'criar'))
             <li>
-                <a href="{{ route('lancamentos-diarios.index') }}" class="{{ request()->routeIs('lancamentos-diarios.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-bolt"></i> Diário
+                <a href="{{ route('lancamentos.index') }}" class="{{ request()->routeIs('lancamentos.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-list-ul"></i> Lançamentos
                 </a>
             </li>
             @endif

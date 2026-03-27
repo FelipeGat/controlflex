@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,5 +17,8 @@ class AppServiceProvider extends ServiceProvider
     {
         URL::forceScheme('https');
         URL::forceRootUrl(config('app.url'));
+
+        // Locale pt_BR para Carbon (nomes de meses em português)
+        Carbon::setLocale('pt_BR');
     }
 }

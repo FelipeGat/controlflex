@@ -36,34 +36,46 @@ class BancoController extends Controller
         }
 
         $request->validate([
-            'nome'            => 'required|string|max:150',
-            'tipo_conta'      => 'required|in:Conta Corrente,Poupança,Dinheiro,Cartão de Crédito',
-            'saldo'           => 'nullable|numeric',
-            'cheque_especial' => 'nullable|numeric|min:0',
-            'limite_cartao'   => 'nullable|numeric|min:0',
-            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
-            'codigo_banco'    => 'nullable|string|max:10',
-            'agencia'         => 'nullable|string|max:20',
-            'conta'           => 'nullable|string|max:30',
-            'logo'            => 'nullable|string|max:100',
-            'cor'             => 'nullable|string|max:7',
+            'nome'               => 'required|string|max:150',
+            'tem_conta_corrente' => 'nullable|boolean',
+            'tem_poupanca'       => 'nullable|boolean',
+            'tem_cartao_credito' => 'nullable|boolean',
+            'eh_dinheiro'        => 'nullable|boolean',
+            'saldo'              => 'nullable|numeric',
+            'saldo_poupanca'     => 'nullable|numeric',
+            'cheque_especial'    => 'nullable|numeric|min:0',
+            'limite_cartao'      => 'nullable|numeric|min:0',
+            'dia_vencimento_cartao' => 'nullable|integer|min:1|max:31',
+            'dia_fechamento_cartao' => 'nullable|integer|min:1|max:31',
+            'titular_id'         => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'codigo_banco'       => 'nullable|string|max:10',
+            'agencia'            => 'nullable|string|max:20',
+            'conta'              => 'nullable|string|max:30',
+            'logo'               => 'nullable|string|max:100',
+            'cor'                => 'nullable|string|max:7',
         ]);
 
         Banco::create([
-            'user_id'         => $userId,
-            'titular_id'      => $request->titular_id,
-            'nome'            => $request->nome,
-            'tipo_conta'      => $request->tipo_conta,
-            'codigo_banco'    => $request->codigo_banco,
-            'agencia'         => $request->agencia,
-            'conta'           => $request->conta,
-            'saldo'           => $request->saldo ?? 0,
-            'cheque_especial' => $request->cheque_especial ?? 0,
-            'saldo_cheque'    => 0,
-            'limite_cartao'   => $request->limite_cartao ?? 0,
-            'saldo_cartao'    => 0,
-            'logo'            => $request->logo,
-            'cor'             => $request->cor,
+            'user_id'            => $userId,
+            'titular_id'         => $request->titular_id,
+            'nome'               => $request->nome,
+            'tem_conta_corrente' => $request->boolean('tem_conta_corrente'),
+            'tem_poupanca'       => $request->boolean('tem_poupanca'),
+            'tem_cartao_credito' => $request->boolean('tem_cartao_credito'),
+            'eh_dinheiro'        => $request->boolean('eh_dinheiro'),
+            'codigo_banco'       => $request->codigo_banco,
+            'agencia'            => $request->agencia,
+            'conta'              => $request->conta,
+            'saldo'              => $request->saldo ?? 0,
+            'saldo_poupanca'     => $request->saldo_poupanca ?? 0,
+            'cheque_especial'    => $request->cheque_especial ?? 0,
+            'saldo_cheque'       => 0,
+            'limite_cartao'      => $request->limite_cartao ?? 0,
+            'saldo_cartao'       => 0,
+            'dia_vencimento_cartao' => $request->dia_vencimento_cartao,
+            'dia_fechamento_cartao' => $request->dia_fechamento_cartao,
+            'logo'               => $request->logo,
+            'cor'                => $request->cor,
         ]);
 
         return back()->with('success', 'Conta bancária criada com sucesso!');
@@ -76,31 +88,43 @@ class BancoController extends Controller
         $tenantId = Auth::user()->tenant_id;
 
         $request->validate([
-            'nome'            => 'required|string|max:150',
-            'tipo_conta'      => 'required|in:Conta Corrente,Poupança,Dinheiro,Cartão de Crédito',
-            'saldo'           => 'nullable|numeric',
-            'cheque_especial' => 'nullable|numeric|min:0',
-            'limite_cartao'   => 'nullable|numeric|min:0',
-            'titular_id'      => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
-            'codigo_banco'    => 'nullable|string|max:10',
-            'agencia'         => 'nullable|string|max:20',
-            'conta'           => 'nullable|string|max:30',
-            'logo'            => 'nullable|string|max:100',
-            'cor'             => 'nullable|string|max:7',
+            'nome'               => 'required|string|max:150',
+            'tem_conta_corrente' => 'nullable|boolean',
+            'tem_poupanca'       => 'nullable|boolean',
+            'tem_cartao_credito' => 'nullable|boolean',
+            'eh_dinheiro'        => 'nullable|boolean',
+            'saldo'              => 'nullable|numeric',
+            'saldo_poupanca'     => 'nullable|numeric',
+            'cheque_especial'    => 'nullable|numeric|min:0',
+            'limite_cartao'      => 'nullable|numeric|min:0',
+            'dia_vencimento_cartao' => 'nullable|integer|min:1|max:31',
+            'dia_fechamento_cartao' => 'nullable|integer|min:1|max:31',
+            'titular_id'         => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
+            'codigo_banco'       => 'nullable|string|max:10',
+            'agencia'            => 'nullable|string|max:20',
+            'conta'              => 'nullable|string|max:30',
+            'logo'               => 'nullable|string|max:100',
+            'cor'                => 'nullable|string|max:7',
         ]);
 
         $banco->update([
-            'titular_id'      => $request->titular_id,
-            'nome'            => $request->nome,
-            'tipo_conta'      => $request->tipo_conta,
-            'codigo_banco'    => $request->codigo_banco,
-            'agencia'         => $request->agencia,
-            'conta'           => $request->conta,
-            'saldo'           => $request->saldo ?? 0,
-            'cheque_especial' => $request->cheque_especial ?? 0,
-            'limite_cartao'   => $request->limite_cartao ?? 0,
-            'logo'            => $request->logo,
-            'cor'             => $request->cor,
+            'titular_id'         => $request->titular_id,
+            'nome'               => $request->nome,
+            'tem_conta_corrente' => $request->boolean('tem_conta_corrente'),
+            'tem_poupanca'       => $request->boolean('tem_poupanca'),
+            'tem_cartao_credito' => $request->boolean('tem_cartao_credito'),
+            'eh_dinheiro'        => $request->boolean('eh_dinheiro'),
+            'codigo_banco'       => $request->codigo_banco,
+            'agencia'            => $request->agencia,
+            'conta'              => $request->conta,
+            'saldo'              => $request->saldo ?? 0,
+            'saldo_poupanca'     => $request->saldo_poupanca ?? 0,
+            'cheque_especial'    => $request->cheque_especial ?? 0,
+            'limite_cartao'      => $request->limite_cartao ?? 0,
+            'dia_vencimento_cartao' => $request->dia_vencimento_cartao,
+            'dia_fechamento_cartao' => $request->dia_fechamento_cartao,
+            'logo'               => $request->logo,
+            'cor'                => $request->cor,
         ]);
 
         return back()->with('success', 'Conta atualizada com sucesso!');
@@ -114,6 +138,16 @@ class BancoController extends Controller
         $banco->update(['saldo' => $request->saldo]);
 
         return back()->with('success', 'Saldo ajustado com sucesso!');
+    }
+
+    public function ajustarSaldoPoupanca(Request $request, Banco $banco)
+    {
+        $this->authorize('update', $banco);
+
+        $request->validate(['saldo_poupanca' => 'required|numeric']);
+        $banco->update(['saldo_poupanca' => $request->saldo_poupanca]);
+
+        return back()->with('success', 'Saldo da poupança ajustado com sucesso!');
     }
 
     public function ajustarSaldoCartao(Request $request, Banco $banco)
