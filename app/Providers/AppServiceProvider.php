@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Garante que todos os redirects e URLs usem a APP_URL correta (incluindo porta)
+        URL::forceScheme('https');
         URL::forceRootUrl(config('app.url'));
     }
 }
