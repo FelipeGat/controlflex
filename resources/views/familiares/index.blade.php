@@ -15,11 +15,20 @@
 
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
     @forelse($familiares as $familiar)
-    @php $membro = $familiar->membro; @endphp
+    @php
+        $userVinculado = $familiar->userVinculado;
+        $ehMaster = $userVinculado && $userVinculado->role === 'master';
+        $membro = $ehMaster ? null : $userVinculado;
+    @endphp
     <div class="card" style="text-align:center;position:relative;">
 
+        {{-- Badge master --}}
+        @if($ehMaster)
+        <span style="position:absolute;top:10px;left:10px;background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;">
+            <i class="fa-solid fa-crown" style="margin-right:3px;"></i>Master
+        </span>
         {{-- Badge acesso ao sistema --}}
-        @if($membro)
+        @elseif($membro)
         <span style="position:absolute;top:10px;left:10px;background:var(--color-primary);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;">
             <i class="fa-solid fa-shield-halved" style="margin-right:3px;"></i>Acesso ao sistema
         </span>
@@ -37,7 +46,9 @@
         {{-- Nome --}}
         <div class="fw-600" style="font-size:15px;margin-bottom:4px;">{{ $familiar->nome }}</div>
 
-        @if($membro)
+        @if($ehMaster)
+        <div class="text-subtle" style="font-size:11px;margin-bottom:10px;">{{ $userVinculado->email }}</div>
+        @elseif($membro)
         <div class="text-subtle" style="font-size:11px;margin-bottom:10px;">{{ $membro->email }}</div>
         @else
         <div style="margin-bottom:10px;"></div>
@@ -62,12 +73,12 @@
         {{-- Ações --}}
         <div class="d-flex gap-2" style="justify-content:center;">
             @if(Auth::user()->temPermissao('familiares', 'editar'))
-            <button onclick="editarMembro({{ $familiar->id }}, {{ $familiar->toJson() }}, {{ $membro ? $membro->toJson() : 'null' }})"
+            <button onclick="editarMembro({{ $familiar->id }}, {{ $familiar->toJson() }}, {{ $membro ? $membro->toJson() : 'null' }}, {{ $ehMaster ? 'true' : 'false' }})"
                 class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-pen"></i> Editar
             </button>
             @endif
-            @if(Auth::user()->temPermissao('familiares', 'excluir'))
+            @if(Auth::user()->temPermissao('familiares', 'excluir') && !$ehMaster)
             <form method="POST" action="{{ route('familiares.destroy', $familiar) }}"
                 onsubmit="return confirm('Excluir {{ addslashes($familiar->nome) }}? Esta ação também remove o acesso ao sistema se existir.')"
                 style="display:inline;">
@@ -254,7 +265,7 @@ function toggleAcesso(fieldId, show) {
     document.getElementById(fieldId).style.display = show ? 'block' : 'none';
 }
 
-function editarMembro(id, familiar, membro) {
+function editarMembro(id, familiar, membro, ehMaster) {
     document.getElementById('form-editar').action = '/familiares/' + id;
     document.getElementById('edit-nome').value    = familiar.nome;
     document.getElementById('edit-salario').value = familiar.salario;
@@ -264,24 +275,35 @@ function editarMembro(id, familiar, membro) {
     const temAcessoBox = document.getElementById('edit-tem-acesso');
     if (!temAcessoBox) { openModal('modal-editar'); return; }
 
-    if (membro) {
-        temAcessoBox.checked = true;
-        toggleAcesso('edit-acesso-fields', true);
-        document.getElementById('edit-email').value = membro.email;
-        document.getElementById('edit-ativo').checked = membro.ativo == 1 || membro.ativo === true;
+    const acessoContainer = temAcessoBox.closest('div[style*="background:var(--color-bg)"]');
 
-        const modulos = ['despesas','receitas','investimentos','bancos','categorias','fornecedores','familiares'];
-        const acoes   = ['ver','criar','editar','excluir'];
-        const perms   = membro.permissoes || {};
-        modulos.forEach(m => {
-            acoes.forEach(a => {
-                const cb = document.querySelector(`#edit-permissoes-grid [name="perm_${m}_${a}"]`);
-                if (cb) cb.checked = perms[m] && perms[m][a] ? true : false;
-            });
-        });
-    } else {
+    if (ehMaster) {
+        // Master não pode alterar acesso ao sistema via esta tela
+        if (acessoContainer) acessoContainer.style.display = 'none';
         temAcessoBox.checked = false;
         toggleAcesso('edit-acesso-fields', false);
+    } else {
+        if (acessoContainer) acessoContainer.style.display = '';
+
+        if (membro) {
+            temAcessoBox.checked = true;
+            toggleAcesso('edit-acesso-fields', true);
+            document.getElementById('edit-email').value = membro.email;
+            document.getElementById('edit-ativo').checked = membro.ativo == 1 || membro.ativo === true;
+
+            const modulos = ['despesas','receitas','investimentos','bancos','categorias','fornecedores','familiares'];
+            const acoes   = ['ver','criar','editar','excluir'];
+            const perms   = membro.permissoes || {};
+            modulos.forEach(m => {
+                acoes.forEach(a => {
+                    const cb = document.querySelector(`#edit-permissoes-grid [name="perm_${m}_${a}"]`);
+                    if (cb) cb.checked = perms[m] && perms[m][a] ? true : false;
+                });
+            });
+        } else {
+            temAcessoBox.checked = false;
+            toggleAcesso('edit-acesso-fields', false);
+        }
     }
 
     openModal('modal-editar');

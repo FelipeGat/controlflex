@@ -64,7 +64,6 @@
                     <th>Nome</th>
                     <th class="hide-mobile">Admin</th>
                     <th>Status</th>
-                    <th class="hide-mobile">Plano</th>
                     <th class="hide-mobile">Clientes</th>
                     <th class="hide-mobile">Criada em</th>
                 </tr>
@@ -81,7 +80,6 @@
                             <span class="badge badge-red"><i class="fa-solid fa-circle" style="font-size:7px"></i> Inativo</span>
                         @endif
                     </td>
-                    <td class="hide-mobile">{{ $revenda->plano?->nome ?? '—' }}</td>
                     <td class="hide-mobile">{{ $revenda->tenants_count }}</td>
                     <td class="text-muted hide-mobile">{{ $revenda->created_at->format('d/m/Y') }}</td>
                 </tr>

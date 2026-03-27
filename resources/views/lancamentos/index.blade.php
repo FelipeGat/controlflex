@@ -44,7 +44,7 @@
             <a href="{{ $urlMesAnterior }}" class="nav-mes-btn" title="Mês anterior">
                 <i class="fa-solid fa-chevron-left"></i>
             </a>
-            <div id="mes-label" style="padding:6px 16px;font-weight:700;font-size:13px;color:var(--color-text);min-width:160px;text-align:center;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleDatePicker()" title="Clique para escolher uma data">
+            <div id="mes-label" style="padding:6px 14px;font-weight:700;font-size:13px;color:var(--color-text);min-width:0;text-align:center;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleDatePicker()" title="Clique para escolher uma data">
                 {{ ucfirst($mesNome) }}
             </div>
             <a href="{{ $urlMesProximo }}" class="nav-mes-btn" title="Próximo mês">
@@ -66,7 +66,7 @@
             <input type="hidden" name="fim"    id="f-fim"    value="{{ $fim }}">
 
             {{-- Date picker oculto --}}
-            <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;">
+            <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:0;right:0;max-width:360px;">
                 <div style="font-size:12px;color:#64748b;margin-bottom:10px;font-weight:600;">Período personalizado</div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                     <div>
@@ -83,7 +83,7 @@
                 </div>
             </div>
 
-            <select name="banco_id" class="form-control" style="max-width:190px;font-size:13px;" onchange="this.form.submit()">
+            <select name="banco_id" class="form-control" style="max-width:190px;min-width:0;font-size:13px;flex:1;" onchange="this.form.submit()">
                 <option value="">Todas as contas</option>
                 @foreach($bancos as $b)
                 <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
@@ -116,25 +116,25 @@
 </style>
 
 {{-- ─── Cards de resumo ──────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:12px;margin-bottom:20px;">
     <div class="card" style="padding:16px;text-align:center;">
         <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> Entradas</div>
-        <div class="fw-700" style="font-size:18px;color:#16a34a;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
+        <div class="fw-700 kpi-value" style="color:#16a34a;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
     </div>
     <div class="card" style="padding:16px;text-align:center;">
         <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> Saídas</div>
-        <div class="fw-700" style="font-size:18px;color:#dc2626;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
+        <div class="fw-700 kpi-value" style="color:#dc2626;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
     </div>
     <div class="card" style="padding:16px;text-align:center;">
         <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-scale-balanced" style="color:#7c3aed;"></i> Saldo do Período</div>
-        <div class="fw-700" style="font-size:18px;color:{{ $saldoPeriodo >= 0 ? '#16a34a' : '#dc2626' }};">
+        <div class="fw-700 kpi-value" style="color:{{ $saldoPeriodo >= 0 ? '#16a34a' : '#dc2626' }};">
             R$ {{ number_format($saldoPeriodo, 2, ',', '.') }}
         </div>
     </div>
 </div>
 
 {{-- ─── Botões de ação ──────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:12px;margin-bottom:24px;">
     <button onclick="openModal('modal-manual')" class="btn-acao" style="border-color:var(--color-primary);background:#f5f3ff;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
         <div class="btn-acao-icon" style="background:var(--color-primary);"><i class="fa-solid fa-pen-to-square" style="color:#fff;font-size:18px;"></i></div>
         <div><div style="font-weight:700;font-size:13px;color:var(--color-text);">Lançamento Manual</div><div style="font-size:10px;color:var(--color-text-muted);margin-top:2px;">Despesa ou receita</div></div>

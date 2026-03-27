@@ -32,7 +32,7 @@ $bancosTemplate = [
     </button>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:14px;margin-bottom:24px;">
     @forelse($bancos as $banco)
         @php $cor = $banco->cor ?: 'var(--color-primary)'; @endphp
         <div class="card" style="border-top: 3px solid {{ $cor }};">
@@ -189,7 +189,7 @@ $bancosTemplate = [
                 {{-- Banco Picker --}}
                 <div style="margin-bottom:16px;">
                     <label class="form-label" style="margin-bottom:8px;">Banco</label>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;max-height:220px;overflow-y:auto;">
                         @foreach($bancosTemplate as $bt)
                         <button type="button"
                             class="banco-picker-btn"

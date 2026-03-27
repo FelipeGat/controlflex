@@ -28,6 +28,16 @@ class Familiar extends Model
         return $this->hasOne(User::class)->where('role', 'membro');
     }
 
+    public function userVinculado()
+    {
+        return $this->hasOne(User::class);
+    }
+
+    public function isMaster(): bool
+    {
+        return $this->userVinculado?->role === 'master';
+    }
+
     public function despesas()
     {
         return $this->hasMany(Despesa::class, 'quem_comprou');

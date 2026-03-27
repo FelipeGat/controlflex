@@ -9,12 +9,12 @@
     <div class="d-flex align-center gap-2 flex-wrap" style="min-height:56px;">
 
         {{-- Esquerda: navegação por mês + período personalizado --}}
-        <div class="d-flex align-center gap-1">
+        <div class="d-flex align-center gap-1" style="flex-shrink:0;">
             <a href="{{ $linkMesAnt }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Mês anterior">
                 <i class="fa-solid fa-chevron-left"></i>
             </a>
             <a href="{{ route('dashboard', array_filter(['inicio' => now()->startOfMonth()->format('Y-m-d'), 'fim' => now()->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId])) }}"
-               class="btn btn-primary" style="min-width:160px;text-align:center;font-weight:700;font-size:14px;letter-spacing:.5px;">
+               class="btn btn-primary" style="min-width:0;text-align:center;font-weight:700;font-size:13px;letter-spacing:.5px;white-space:nowrap;">
                 {{ $nomeMes }} {{ $anoMes }}
             </a>
             <a href="{{ $linkMesProx }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Próximo mês">
@@ -22,11 +22,11 @@
             </a>
         </div>
 
-        <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2">
+        <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap" style="min-width:0;">
             @if($familiarId)<input type="hidden" name="familiar_id" value="{{ $familiarId }}">@endif
-            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:135px;font-size:13px;">
+            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
             <span style="color:#94a3b8;">—</span>
-            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:135px;font-size:13px;">
+            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
             <button type="submit" class="btn btn-secondary btn-sm" title="Filtrar período"><i class="fa-solid fa-filter"></i></button>
         </form>
 
@@ -47,7 +47,7 @@
         <div style="width:1px; height:36px; background:#e2e8f0; margin: 0 4px;"></div>
 
         {{-- Direita: avatares dos membros --}}
-        <div class="d-flex align-center gap-2" style="margin-left:auto;">
+        <div class="d-flex align-center gap-2" style="margin-left:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;">
             @foreach($familiares as $fam)
             @php
                 $isSelected = $familiarId === $fam->id;
@@ -198,28 +198,28 @@
 </div>
 
 {{-- Gastos com Cartões + Patrimônio Acumulado --}}
-<div class="d-flex gap-4 mb-5" style="flex-wrap:wrap;">
-    <div class="card" style="flex:7;min-width:0;">
+<div class="grid-2 mb-5">
+    <div class="card">
         <div class="card-title">
             <i class="fa-solid fa-credit-card" style="color:#7c3aed;"></i>
             Gastos com Cartões
         </div>
 
         {{-- Resumo geral --}}
-        <div class="d-flex justify-between align-center" style="padding:10px 12px;background:#f8fafc;border-radius:8px;margin-bottom:12px;">
-            <div style="text-align:center;flex:1;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;padding:10px 12px;background:#f8fafc;border-radius:8px;margin-bottom:12px;gap:8px;">
+            <div style="text-align:center;flex:1;min-width:80px;">
                 <div style="font-size:11px;color:#64748b;">Fatura Total</div>
-                <div class="fw-600 text-red" style="font-size:15px;">R$ {{ number_format($totalFaturaCartoes, 2, ',', '.') }}</div>
+                <div class="fw-600 text-red" style="font-size:14px;">R$ {{ number_format($totalFaturaCartoes, 2, ',', '.') }}</div>
             </div>
             <div style="width:1px;height:30px;background:#e2e8f0;"></div>
-            <div style="text-align:center;flex:1;">
+            <div style="text-align:center;flex:1;min-width:80px;">
                 <div style="font-size:11px;color:#64748b;">Gastos no Período</div>
-                <div class="fw-600" style="font-size:15px;color:#d97706;">R$ {{ number_format($totalGastosCartoes, 2, ',', '.') }}</div>
+                <div class="fw-600" style="font-size:14px;color:#d97706;">R$ {{ number_format($totalGastosCartoes, 2, ',', '.') }}</div>
             </div>
             <div style="width:1px;height:30px;background:#e2e8f0;"></div>
-            <div style="text-align:center;flex:1;">
+            <div style="text-align:center;flex:1;min-width:80px;">
                 <div style="font-size:11px;color:#64748b;">Limite Total</div>
-                <div class="fw-600" style="font-size:15px;color:#4f46e5;">R$ {{ number_format($totalLimiteCartoes, 2, ',', '.') }}</div>
+                <div class="fw-600" style="font-size:14px;color:#4f46e5;">R$ {{ number_format($totalLimiteCartoes, 2, ',', '.') }}</div>
             </div>
         </div>
 
@@ -261,7 +261,7 @@
         @endforelse
     </div>
 
-    <div class="card" style="flex:3;min-width:0;">
+    <div class="card">
         <div class="card-title">
             <i class="fa-solid fa-chart-line" style="color:#d97706;"></i>
             Patrimônio Acumulado {{ $ano }}

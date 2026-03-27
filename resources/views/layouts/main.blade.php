@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'AlfaHome') }} — @yield('title', 'Dashboard')</title>
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -209,6 +209,8 @@
         .page-content {
             padding: 20px;
             flex: 1;
+            overflow-x: hidden;
+            min-width: 0;
         }
 
         /* ─── Cards ─────────────────────────────────────────────── */
@@ -495,14 +497,36 @@
             /* Permissions grid scroll */
             .perm-grid-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
             .perm-grid-wrapper table { min-width: 480px; }
+            /* Charts smaller on mobile */
+            .chart-box { height: 220px; }
+            .chart-box-sm { height: 180px; }
         }
         @media (max-width: 480px) {
             .grid-4 { grid-template-columns: 1fr; }
             .topbar { padding: 0 12px; gap: 10px; }
-            .kpi-value { font-size: 1.2rem; }
+            .kpi-value { font-size: 1.1rem; }
             .card { padding: 12px; }
             .btn { padding: 8px 12px; font-size: 12px; }
             .btn-sm { padding: 6px 10px; font-size: 11px; }
+            /* Modal adjustments for small phones */
+            .modal-header { padding: 14px 16px; }
+            .modal-header h3 { font-size: 14px; }
+            .modal-body { padding: 14px; }
+            .modal-footer { flex-wrap: wrap; }
+            .modal-footer .btn { flex: 1; min-width: 0; justify-content: center; }
+            /* Table tighter on small phones */
+            .table thead th { padding: 7px 8px; font-size: 10px; }
+            .table tbody td { padding: 8px; font-size: 12px; }
+            /* Badge smaller */
+            .badge { font-size: 10px; padding: 2px 5px; }
+            /* Bottom nav safe area for notch phones */
+            .bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0); height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0)); }
+            .page-content { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0) + 14px); }
+            /* KPI icon smaller */
+            .kpi-icon { width: 34px; height: 34px; font-size: 14px; }
+            /* Form controls tighter */
+            .form-control { padding: 7px 9px; font-size: 13px; }
+            .form-label { font-size: 10px; }
         }
     </style>
     @stack('styles')

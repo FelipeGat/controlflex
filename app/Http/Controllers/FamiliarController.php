@@ -15,7 +15,9 @@ class FamiliarController extends Controller
 {
     public function index()
     {
-        $familiares = Familiar::with('membro')->orderBy('nome')->get();
+        $familiares = Familiar::with('userVinculado')->orderByRaw(
+            "EXISTS (SELECT 1 FROM users WHERE users.familiar_id = familiares.id AND users.role = 'master') DESC, nome ASC"
+        )->get();
         return view('familiares.index', compact('familiares'));
     }
 
@@ -79,6 +81,8 @@ class FamiliarController extends Controller
     {
         $this->authorize('update', $familiar);
 
+        $isMasterFamiliar = $familiar->isMaster();
+
         $rules = [
             'nome'          => 'required|string|max:100',
             'salario'       => 'nullable|numeric|min:0',
@@ -87,7 +91,7 @@ class FamiliarController extends Controller
             'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ];
 
-        $temAcesso    = $request->boolean('tem_acesso');
+        $temAcesso    = !$isMasterFamiliar && $request->boolean('tem_acesso');
         $membro       = $familiar->membro;
 
         if ($temAcesso) {
@@ -116,6 +120,11 @@ class FamiliarController extends Controller
         }
 
         $familiar->update($data);
+
+        // Sincronizar nome no user master
+        if ($isMasterFamiliar && $familiar->userVinculado) {
+            $familiar->userVinculado->update(['name' => $request->nome]);
+        }
 
         if ($temAcesso) {
             $permissoes = $this->buildPermissoes($request);
@@ -164,6 +173,10 @@ class FamiliarController extends Controller
     public function destroy(Familiar $familiar)
     {
         $this->authorize('delete', $familiar);
+
+        if ($familiar->isMaster()) {
+            return back()->withErrors(['nome' => 'O membro master não pode ser excluído.']);
+        }
 
         if ($familiar->membro) {
             $familiar->membro->delete();

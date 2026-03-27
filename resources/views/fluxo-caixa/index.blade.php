@@ -48,7 +48,7 @@
 </form>
 
 {{-- ─── KPIs ──────────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:12px;margin-bottom:20px;">
 
     <div class="card" style="border-top:3px solid #16a34a;">
         <div class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> A Receber</div>

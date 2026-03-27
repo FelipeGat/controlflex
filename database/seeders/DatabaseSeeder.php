@@ -111,6 +111,9 @@ class DatabaseSeeder extends Seeder
         $felipe = Familiar::create(['user_id' => $user->id, 'nome' => 'Felipe', 'salario' => 5000, 'limite_cartao' => 3000, 'limite_cheque' => 1000]);
         $maria  = Familiar::create(['user_id' => $user->id, 'nome' => 'Maria',  'salario' => 4000, 'limite_cartao' => 2000, 'limite_cheque' => 500]);
 
+        // Vincular o master ao seu familiar
+        $user->update(['familiar_id' => $felipe->id]);
+
         // ─── Categorias ───────────────────────────────────────────────────────
 
         CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);

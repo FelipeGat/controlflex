@@ -5,7 +5,7 @@
 @section('content')
 
 {{-- Cards de resumo --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr));gap:14px;margin-bottom:24px;">
     <div class="card" style="text-align:center;padding:20px;">
         <div style="font-size:28px;font-weight:700;color:var(--color-primary);">{{ $clientes->count() }}</div>
         <div class="text-muted" style="font-size:13px;">Total de Clientes</div>

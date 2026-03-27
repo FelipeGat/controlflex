@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Familiar;
 use App\Models\Plano;
 use App\Models\Tenant;
 use App\Models\User;
@@ -59,6 +60,17 @@ class RegisteredUserController extends Controller
                 'role'      => 'master',
                 'ativo'     => true,
             ]);
+
+            $familiar = Familiar::create([
+                'tenant_id'     => $tenant->id,
+                'user_id'       => $user->id,
+                'nome'          => $request->name,
+                'salario'       => 0,
+                'limite_cartao' => 0,
+                'limite_cheque' => 0,
+            ]);
+
+            $user->update(['familiar_id' => $familiar->id]);
 
             CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);
             FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $user->id);

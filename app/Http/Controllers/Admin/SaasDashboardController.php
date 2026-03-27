@@ -22,7 +22,7 @@ class SaasDashboardController extends Controller
 
         $totalUsuarios = User::whereIn('role', ['master', 'membro'])->count();
 
-        $ultimasRevendas = Revenda::with('plano', 'admin')
+        $ultimasRevendas = Revenda::with('admin')
             ->withCount('tenants')
             ->orderByDesc('created_at')
             ->limit(10)

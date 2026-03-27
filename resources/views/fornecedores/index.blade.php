@@ -65,7 +65,7 @@
         <span class="contador-grupo" style="font-size:11px;color:var(--color-text-subtle);">({{ $itens->count() }})</span>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;" class="grid-grupo">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:8px;" class="grid-grupo">
         @foreach($itens as $forn)
         <div class="card-fornecedor"
              data-nome="{{ strtolower($forn->nome) }}"

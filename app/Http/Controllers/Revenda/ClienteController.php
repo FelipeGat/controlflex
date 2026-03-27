@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Revenda;
 
 use App\Http\Controllers\Controller;
+use App\Models\Familiar;
 use App\Models\Plano;
 use App\Models\Tenant;
 use App\Models\User;
@@ -67,6 +68,17 @@ class ClienteController extends Controller
                 'role'      => 'master',
                 'ativo'     => true,
             ]);
+
+            $familiar = Familiar::create([
+                'tenant_id'     => $tenant->id,
+                'user_id'       => $master->id,
+                'nome'          => $request->nome_master,
+                'salario'       => 0,
+                'limite_cartao' => 0,
+                'limite_cheque' => 0,
+            ]);
+
+            $master->update(['familiar_id' => $familiar->id]);
 
             CategoriasDefaultSeeder::seedParaTenant($tenant->id, $master->id);
             FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $master->id);
