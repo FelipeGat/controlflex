@@ -7,7 +7,6 @@
     <title>{{ config('app.name', 'AlfaHome') }} — @yield('title', 'Dashboard')</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         /* ─── Reset & Base ─────────────────────────────────────── */

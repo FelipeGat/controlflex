@@ -1,4 +1,3 @@
-# Dockerfile para Laravel
 FROM php:8.2-fpm
 
 # Instala dependências do sistema
@@ -18,6 +17,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
+    nodejs \
+    npm \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
 
 # Instala Composer
@@ -31,6 +33,9 @@ COPY . /var/www
 
 # Instala dependências do PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Instala dependências do Node e compila assets
+RUN npm install && npm run build
 
 # Permissões
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
