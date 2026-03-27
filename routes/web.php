@@ -12,6 +12,7 @@ use App\Http\Controllers\InvestimentoController;
 use App\Http\Controllers\FluxoCaixaController;
 use App\Http\Controllers\LancamentoDiarioController;
 use App\Http\Controllers\LancamentoController;
+use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(func
 // ─── Tenant (Master / Membro) ───────────────────────────────────────────────
 Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Alertas financeiros
+    Route::get('/alertas', [AlertaController::class, 'index'])->name('alertas.index');
 
     // Fluxo de Caixa / Baixas
     Route::get('/fluxo-caixa', [FluxoCaixaController::class, 'index'])->name('fluxo-caixa.index');
