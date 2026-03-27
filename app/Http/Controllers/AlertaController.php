@@ -38,8 +38,7 @@ class AlertaController extends Controller
 
         if ($vencidas->count() > 0) {
             $totalVencido = $vencidas->sum('valor');
-            $dias = $vencidas->map(fn($d) => now()->diffInDays(Carbon::parse($d->data_compra)));
-            $maisDias = $dias->max();
+            $maisDias = (int) $vencidas->map(fn($d) => abs(Carbon::parse($d->data_compra)->diffInDays(now())))->max();
             $alertas->push([
                 'tipo'      => 'urgente',
                 'icone'     => 'fa-circle-exclamation',
@@ -47,7 +46,7 @@ class AlertaController extends Controller
                 'descricao' => 'Total em aberto: <strong>R$ ' . number_format($totalVencido, 2, ',', '.') . '</strong>. A mais antiga venceu há <strong>' . $maisDias . ' dia(s)</strong>.',
                 'acao_url'  => route('fluxo-caixa.index'),
                 'acao_txt'  => 'Ver e baixar contas',
-                'detalhe'   => $vencidas->take(5)->map(fn($d) => Carbon::parse($d->data_compra)->format('d/m') . ' — ' . $d->descricao . ' (R$ ' . number_format($d->valor, 2, ',', '.') . ')')->toArray(),
+                'detalhe'   => $vencidas->take(5)->map(fn($d) => Carbon::parse($d->data_compra)->format('d/m') . ' — ' . ($d->descricao ?: 'Despesa') . ' (R$ ' . number_format($d->valor, 2, ',', '.') . ')')->toArray(),
             ]);
         }
 

@@ -42,45 +42,45 @@ $config = [
 @else
 
 {{-- Grid de alertas --}}
-<div style="display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 10px;">
     @foreach($alertas as $alerta)
     @php $c = $config[$alerta['tipo']]; @endphp
     <div style="
         background: {{ $c['bg'] }};
         border: 1px solid {{ $c['borda'] }};
-        border-left: 5px solid {{ $c['cor'] }};
-        border-radius: 12px;
-        padding: 18px 20px;
+        border-left: 4px solid {{ $c['cor'] }};
+        border-radius: 10px;
+        padding: 12px 16px;
         display: flex;
-        gap: 16px;
+        gap: 12px;
         align-items: flex-start;
     ">
         {{-- Ícone --}}
         <div style="
-            width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+            width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
             background: {{ $c['cor'] }}22;
             display: flex; align-items: center; justify-content: center;
         ">
-            <i class="fa-solid {{ $alerta['icone'] }}" style="font-size: 18px; color: {{ $c['cor'] }};"></i>
+            <i class="fa-solid {{ $alerta['icone'] }}" style="font-size: 14px; color: {{ $c['cor'] }};"></i>
         </div>
 
         {{-- Conteúdo --}}
         <div style="flex: 1; min-width: 0;">
-            <div class="d-flex align-center gap-2 flex-wrap mb-1">
+            <div class="d-flex align-center gap-2 flex-wrap" style="margin-bottom: 3px;">
                 <span style="
                     background: {{ $c['cor'] }}; color: #fff;
-                    font-size: 10px; font-weight: 700; letter-spacing: .5px;
-                    padding: 2px 8px; border-radius: 99px; text-transform: uppercase;
+                    font-size: 9px; font-weight: 700; letter-spacing: .5px;
+                    padding: 2px 7px; border-radius: 99px; text-transform: uppercase;
                 ">{{ $c['label'] }}</span>
-                <strong style="font-size: 15px; color: #1e293b;">{{ $alerta['titulo'] }}</strong>
+                <strong style="font-size: 13px; color: #1e293b;">{{ $alerta['titulo'] }}</strong>
             </div>
 
-            <p style="color: #475569; font-size: 14px; margin: 4px 0 10px 0; line-height: 1.6;">
+            <p style="color: #475569; font-size: 13px; margin: 2px 0 8px 0; line-height: 1.5;">
                 {!! $alerta['descricao'] !!}
             </p>
 
             @if(!empty($alerta['detalhe']))
-            <ul style="margin: 0 0 12px 0; padding-left: 18px; color: #475569; font-size: 13px; line-height: 1.8;">
+            <ul style="margin: 0 0 8px 0; padding-left: 16px; color: #475569; font-size: 12px; line-height: 1.7;">
                 @foreach($alerta['detalhe'] as $item)
                 <li>{{ $item }}</li>
                 @endforeach
@@ -89,13 +89,13 @@ $config = [
 
             <a href="{{ $alerta['acao_url'] }}"
                style="
-                   display: inline-flex; align-items: center; gap: 6px;
+                   display: inline-flex; align-items: center; gap: 5px;
                    background: {{ $c['cor'] }}; color: #fff;
-                   font-size: 13px; font-weight: 600;
-                   padding: 6px 14px; border-radius: 7px;
+                   font-size: 12px; font-weight: 600;
+                   padding: 5px 12px; border-radius: 6px;
                    text-decoration: none;
                ">
-                {{ $alerta['acao_txt'] }} <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+                {{ $alerta['acao_txt'] }} <i class="fa-solid fa-arrow-right" style="font-size:10px;"></i>
             </a>
         </div>
     </div>
