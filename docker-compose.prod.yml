@@ -15,6 +15,7 @@ services:
       - app
     networks:
       - alfa-network
+      - external
     restart: unless-stopped
 
   app:
