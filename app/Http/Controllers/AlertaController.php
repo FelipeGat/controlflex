@@ -28,7 +28,7 @@ class AlertaController extends Controller
         // 1. Contas vencidas (sem pagamento, data já passou)
         $vencidas = DB::table('despesas')
             ->leftJoin('categorias', 'despesas.categoria_id', '=', 'categorias.id')
-            ->selectRaw("despesas.id, despesas.descricao, despesas.valor, despesas.data_compra, COALESCE(categorias.nome,'Sem categoria') as categoria")
+            ->selectRaw("despesas.id, despesas.onde_comprou as descricao, despesas.valor, despesas.data_compra, COALESCE(categorias.nome,'Sem categoria') as categoria")
             ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereNull('despesas.data_pagamento')
@@ -105,7 +105,7 @@ class AlertaController extends Controller
         // 4. Contas a vencer nos próximos 7 dias
         $aVencer = DB::table('despesas')
             ->leftJoin('categorias', 'despesas.categoria_id', '=', 'categorias.id')
-            ->selectRaw("despesas.id, despesas.descricao, despesas.valor, despesas.data_compra, COALESCE(categorias.nome,'Sem categoria') as categoria")
+            ->selectRaw("despesas.id, despesas.onde_comprou as descricao, despesas.valor, despesas.data_compra, COALESCE(categorias.nome,'Sem categoria') as categoria")
             ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereNull('despesas.data_pagamento')
@@ -132,6 +132,7 @@ class AlertaController extends Controller
             ->whereNull('deleted_at')
             ->whereNull('data_recebimento')
             ->whereBetween('data_prevista_recebimento', [$hoje, $em7dias])
+            ->select('id', 'valor', 'data_prevista_recebimento', 'observacoes')
             ->get();
 
         if ($aReceber->count() > 0) {
@@ -143,7 +144,7 @@ class AlertaController extends Controller
                 'descricao' => 'Você tem <strong>R$ ' . number_format($totalAReceber, 2, ',', '.') . '</strong> a receber em breve. Confirme os recebimentos.',
                 'acao_url'  => route('receitas.index'),
                 'acao_txt'  => 'Ver receitas',
-                'detalhe'   => $aReceber->map(fn($r) => Carbon::parse($r->data_prevista_recebimento)->format('d/m') . ' — ' . $r->descricao . ' (R$ ' . number_format($r->valor, 2, ',', '.') . ')')->toArray(),
+                'detalhe'   => $aReceber->map(fn($r) => Carbon::parse($r->data_prevista_recebimento)->format('d/m') . ' — ' . ($r->observacoes ?: 'Receita prevista') . ' (R$ ' . number_format($r->valor, 2, ',', '.') . ')')->toArray(),
             ]);
         }
 
