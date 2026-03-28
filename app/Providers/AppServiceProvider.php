@@ -15,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        URL::forceScheme('https');
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
         URL::forceRootUrl(config('app.url'));
 
         // Locale pt_BR para Carbon (nomes de meses em português)
