@@ -72,38 +72,184 @@ $config = [
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 {{-- 2. ALERTA PRINCIPAL (DESTAQUE) --}}
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
+
+{{-- CSS do Alerta Principal --}}
+<style>
+    .alerta-principal {
+        background: linear-gradient(135deg, var(--cor-10), var(--cor-08));
+        border: 2px solid var(--cor);
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .alerta-principal-icone {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: var(--cor);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .alerta-principal-icone i {
+        font-size: 22px;
+        color: #fff;
+    }
+
+    .alerta-principal-conteudo {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .alerta-principal-badge {
+        background: var(--cor);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        display: inline-block;
+    }
+
+    .alerta-principal-badge-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+    }
+
+    .alerta-principal-titulo {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .alerta-principal-descricao {
+        margin: 0 0 4px;
+        font-size: 14px;
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    .alerta-principal-impacto {
+        margin: 0;
+        font-size: 13px;
+        color: var(--cor);
+        font-weight: 700;
+    }
+
+    .alerta-principal-previsao {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #64748b;
+        font-style: italic;
+    }
+
+    .alerta-principal-acao {
+        background: var(--cor);
+        color: #fff;
+        padding: 10px 22px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        transition: opacity .2s;
+    }
+
+    .alerta-principal-acao:hover {
+        opacity: 0.9;
+    }
+
+    /* Mobile: < 480px */
+    @media (max-width: 480px) {
+        .alerta-principal {
+            padding: 16px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .alerta-principal-icone {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto;
+        }
+
+        .alerta-principal-icone i {
+            font-size: 18px;
+        }
+
+        .alerta-principal-conteudo {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .alerta-principal-badge-wrap {
+            justify-content: center;
+        }
+
+        .alerta-principal-titulo {
+            font-size: 16px !important;
+        }
+
+        .alerta-principal-descricao {
+            font-size: 13px !important;
+        }
+
+        .alerta-principal-impacto {
+            font-size: 12px !important;
+        }
+
+        .alerta-principal-previsao {
+            font-size: 11px !important;
+        }
+
+        .alerta-principal-acao {
+            width: 100%;
+            justify-content: center;
+            margin-top: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+    }
+</style>
+
 @if($alertaPrincipal)
 @php $cp = $config[$alertaPrincipal['tipo']] ?? $config['critico']; @endphp
-<div style="
-    background: linear-gradient(135deg, {{ $cp['cor'] }}10, {{ $cp['cor'] }}08);
-    border: 2px solid {{ $cp['cor'] }};
-    border-radius: 14px;
-    padding: 24px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    justify-content: center;
-">
-    <div style="width:56px; height:56px; border-radius:14px; background:{{ $cp['cor'] }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <i class="fa-solid {{ $alertaPrincipal['icone'] }}" style="font-size:22px; color:#fff;"></i>
+<div class="alerta-principal" style="--cor: {{ $cp['cor'] }}; --cor-10: {{ $cp['cor'] }}10; --cor-08: {{ $cp['cor'] }}08;">
+    <div class="alerta-principal-icone">
+        <i class="fa-solid {{ $alertaPrincipal['icone'] }}"></i>
     </div>
-    <div style="flex:1;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="background:{{ $cp['cor'] }}; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:.4px;">{{ $cp['label'] }}</span>
+    <div class="alerta-principal-conteudo">
+        <div class="alerta-principal-badge-wrap">
+            <span class="alerta-principal-badge">{{ $cp['label'] }}</span>
         </div>
-        <h3 style="margin:0 0 6px; font-size:18px; font-weight:800; color:#1e293b;">{{ $alertaPrincipal['titulo'] }}</h3>
-        <p style="margin:0 0 4px; font-size:14px; color:#475569; line-height:1.5;">{!! $alertaPrincipal['descricao'] !!}</p>
-        <p style="margin:0; font-size:13px; color:{{ $cp['cor'] }}; font-weight:700;">{{ $alertaPrincipal['impacto'] }}</p>
+        <h3 class="alerta-principal-titulo">{{ $alertaPrincipal['titulo'] }}</h3>
+        <p class="alerta-principal-descricao">{!! $alertaPrincipal['descricao'] !!}</p>
+        <p class="alerta-principal-impacto">{{ $alertaPrincipal['impacto'] }}</p>
         @if($alertaPrincipal['previsao'])
-        <p style="margin:4px 0 0; font-size:12px; color:#64748b; font-style:italic;">
+        <p class="alerta-principal-previsao">
             <i class="fa-solid fa-forward" style="font-size:10px; margin-right:4px;"></i>{{ $alertaPrincipal['previsao'] }}
         </p>
         @endif
     </div>
-    <a href="{{ $alertaPrincipal['acao_url'] }}"
-       style="background:{{ $cp['cor'] }}; color:#fff; padding:10px 22px; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; flex-shrink:0;">
+    <a href="{{ $alertaPrincipal['acao_url'] }}" class="alerta-principal-acao">
         {{ $alertaPrincipal['acao_label'] }} <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
     </a>
 </div>
