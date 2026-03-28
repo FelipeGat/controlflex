@@ -53,6 +53,8 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'asset_url' => env('ASSET_URL', 'https://home.alfasolucoes.cloud'),
+    'force_url_scheme' => 'https',
 
     /*
     |--------------------------------------------------------------------------

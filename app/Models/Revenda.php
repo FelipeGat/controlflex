@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Revenda extends Model
 {
-    protected $fillable = ['nome', 'cnpj', 'email', 'telefone', 'status'];
+    protected $fillable = ['nome', 'cnpj', 'email', 'telefone', 'status', 'plano_id'];
 
     public function tenants()
     {
@@ -21,6 +21,11 @@ class Revenda extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function plano()
+    {
+        return $this->belongsTo(Plano::class);
     }
 
     public function isAtivo(): bool
