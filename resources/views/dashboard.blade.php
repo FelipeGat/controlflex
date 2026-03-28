@@ -6,48 +6,54 @@
 
 {{-- Filtros: datas à esquerda, membros à direita — tudo em uma linha --}}
 <div class="card mb-5" style="padding: 10px 16px;">
-    <div class="d-flex align-center gap-2 flex-wrap" style="min-height:56px;justify-content:center;">
+    <style>
+        @media (max-width: 450px) {
+            .dashboard-filtros { justify-content: center !important; }
+            .dashboard-filtros > div:first-child { justify-content: center; margin-bottom: 12px; }
+            .dashboard-filtros .avatares-mobile { justify-content: center !important; }
+        }
+    </style>
+    <div class="d-flex align-center gap-2 flex-wrap dashboard-filtros" style="min-height:56px;justify-content:space-between;">
 
-        {{-- Esquerda: navegação por mês + período personalizado --}}
-        <div class="d-flex align-center gap-1" style="flex-shrink:0;">
-            <a href="{{ $linkMesAnt }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Mês anterior">
-                <i class="fa-solid fa-chevron-left"></i>
+        {{-- Esquerda: todos os filtros agrupados --}}
+        <div class="d-flex align-center gap-2 flex-wrap" style="flex-shrink:1;min-width:0;">
+            <div class="d-flex align-center gap-1 flex-shrink-0">
+                <a href="{{ $linkMesAnt }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Mês anterior">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                <a href="{{ route('dashboard', array_filter(['inicio' => now()->startOfMonth()->format('Y-m-d'), 'fim' => now()->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId])) }}"
+                   class="btn btn-primary" style="min-width:0;text-align:center;font-weight:700;font-size:13px;letter-spacing:.5px;white-space:nowrap;">
+                    {{ $nomeMes }} {{ $anoMes }}
+                </a>
+                <a href="{{ $linkMesProx }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Próximo mês">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap flex-shrink-0" style="min-width:0;">
+                @if($familiarId)<input type="hidden" name="familiar_id" value="{{ $familiarId }}">@endif
+                <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
+                <span style="color:#94a3b8;">—</span>
+                <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
+                <button type="submit" class="btn btn-secondary btn-sm" title="Filtrar período"><i class="fa-solid fa-filter"></i></button>
+            </form>
+
+            {{-- Botão Limpar Filtros --}}
+            @php
+                $mesAtualInicio = now()->startOfMonth()->format('Y-m-d');
+                $mesAtualFim    = now()->endOfMonth()->format('Y-m-d');
+                $filtroAtivo    = $familiarId || $inicio !== $mesAtualInicio || $fim !== $mesAtualFim;
+            @endphp
+            @if($filtroAtivo)
+            <a href="{{ route('dashboard') }}" class="btn btn-sm flex-shrink-0" title="Limpar todos os filtros"
+               style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; white-space:nowrap; font-size:12px; font-weight:600;">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar filtros
             </a>
-            <a href="{{ route('dashboard', array_filter(['inicio' => now()->startOfMonth()->format('Y-m-d'), 'fim' => now()->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId])) }}"
-               class="btn btn-primary" style="min-width:0;text-align:center;font-weight:700;font-size:13px;letter-spacing:.5px;white-space:nowrap;">
-                {{ $nomeMes }} {{ $anoMes }}
-            </a>
-            <a href="{{ $linkMesProx }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Próximo mês">
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
+            @endif
         </div>
 
-        <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap" style="min-width:0;justify-content:center;">
-            @if($familiarId)<input type="hidden" name="familiar_id" value="{{ $familiarId }}">@endif
-            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
-            <span style="color:#94a3b8;">—</span>
-            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
-            <button type="submit" class="btn btn-secondary btn-sm" title="Filtrar período"><i class="fa-solid fa-filter"></i></button>
-        </form>
-
-        {{-- Botão Limpar Filtros (aparece sempre que há algum filtro ativo) --}}
-        @php
-            $mesAtualInicio = now()->startOfMonth()->format('Y-m-d');
-            $mesAtualFim    = now()->endOfMonth()->format('Y-m-d');
-            $filtroAtivo    = $familiarId || $inicio !== $mesAtualInicio || $fim !== $mesAtualFim;
-        @endphp
-        @if($filtroAtivo)
-        <a href="{{ route('dashboard') }}" class="btn btn-sm" title="Limpar todos os filtros"
-           style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; white-space:nowrap; font-size:12px; font-weight:600;">
-            <i class="fa-solid fa-xmark me-1"></i> Limpar filtros
-        </a>
-        @endif
-
-        {{-- Divisor --}}
-        <div class="hide-mobile" style="width:1px; height:36px; background:#e2e8f0; margin: 0 4px;"></div>
-
         {{-- Direita: avatares dos membros --}}
-        <div class="d-flex align-center gap-2" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;justify-content:center;">
+        <div class="d-flex align-center gap-2 avatares-mobile" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;justify-content:center;">
             @foreach($familiares as $fam)
             @php
                 $isSelected = $familiarId === $fam->id;
