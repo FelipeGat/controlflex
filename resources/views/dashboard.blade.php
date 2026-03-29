@@ -84,8 +84,150 @@
     </div>
 </div>
 
-{{-- KPI Cards Principais --}}
-<div class="grid-3 mb-5">
+{{-- ─── Posição Atual (Saldos) ──────────────────────────────────────────── --}}
+@php
+    $saldoTotalContas  = $bancos->sum('saldo');
+    $creditoDisponivel = max(0, $totalLimiteCartoes - $totalFaturaCartoes);
+@endphp
+
+<style>
+.db-kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px; }
+@media (max-width:640px) { .db-kpi-row { grid-template-columns:1fr; } }
+
+.db-saldo-section { margin-bottom:20px; }
+.db-section-label {
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:#94a3b8; margin-bottom:10px; display:flex; align-items:center; gap:6px;
+}
+.db-section-label::after { content:''; flex:1; height:1px; background:#f1f5f9; }
+
+.db-banco-item { display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f8fafc; gap:8px; }
+.db-banco-item:last-child { border-bottom:none; }
+.db-banco-nome { font-size:12px; font-weight:600; color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.db-banco-tipo { font-size:10px; color:#94a3b8; }
+.db-banco-val  { font-size:13px; font-weight:700; white-space:nowrap; flex-shrink:0; }
+</style>
+
+<div class="db-saldo-section">
+    <div class="db-section-label"><i class="fa-solid fa-circle-dot" style="font-size:8px;color:#4f46e5;"></i> Posição Atual</div>
+
+    <div class="db-kpi-row">
+
+        {{-- Saldo em Contas --}}
+        <div class="card" style="border-top:3px solid {{ $saldoTotalContas >= 0 ? '#16a34a' : '#dc2626' }};padding:14px 16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                <div>
+                    <div class="kpi-label" style="margin-bottom:2px;"><i class="fa-solid fa-building-columns" style="color:#16a34a;"></i> Saldo em Contas</div>
+                    <div style="font-size:clamp(16px,3vw,22px);font-weight:700;color:{{ $saldoTotalContas >= 0 ? '#16a34a' : '#dc2626' }};">
+                        R$ {{ number_format($saldoTotalContas, 2, ',', '.') }}
+                    </div>
+                </div>
+                <div style="background:#dcfce7;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-building-columns" style="color:#16a34a;font-size:14px;"></i>
+                </div>
+            </div>
+            <div style="border-top:1px solid #f1f5f9;padding-top:8px;">
+                @forelse($bancos->take(4) as $banco)
+                <div class="db-banco-item">
+                    <div style="min-width:0;">
+                        <div class="db-banco-nome">{{ $banco->nome }}</div>
+                        <div class="db-banco-tipo">{{ $banco->eh_dinheiro ? 'Dinheiro' : 'Banco' }}</div>
+                    </div>
+                    <div class="db-banco-val {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}">
+                        R$ {{ number_format($banco->saldo, 2, ',', '.') }}
+                    </div>
+                </div>
+                @empty
+                <div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Nenhuma conta cadastrada</div>
+                @endforelse
+                @if($bancos->count() > 4)
+                <div style="font-size:11px;color:#94a3b8;text-align:center;padding-top:4px;">+{{ $bancos->count() - 4 }} conta(s)</div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Fatura dos Cartões --}}
+        <div class="card" style="border-top:3px solid #7c3aed;padding:14px 16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                <div>
+                    <div class="kpi-label" style="margin-bottom:2px;"><i class="fa-solid fa-credit-card" style="color:#7c3aed;"></i> Fatura dos Cartões</div>
+                    <div style="font-size:clamp(16px,3vw,22px);font-weight:700;color:#dc2626;">
+                        R$ {{ number_format($totalFaturaCartoes, 2, ',', '.') }}
+                    </div>
+                </div>
+                <div style="background:#ede9fe;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-credit-card" style="color:#7c3aed;font-size:14px;"></i>
+                </div>
+            </div>
+            <div style="border-top:1px solid #f1f5f9;padding-top:8px;">
+                @forelse($cartoes->take(4) as $cartao)
+                <div class="db-banco-item">
+                    <div style="min-width:0;">
+                        <div class="db-banco-nome">{{ $cartao->nome }}</div>
+                        <div style="height:4px;border-radius:2px;background:#f1f5f9;margin-top:3px;overflow:hidden;">
+                            <div style="height:100%;border-radius:2px;width:{{ min($cartao->percentual_uso,100) }}%;background:{{ $cartao->percentual_uso > 80 ? '#dc2626' : ($cartao->percentual_uso > 50 ? '#d97706' : '#7c3aed') }};"></div>
+                        </div>
+                        <div class="db-banco-tipo" style="margin-top:2px;">{{ $cartao->percentual_uso }}% usado</div>
+                    </div>
+                    <div class="db-banco-val text-red">
+                        R$ {{ number_format($cartao->saldo_cartao, 2, ',', '.') }}
+                    </div>
+                </div>
+                @empty
+                <div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Nenhum cartão cadastrado</div>
+                @endforelse
+                @if($cartoes->count() > 4)
+                <div style="font-size:11px;color:#94a3b8;text-align:center;padding-top:4px;">+{{ $cartoes->count() - 4 }} cartão(ões)</div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Crédito Disponível --}}
+        <div class="card" style="border-top:3px solid #0ea5e9;padding:14px 16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                <div>
+                    <div class="kpi-label" style="margin-bottom:2px;"><i class="fa-solid fa-circle-check" style="color:#0ea5e9;"></i> Crédito Disponível</div>
+                    <div style="font-size:clamp(16px,3vw,22px);font-weight:700;color:#0ea5e9;">
+                        R$ {{ number_format($creditoDisponivel, 2, ',', '.') }}
+                    </div>
+                </div>
+                <div style="background:#e0f2fe;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-circle-check" style="color:#0ea5e9;font-size:14px;"></i>
+                </div>
+            </div>
+            <div style="border-top:1px solid #f1f5f9;padding-top:8px;">
+                @if($totalLimiteCartoes > 0)
+                @php $percUsado = round(($totalFaturaCartoes / $totalLimiteCartoes) * 100); @endphp
+                <div style="margin-bottom:6px;">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
+                        <span style="color:#94a3b8;">Limite total utilizado</span>
+                        <span style="font-weight:700;color:{{ $percUsado > 80 ? '#dc2626' : ($percUsado > 50 ? '#d97706' : '#0ea5e9') }};">{{ $percUsado }}%</span>
+                    </div>
+                    <div style="height:6px;border-radius:3px;background:#f1f5f9;overflow:hidden;">
+                        <div style="height:100%;border-radius:3px;width:{{ min($percUsado,100) }}%;background:{{ $percUsado > 80 ? '#dc2626' : ($percUsado > 50 ? '#d97706' : '#0ea5e9') }};transition:width .3s;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;">
+                    <span style="color:#94a3b8;">Limite total</span>
+                    <span style="font-weight:600;color:var(--color-text);">R$ {{ number_format($totalLimiteCartoes, 2, ',', '.') }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;">
+                    <span style="color:#94a3b8;">Fatura aberta</span>
+                    <span style="font-weight:600;color:#dc2626;">R$ {{ number_format($totalFaturaCartoes, 2, ',', '.') }}</span>
+                </div>
+                @else
+                <div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Sem limite cadastrado</div>
+                @endif
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{-- ─── KPIs do Período ────────────────────────────────────────────────────── --}}
+<div class="db-section-label"><i class="fa-solid fa-circle-dot" style="font-size:8px;color:#16a34a;"></i> Período Selecionado</div>
+
+<div class="db-kpi-row" style="margin-bottom:20px;">
     <div class="card" style="border-top: 3px solid #16a34a;">
         <div class="d-flex justify-between align-center">
             <div>
