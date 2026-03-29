@@ -5,31 +5,58 @@
 @section('content')
 
 {{-- ─── Filtro de período ─────────────────────────────────────────────────── --}}
-<div class="card filtros-bar">
-    <div class="filtros-lanc" style="flex-wrap:wrap;gap:12px;">
+<style>
+.fc-filtro { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.fc-atalhos { display:flex; gap:6px; }
+.fc-atalho-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700;
+    text-decoration:none; border:1px solid #e2e8f0;
+    transition:all .15s; white-space:nowrap;
+}
+.fc-atalho-btn.ativo { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+.fc-atalho-btn:not(.ativo) { background:#fff; color:#64748b; }
+.fc-atalho-btn:not(.ativo):hover { background:#f8fafc; }
+.fc-custom { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.fc-periodo-label {
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:#94a3b8; padding-top:8px;
+    border-top:1px solid #f1f5f9; margin-top:10px;
+}
+@media (max-width:640px) {
+    .fc-filtro { flex-direction:column; align-items:stretch; }
+    .fc-atalhos { justify-content:center; }
+    .fc-custom { justify-content:center; }
+    .fc-custom input.form-control { max-width:calc(50% - 24px) !important; }
+}
+.fc-kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:12px; }
+@media (max-width:640px) { .fc-kpi-grid { grid-template-columns:1fr; } }
+</style>
 
-        {{-- Atalhos: segmented control --}}
-        <div class="filtro-grupo">
-            <div class="seg-control">
-                @foreach(['semana' => '<i class="fa-solid fa-calendar-week"></i> Esta Semana', 'mes' => '<i class="fa-solid fa-calendar"></i> Este Mês'] as $key => $label)
-                <a href="{{ route('fluxo-caixa.index', ['periodo' => $key]) }}"
-                   class="seg-btn" style="text-decoration:none;
-                          background:{{ $periodo === $key ? 'var(--color-primary)' : '#fff' }};
-                          color:{{ $periodo === $key ? '#fff' : '#64748b' }};">
-                    {!! $label !!}
-                </a>
-                @endforeach
-            </div>
+<div class="card filtros-bar">
+    <div class="fc-filtro">
+
+        {{-- Atalhos de período --}}
+        <div class="fc-atalhos">
+            <a href="{{ route('fluxo-caixa.index', ['periodo' => 'semana']) }}"
+               class="fc-atalho-btn {{ $periodo === 'semana' ? 'ativo' : '' }}">
+                <i class="fa-solid fa-calendar-week"></i> Esta Semana
+            </a>
+            <a href="{{ route('fluxo-caixa.index', ['periodo' => 'mes']) }}"
+               class="fc-atalho-btn {{ $periodo === 'mes' ? 'ativo' : '' }}">
+                <i class="fa-solid fa-calendar"></i> Este Mês
+            </a>
         </div>
 
         {{-- Período personalizado --}}
         <form method="GET" action="{{ route('fluxo-caixa.index') }}" id="form-periodo">
             <input type="hidden" name="periodo" value="custom">
-            <div class="filtro-grupo" style="flex-wrap:wrap;gap:6px;">
-                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Personalizado</span>
-                <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:138px;font-size:12px;">
-                <span style="color:#94a3b8;font-size:12px;">→</span>
-                <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:138px;font-size:12px;">
+            <div class="fc-custom">
+                <input type="date" name="inicio" value="{{ $inicio }}" class="form-control"
+                       style="max-width:138px;font-size:12px;">
+                <span style="color:#94a3b8;font-size:13px;">→</span>
+                <input type="date" name="fim" value="{{ $fim }}" class="form-control"
+                       style="max-width:138px;font-size:12px;">
                 <button type="submit" class="btn btn-primary btn-sm">
                     <i class="fa-solid fa-check"></i> Aplicar
                 </button>
@@ -38,16 +65,14 @@
 
     </div>
 
-    {{-- Período exibido --}}
-    <div style="font-size:11px;color:#94a3b8;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
+    {{-- Período ativo exibido --}}
+    <div class="fc-periodo-label">
         <i class="fa-regular fa-calendar" style="color:#cbd5e1;"></i>
-        <span>
-            {{ \Carbon\Carbon::parse($inicio)->locale('pt_BR')->isoFormat('D [de] MMMM') }}
-            <span style="color:#cbd5e1;margin:0 4px;">→</span>
-            {{ \Carbon\Carbon::parse($fim)->locale('pt_BR')->isoFormat('D [de] MMMM [de] YYYY') }}
-        </span>
-        @if($periodo === 'semana' || $periodo === 'mes')
-        <span style="background:{{ $periodo === 'semana' ? '#ede9fe' : '#dbeafe' }};color:{{ $periodo === 'semana' ? '#7c3aed' : '#1d4ed8' }};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;">
+        {{ \Carbon\Carbon::parse($inicio)->locale('pt_BR')->isoFormat('D [de] MMMM') }}
+        <span style="color:#cbd5e1;">→</span>
+        {{ \Carbon\Carbon::parse($fim)->locale('pt_BR')->isoFormat('D [de] MMMM [de] YYYY') }}
+        @if(in_array($periodo, ['semana','mes']))
+        <span style="background:{{ $periodo === 'semana' ? '#ede9fe' : '#dbeafe' }};color:{{ $periodo === 'semana' ? '#7c3aed' : '#1d4ed8' }};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:4px;">
             {{ $periodo === 'semana' ? 'Esta Semana' : 'Este Mês' }}
         </span>
         @endif
@@ -55,7 +80,7 @@
 </div>
 
 {{-- ─── KPIs ──────────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:12px;margin-bottom:20px;">
+<div class="fc-kpi-grid">
 
     <div class="card" style="border-top:3px solid #16a34a;">
         <div class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> A Receber</div>
@@ -85,32 +110,33 @@
         <div class="kpi-sub">{{ $saldoProjetado >= 0 ? 'Superávit no período' : 'Déficit no período' }}</div>
     </div>
 
-    @php
-        $totalDespesas = $despesas->count();
-        $pagas = $despesas->whereNotNull('data_pagamento')->count();
-        $totalReceitas = $receitas->count();
-        $recebidas = $receitas->whereNotNull('data_recebimento')->count();
-    @endphp
-    <div class="card" style="border-top:3px solid #94a3b8;">
-        <div class="kpi-label"><i class="fa-solid fa-list-check"></i> Progresso</div>
-        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
-            <div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
-                    <span class="text-muted">Pago</span>
-                    <span class="fw-600">{{ $pagas }}/{{ $totalDespesas }}</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-bar-fill" style="width:{{ $totalDespesas > 0 ? round($pagas/$totalDespesas*100) : 0 }}%;background:#dc2626;"></div>
-                </div>
+</div>
+
+@php
+    $totalDespesas = $despesas->count();
+    $pagas = $despesas->whereNotNull('data_pagamento')->count();
+    $totalReceitas = $receitas->count();
+    $recebidas = $receitas->whereNotNull('data_recebimento')->count();
+@endphp
+<div class="card" style="border-top:3px solid #94a3b8;margin-bottom:20px;">
+    <div class="kpi-label"><i class="fa-solid fa-list-check"></i> Progresso</div>
+    <div style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                <span class="text-muted">Pago</span>
+                <span class="fw-600">{{ $pagas }}/{{ $totalDespesas }}</span>
             </div>
-            <div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
-                    <span class="text-muted">Recebido</span>
-                    <span class="fw-600">{{ $recebidas }}/{{ $totalReceitas }}</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-bar-fill" style="width:{{ $totalReceitas > 0 ? round($recebidas/$totalReceitas*100) : 0 }}%;background:#16a34a;"></div>
-                </div>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width:{{ $totalDespesas > 0 ? round($pagas/$totalDespesas*100) : 0 }}%;background:#dc2626;"></div>
+            </div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                <span class="text-muted">Recebido</span>
+                <span class="fw-600">{{ $recebidas }}/{{ $totalReceitas }}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-bar-fill" style="width:{{ $totalReceitas > 0 ? round($recebidas/$totalReceitas*100) : 0 }}%;background:#16a34a;"></div>
             </div>
         </div>
     </div>

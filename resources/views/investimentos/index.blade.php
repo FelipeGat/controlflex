@@ -5,13 +5,25 @@
 @section('content')
 
 {{-- ── KPIs ──────────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:14px;margin-bottom:24px;">
+<style>
+.inv-kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+@media (max-width:640px) { .inv-kpi-row { grid-template-columns:1fr; } }
+</style>
 
-    <div class="card" style="padding:16px 18px;">
+{{-- Total Aportado — linha própria --}}
+<div class="card" style="padding:16px 20px;margin-bottom:14px;border-left:4px solid #d97706;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div>
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Total Aportado</div>
-        <div style="font-size:22px;font-weight:700;color:#d97706;">R$ {{ number_format($totalAportado, 2, ',', '.') }}</div>
-        <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{{ $investimentos->count() }} ativo{{ $investimentos->count() !== 1 ? 's' : '' }}</div>
+        <div style="font-size:24px;font-weight:700;color:#d97706;">R$ {{ number_format($totalAportado, 2, ',', '.') }}</div>
     </div>
+    <div style="font-size:12px;color:var(--color-text-muted);background:#fef3c7;padding:6px 12px;border-radius:20px;font-weight:600;">
+        <i class="fa-solid fa-seedling" style="color:#d97706;"></i>
+        {{ $investimentos->count() }} ativo{{ $investimentos->count() !== 1 ? 's' : '' }} na carteira
+    </div>
+</div>
+
+{{-- Valor Atual | Rendimento Total | Melhor Ativo — mesma linha --}}
+<div class="inv-kpi-row">
 
     <div class="card" style="padding:16px 18px;">
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Valor Atual</div>
@@ -33,15 +45,18 @@
     </div>
 
     @if($investimentos->count() > 0)
-    @php
-        $melhor = $investimentos->sortByDesc('ganho_percentual')->first();
-    @endphp
+    @php $melhor = $investimentos->sortByDesc('ganho_percentual')->first(); @endphp
     <div class="card" style="padding:16px 18px;">
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Melhor Ativo</div>
         <div style="font-size:14px;font-weight:700;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $melhor->nome_ativo }}</div>
         <div style="font-size:13px;color:#16a34a;margin-top:2px;font-weight:600;">
             {{ $melhor->ganho_percentual >= 0 ? '+' : '' }}{{ number_format($melhor->ganho_percentual, 2, ',', '.') }}%
         </div>
+    </div>
+    @else
+    <div class="card" style="padding:16px 18px;opacity:.4;">
+        <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Melhor Ativo</div>
+        <div style="font-size:14px;font-weight:600;color:var(--color-text-muted);">—</div>
     </div>
     @endif
 

@@ -91,100 +91,122 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="d-flex justify-between align-center mb-4 flex-wrap gap-2">
-        <div style="font-size:13px;" class="text-muted">
-            <i class="fa-solid fa-arrow-trend-up text-green"></i>
-            <strong class="fw-600" style="color:var(--color-text);">{{ $receitas->total() }}</strong> receita(s)
+@php
+    $receitasPorData = collect($receitas->items())->groupBy(fn($r) => $r->data_prevista_recebimento->format('d/m/Y'));
+@endphp
+
+<div class="card ext-card">
+
+    {{-- Cabeçalho --}}
+    <div class="ext-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:#1e293b;">Receitas</span>
+            <span style="font-size:11px;color:#64748b;">
+                {{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}
+            </span>
         </div>
-        <div class="fw-700 text-green" style="font-size:15px;">
-            R$ {{ number_format($totalValor, 2, ',', '.') }}
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:13px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">{{ $receitas->total() }}</span>
         </div>
     </div>
 
-    <div class="table-wrapper">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Data Prevista</th>
-                    <th>Valor</th>
-                    <th class="hide-mobile">Categoria</th>
-                    <th class="hide-mobile">Quem Recebeu</th>
-                    <th class="hide-mobile">Conta / Forma</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($receitas as $receita)
-                    <tr>
-                        <td style="white-space:nowrap;">{{ $receita->data_prevista_recebimento->format('d/m/Y') }}</td>
-                        <td style="white-space:nowrap;"><strong class="text-green">R$ {{ number_format($receita->valor, 2, ',', '.') }}</strong></td>
-                        <td class="hide-mobile">
-                            @if($receita->categoria)
-                                <span class="badge badge-blue">{{ $receita->categoria->nome }}</span>
-                            @else
-                                <span class="text-subtle">—</span>
-                            @endif
-                        </td>
-                        <td class="hide-mobile">{{ $receita->familiar?->nome ?? '—' }}</td>
-                        <td class="hide-mobile">
-                            {{ $receita->banco?->nome ?? '—' }}
-                            @if($receita->tipo_pagamento)
-                                <br>
-                                @php
-                                    $iconesTipo = [
-                                        'dinheiro'     => ['fa-money-bill-wave', 'badge-green',  'Dinheiro'],
-                                        'pix'          => ['fa-bolt',            'badge-teal',   'Pix'],
-                                        'transferencia'=> ['fa-arrow-right-arrow-left', 'badge-slate', 'Transf.'],
-                                        'deposito'     => ['fa-building-columns', 'badge-blue',  'Depósito'],
-                                        'outros'       => ['fa-circle',           'badge-slate',  'Outros'],
-                                    ];
-                                    $t = $iconesTipo[$receita->tipo_pagamento] ?? ['fa-circle', 'badge-slate', $receita->tipo_pagamento];
-                                @endphp
-                                <span class="badge {{ $t[1] }}" style="font-size:10px;">
-                                    <i class="fa-solid {{ $t[0] }}"></i> {{ $t[2] }}
-                                </span>
-                            @endif
-                        </td>
-                        <td style="white-space:nowrap;">
-                            @if($receita->status === 'recebido')
-                                <span class="badge badge-green"><i class="fa-solid fa-check"></i> Recebido</span>
-                            @elseif($receita->status === 'vencido')
-                                <span class="badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i> Vencido</span>
-                            @else
-                                <span class="badge badge-amber">A Receber</span>
-                            @endif
-                            @if($receita->recorrente)
-                                <span class="badge badge-slate"><i class="fa-solid fa-rotate"></i></span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button onclick="editarReceita({{ $receita->id }}, {{ $receita->toJson() }})" class="btn btn-ghost btn-icon btn-sm" title="Editar">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button onclick="excluirReceita({{ $receita->id }}, {{ $receita->grupo_recorrencia_id ? 'true' : 'false' }})" class="btn btn-ghost btn-icon btn-sm text-red" title="Excluir">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
-                                <i class="fa-solid fa-inbox"></i>
-                                <p>Nenhuma receita encontrada no período</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    @if($receitasPorData->isNotEmpty())
+
+    @foreach($receitasPorData as $dataFmt => $itens)
+    @php
+        $dtR2     = $itens->first()->data_prevista_recebimento;
+        $isHojeR2 = $dtR2->isToday();
+        $isOntR2  = $dtR2->isYesterday();
+        $labelR2  = $isHojeR2 ? 'Hoje · '.$dataFmt : ($isOntR2 ? 'Ontem · '.$dataFmt : $dtR2->locale('pt_BR')->isoFormat('dddd, D [de] MMMM'));
+        $totalDiaR = $itens->sum('valor');
+    @endphp
+
+    <div class="ext-date-header">
+        <span class="ext-date-label">{{ $labelR2 }}</span>
+        <span style="font-size:11.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalDiaR, 2, ',', '.') }}</span>
     </div>
-    <div class="mt-4">{{ $receitas->links() }}</div>
+
+    @foreach($itens as $receita)
+    @php
+        $rSt    = $receita->status;
+        $rStOk  = $rSt === 'recebido';
+        $rStCls = $rStOk ? 's-ok' : ($rSt === 'vencido' ? 's-venc' : 's-pend');
+        $rStLbl = $rStOk ? 'Recebido' : ($rSt === 'vencido' ? 'Vencido' : 'A receber');
+        $rStIco = $rStOk ? 'fa-check' : ($rSt === 'vencido' ? 'fa-triangle-exclamation' : 'fa-clock');
+        $rDesc  = $receita->observacoes ?? '—';
+        $rIcone = $receita->categoria?->icone ?? 'fa-circle-dollar-sign';
+        $rConta = $receita->banco?->nome ?? '—';
+        $rCor   = $receita->banco?->cor ?? '#94a3b8';
+    @endphp
+
+    <div class="ext-row ext-credito">
+
+        <div class="ext-icone ext-credito">
+            <i class="fa-solid {{ $rIcone }}" style="font-size:16px;color:#16a34a;"></i>
+        </div>
+
+        <div class="ext-info">
+            <div class="ext-desc" title="{{ $rDesc }}">{{ $rDesc }}</div>
+            <div class="ext-meta">
+                <span class="ext-conta-pill">
+                    <span class="ext-dot" style="background:{{ $rCor }};"></span>
+                    {{ $rConta }}
+                </span>
+                @if($receita->categoria)
+                <span class="ext-tag ext-tag-cat">{{ $receita->categoria->nome }}</span>
+                @endif
+                @if($receita->familiar)
+                <span class="ext-tag" style="background:#f0fdf4;color:#16a34a;">{{ $receita->familiar->nome }}</span>
+                @endif
+                @if($receita->recorrente)
+                <span class="ext-tag ext-tag-rec"><i class="fa-solid fa-rotate" style="font-size:8px;"></i> Recorrente</span>
+                @endif
+            </div>
+        </div>
+
+        <div class="ext-valor-col">
+            <div class="ext-valor ext-credito">+ R$ {{ number_format($receita->valor, 2, ',', '.') }}</div>
+            <div class="ext-status {{ $rStCls }}">
+                <i class="fa-solid {{ $rStIco }}" style="font-size:8px;"></i> {{ $rStLbl }}
+            </div>
+        </div>
+
+        <div class="ext-actions">
+            <button onclick="editarReceita({{ $receita->id }}, {{ $receita->toJson() }})" class="ext-edit-btn" title="Editar">
+                <i class="fa-solid fa-pen" style="font-size:11px;"></i>
+            </button>
+            <button onclick="excluirReceita({{ $receita->id }}, {{ $receita->grupo_recorrencia_id ? 'true' : 'false' }})" class="ext-del-btn" title="Excluir">
+                <i class="fa-solid fa-trash" style="font-size:11px;"></i>
+            </button>
+        </div>
+
+    </div>
+    @endforeach
+    @endforeach
+
+    <div class="ext-footer">
+        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <div class="ext-footer-item">
+            <span class="ext-footer-dot" style="background:#16a34a;"></span>
+            <span style="font-size:12.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+        </div>
+    </div>
+
+    @else
+    <div style="text-align:center;padding:48px 20px;">
+        <div style="width:56px;height:56px;border-radius:14px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-inbox" style="font-size:22px;color:#16a34a;opacity:.5;"></i>
+        </div>
+        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhuma receita encontrada</p>
+        <p style="font-size:12px;color:#94a3b8;">Ajuste o período ou os filtros acima.</p>
+    </div>
+    @endif
+
 </div>
+
+<div style="margin-top:12px;">{{ $receitas->links() }}</div>
 
 {{-- Modal Nova Receita --}}
 <div class="modal-backdrop" id="modal-nova-receita">

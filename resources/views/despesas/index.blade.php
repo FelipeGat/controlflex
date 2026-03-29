@@ -92,109 +92,125 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="d-flex justify-between align-center mb-4 flex-wrap gap-2">
-        <div style="font-size:13px;" class="text-muted">
-            <i class="fa-solid fa-arrow-trend-down text-red"></i>
-            <strong class="fw-600" style="color:var(--color-text);">{{ $despesas->total() }}</strong> despesa(s) ·
-            {{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }} a {{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}
+@php
+    $despesasPorData = collect($despesas->items())->groupBy(fn($d) => $d->data_compra->format('d/m/Y'));
+@endphp
+
+<div class="card ext-card">
+
+    {{-- Cabeçalho --}}
+    <div class="ext-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-arrow-trend-down" style="color:#ef4444;font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:#1e293b;">Despesas</span>
+            <span style="font-size:11px;color:#64748b;">
+                {{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}
+            </span>
         </div>
-        <div class="fw-700 text-red" style="font-size:15px;">
-            R$ {{ number_format($totalValor, 2, ',', '.') }}
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:13px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">{{ $despesas->total() }}</span>
         </div>
     </div>
 
-    <div class="table-wrapper">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Valor</th>
-                    <th class="hide-mobile">Categoria</th>
-                    <th class="hide-mobile">Quem</th>
-                    <th class="hide-mobile">Onde</th>
-                    <th class="hide-mobile">Conta / Forma</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($despesas as $despesa)
-                    <tr>
-                        <td style="white-space:nowrap;">{{ $despesa->data_compra->format('d/m/Y') }}</td>
-                        <td style="white-space:nowrap;">
-                            <strong class="text-red">R$ {{ number_format($despesa->valor, 2, ',', '.') }}</strong>
-                            @if($despesa->recorrente && $despesa->parcelas > 1)
-                                <br><span class="text-subtle" style="font-size:11px;">Parcela {{ $despesa->grupo_recorrencia_id ? '' : '1/' }}{{ $despesa->parcelas }}</span>
-                            @endif
-                        </td>
-                        <td class="hide-mobile">
-                            @if($despesa->categoria)
-                                <span class="badge badge-blue">{{ $despesa->categoria->nome }}</span>
-                            @else
-                                <span class="text-subtle">—</span>
-                            @endif
-                        </td>
-                        <td class="hide-mobile">{{ $despesa->familiar?->nome ?? '—' }}</td>
-                        <td class="hide-mobile">{{ $despesa->fornecedor?->nome ?? '—' }}</td>
-                        <td class="hide-mobile">
-                            {{ $despesa->banco?->nome ?? '—' }}
-                            @if($despesa->tipo_pagamento)
-                                <br>
-                                @php
-                                    $iconesTipo = [
-                                        'dinheiro'     => ['fa-money-bill-wave', 'badge-green',  'Dinheiro'],
-                                        'pix'          => ['fa-bolt',            'badge-teal',   'Pix'],
-                                        'debito'       => ['fa-credit-card',     'badge-blue',   'Débito'],
-                                        'credito'      => ['fa-credit-card',     'badge-amber',  'Crédito'],
-                                        'transferencia'=> ['fa-arrow-right-arrow-left', 'badge-slate', 'Transf.'],
-                                    ];
-                                    $t = $iconesTipo[$despesa->tipo_pagamento] ?? ['fa-circle', 'badge-slate', $despesa->tipo_pagamento];
-                                @endphp
-                                <span class="badge {{ $t[1] }}" style="font-size:10px;">
-                                    <i class="fa-solid {{ $t[0] }}"></i> {{ $t[2] }}
-                                </span>
-                            @endif
-                        </td>
-                        <td style="white-space:nowrap;">
-                            @if($despesa->status === 'pago')
-                                <span class="badge badge-green"><i class="fa-solid fa-check"></i> Pago</span>
-                            @elseif($despesa->status === 'vencido')
-                                <span class="badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i> Vencido</span>
-                            @else
-                                <span class="badge badge-amber">A Pagar</span>
-                            @endif
-                            @if($despesa->recorrente)
-                                <span class="badge badge-slate" title="{{ $despesa->frequencia }}"><i class="fa-solid fa-rotate"></i></span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button onclick="editarDespesa({{ $despesa->id }}, {{ $despesa->toJson() }})" class="btn btn-ghost btn-icon btn-sm" title="Editar">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button onclick="excluirDespesa({{ $despesa->id }}, {{ $despesa->grupo_recorrencia_id ? 'true' : 'false' }})" class="btn btn-ghost btn-icon btn-sm text-red" title="Excluir">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8">
-                            <div class="empty-state">
-                                <i class="fa-solid fa-inbox"></i>
-                                <p>Nenhuma despesa encontrada no período</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    @if($despesasPorData->isNotEmpty())
+
+    @foreach($despesasPorData as $dataFmt => $itens)
+    @php
+        $dtD2     = $itens->first()->data_compra;
+        $isHojeD2 = $dtD2->isToday();
+        $isOntD2  = $dtD2->isYesterday();
+        $labelD2  = $isHojeD2 ? 'Hoje · '.$dataFmt : ($isOntD2 ? 'Ontem · '.$dataFmt : $dtD2->locale('pt_BR')->isoFormat('dddd, D [de] MMMM'));
+        $totalDia2 = $itens->sum('valor');
+    @endphp
+
+    <div class="ext-date-header">
+        <span class="ext-date-label">{{ $labelD2 }}</span>
+        <span style="font-size:11.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalDia2, 2, ',', '.') }}</span>
     </div>
 
-    <div class="mt-4">{{ $despesas->links() }}</div>
+    @foreach($itens as $despesa)
+    @php
+        $dSt    = $despesa->status;
+        $dStOk  = $dSt === 'pago';
+        $dStCls = $dStOk ? 's-ok' : ($dSt === 'vencido' ? 's-venc' : 's-pend');
+        $dStLbl = $dStOk ? 'Pago' : ($dSt === 'vencido' ? 'Vencido' : 'A pagar');
+        $dStIco = $dStOk ? 'fa-check' : ($dSt === 'vencido' ? 'fa-triangle-exclamation' : 'fa-clock');
+        $dDesc  = $despesa->observacoes ?? $despesa->fornecedor?->nome ?? '—';
+        $dIcone = $despesa->categoria?->icone ?? 'fa-cart-shopping';
+        $dConta = $despesa->banco?->nome ?? '—';
+        $dCor   = $despesa->banco?->cor ?? '#94a3b8';
+    @endphp
+
+    <div class="ext-row ext-debito">
+
+        <div class="ext-icone ext-debito">
+            <i class="fa-solid {{ $dIcone }}" style="font-size:16px;color:#ef4444;"></i>
+        </div>
+
+        <div class="ext-info">
+            <div class="ext-desc" title="{{ $dDesc }}">{{ $dDesc }}</div>
+            <div class="ext-meta">
+                <span class="ext-conta-pill">
+                    <span class="ext-dot" style="background:{{ $dCor }};"></span>
+                    {{ $dConta }}
+                </span>
+                @if($despesa->categoria)
+                <span class="ext-tag ext-tag-cat">{{ $despesa->categoria->nome }}</span>
+                @endif
+                @if($despesa->familiar)
+                <span class="ext-tag" style="background:#f0f9ff;color:#0369a1;">{{ $despesa->familiar->nome }}</span>
+                @endif
+                @if($despesa->recorrente)
+                <span class="ext-tag ext-tag-rec"><i class="fa-solid fa-rotate" style="font-size:8px;"></i> Recorrente</span>
+                @endif
+                @if($despesa->parcelas > 1)
+                <span class="ext-tag ext-tag-doc">{{ $despesa->parcelas }}x</span>
+                @endif
+            </div>
+        </div>
+
+        <div class="ext-valor-col">
+            <div class="ext-valor ext-debito">− R$ {{ number_format($despesa->valor, 2, ',', '.') }}</div>
+            <div class="ext-status {{ $dStCls }}">
+                <i class="fa-solid {{ $dStIco }}" style="font-size:8px;"></i> {{ $dStLbl }}
+            </div>
+        </div>
+
+        <div class="ext-actions">
+            <button onclick="editarDespesa({{ $despesa->id }}, {{ $despesa->toJson() }})" class="ext-edit-btn" title="Editar">
+                <i class="fa-solid fa-pen" style="font-size:11px;"></i>
+            </button>
+            <button onclick="excluirDespesa({{ $despesa->id }}, {{ $despesa->grupo_recorrencia_id ? 'true' : 'false' }})" class="ext-del-btn" title="Excluir">
+                <i class="fa-solid fa-trash" style="font-size:11px;"></i>
+            </button>
+        </div>
+
+    </div>
+    @endforeach
+    @endforeach
+
+    <div class="ext-footer">
+        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <div class="ext-footer-item">
+            <span class="ext-footer-dot" style="background:#ef4444;"></span>
+            <span style="font-size:12.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+        </div>
+    </div>
+
+    @else
+    <div style="text-align:center;padding:48px 20px;">
+        <div style="width:56px;height:56px;border-radius:14px;background:#fff1f2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-inbox" style="font-size:22px;color:#ef4444;opacity:.5;"></i>
+        </div>
+        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhuma despesa encontrada</p>
+        <p style="font-size:12px;color:#94a3b8;">Ajuste o período ou os filtros acima.</p>
+    </div>
+    @endif
+
 </div>
+
+<div style="margin-top:12px;">{{ $despesas->links() }}</div>
 
 {{-- Modal Nova Despesa --}}
 <div class="modal-backdrop" id="modal-nova-despesa">

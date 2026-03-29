@@ -459,6 +459,58 @@
         /* ─── Badge yellow (alias) ───────────────────────────────── */
         .badge-yellow { background: #fef3c7; color: #92400e; }
 
+        /* ─── Extrato / List rows (shared across pages) ─────────── */
+        .ext-card { padding:0; overflow:hidden; }
+        .ext-header { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-bottom:1px solid #f1f5f9; }
+        .ext-date-header { display:flex; align-items:center; justify-content:space-between; padding:6px 16px; background:#f8fafc; border-top:1px solid #f1f5f9; border-bottom:1px solid #f1f5f9; position:sticky; top:0; z-index:2; }
+        .ext-date-label { font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
+        .ext-row { display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid #f8fafc; transition:background .12s; position:relative; }
+        .ext-row:hover { background:#fafbff; }
+        .ext-row:last-of-type { border-bottom:none; }
+        .ext-row::before { content:''; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; }
+        .ext-credito::before { background:#16a34a; }
+        .ext-debito::before  { background:#ef4444; }
+        .ext-icone { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .ext-icone.ext-credito { background:#f0fdf4; }
+        .ext-icone.ext-debito  { background:#fff1f2; }
+        .ext-info { flex:1; min-width:0; }
+        .ext-desc { font-size:13px; font-weight:600; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.3; }
+        .ext-meta { display:flex; align-items:center; gap:5px; margin-top:4px; flex-wrap:wrap; }
+        .ext-conta-pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8; }
+        .ext-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .ext-tag { font-size:10px; padding:1px 7px; border-radius:20px; font-weight:600; line-height:1.6; white-space:nowrap; }
+        .ext-tag-cat { background:#f1f5f9; color:#475569; }
+        .ext-tag-rec { background:#ede9fe; color:#7c3aed; }
+        .ext-tag-doc { background:#e0f2fe; color:#0369a1; }
+        .ext-valor-col { text-align:right; flex-shrink:0; min-width:100px; }
+        .ext-valor { font-size:14px; font-weight:700; white-space:nowrap; line-height:1.2; }
+        .ext-valor.ext-credito { color:#16a34a; }
+        .ext-valor.ext-debito  { color:#ef4444; }
+        .ext-status { font-size:10px; font-weight:600; margin-top:3px; display:flex; align-items:center; justify-content:flex-end; gap:3px; }
+        .s-ok   { color:#16a34a; }
+        .s-venc { color:#ef4444; }
+        .s-pend { color:#d97706; }
+        .ext-actions { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+        .ext-del-btn, .ext-edit-btn { opacity:0; transition:opacity .15s; background:none; border:none; cursor:pointer; padding:6px; border-radius:6px; line-height:1; }
+        .ext-del-btn  { color:#94a3b8; }
+        .ext-edit-btn { color:#94a3b8; }
+        .ext-del-btn:hover  { background:#fff1f2; color:#ef4444; }
+        .ext-edit-btn:hover { background:#f0f9ff; color:var(--color-primary); }
+        .ext-row:hover .ext-del-btn,
+        .ext-row:hover .ext-edit-btn { opacity:1; }
+        .ext-footer { display:flex; align-items:center; gap:16px; padding:10px 16px; background:#f8fafc; border-top:2px solid #f1f5f9; }
+        .ext-footer-item { display:flex; align-items:center; gap:6px; }
+        .ext-footer-dot  { width:8px; height:8px; border-radius:50%; }
+        @media (max-width:640px) {
+            .ext-row { padding:10px 14px 10px 18px; gap:10px; }
+            .ext-icone { width:36px; height:36px; border-radius:9px; }
+            .ext-desc { font-size:12px; }
+            .ext-valor { font-size:13px; }
+            .ext-valor-col { min-width:80px; }
+            .ext-del-btn, .ext-edit-btn { opacity:1; }
+            .ext-tag-cat { display:none; }
+        }
+
         /* ─── Filter Bar (shared across pages) ───────────────────── */
         .filtros-bar  { padding:12px 16px; margin-bottom:18px; }
         .filtros-lanc { display:flex; align-items:center; gap:10px; justify-content:space-between; }
