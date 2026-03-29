@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)",
+      "Bash(docker exec:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/login)",
+      "Bash(find /Users/felipegat/dev/AlfaControl/resources/views/layouts -type f -name *.blade.php)",
+      "Bash(cp /Users/felipegat/dev/AlfaHome/alfa-home-logo/alfa-home-logo.png /Users/felipegat/dev/AlfaHome/public/alfa-home-logo.png)",
+      "Bash(cp /Users/felipegat/dev/AlfaHome/alfa-home-logo/alfa-home-logo-2.png /Users/felipegat/dev/AlfaHome/public/alfa-home-logo-2.png)",
+      "Bash(identify /Users/felipegat/dev/AlfaHome/public/alfa-home-logo.png /Users/felipegat/dev/AlfaHome/public/alfa-home-logo-2.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/felipegat/dev/AlfaHome/public/alfa-home-logo.png /Users/felipegat/dev/AlfaHome/public/alfa-home-logo-2.png)",
+      "Bash(ls -lh /Users/felipegat/dev/AlfaHome/public/alfa-home-logo*.png)",
+      "Bash(ls /Users/felipegat/dev/AlfaHome/public/favicon*)",
+      "Bash(ls /Users/felipegat/dev/AlfaHome/public/alfa-home-logo*.png)",
+      "Bash(docker rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(find /Users/felipegat/dev/AlfaHome/app/Http/Middleware -type f -name *.php)"
+    ]
+  }
+}

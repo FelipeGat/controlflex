@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Sem conexão — AlfaHome</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1120">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #0b1120;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      text-align: center;
+      padding: 24px;
+    }
+    .icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+      opacity: 0.45;
+      display: block;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 14px;
+      color: #6b7280;
+      max-width: 280px;
+      line-height: 1.6;
+      margin: 0 auto;
+    }
+    button {
+      margin-top: 28px;
+      padding: 10px 28px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+    }
+    button:hover { background: #1d4ed8; }
+    .logo {
+      height: 36px;
+      width: auto;
+      margin-bottom: 28px;
+      opacity: 0.75;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <img src="/alfa-home-logo.png" alt="AlfaHome" class="logo" onerror="this.style.display='none'">
+    <span class="icon">📡</span>
+    <h1>Sem conexão com a internet</h1>
+    <p>Não foi possível carregar esta página. Verifique sua conexão e tente novamente.</p>
+    <button onclick="window.location.reload()">Tentar novamente</button>
+  </div>
+</body>
+</html>
