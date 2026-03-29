@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'AlfaHome') }} — @yield('title', 'Dashboard')</title>
     <link rel="icon" type="image/png" href="/favicon.png">
+    <script>if(localStorage.getItem('alfahome-theme')==='light')document.documentElement.classList.add('ah-light-preload');</script>
+    <style>.ah-light-preload body,.ah-light-preload{background:#f8fafc;}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -204,6 +206,76 @@
         }
         .topbar-actions .btn-secondary:hover { background: rgba(255,255,255,.14); color: #e2e8f0; }
         .topbar-logo-mobile { display: none; height: 26px; width: auto; object-fit: contain; opacity: .92; }
+
+        /* ─── Botão Tema (light / dark) ─────────────────────────── */
+        .theme-toggle {
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 8px;
+            background: rgba(255,255,255,.07);
+            color: #94a3b8;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, color .15s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover { background: rgba(255,255,255,.14); color: #e2e8f0; border-color: rgba(255,255,255,.22); }
+        .theme-toggle .icon-sun  { display: none; }
+        .theme-toggle .icon-moon { display: block; }
+        body.light-mode .theme-toggle .icon-sun  { display: block; }
+        body.light-mode .theme-toggle .icon-moon { display: none; }
+
+        /* ─── Light mode overrides ───────────────────────────────── */
+        body.light-mode {
+            --color-bg: #f8fafc;
+            --color-text: #1e293b;
+            --color-text-muted: #64748b;
+            --color-text-subtle: #94a3b8;
+            --color-border: #e2e8f0;
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+        body.light-mode .topbar {
+            background: #ffffff;
+            border-bottom-color: #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        }
+        body.light-mode .topbar-title { color: #1e293b; }
+        body.light-mode .topbar-hamburger { color: #475569; }
+        body.light-mode .topbar-hamburger:hover { background: #f1f5f9; }
+        body.light-mode .theme-toggle {
+            background: #f1f5f9; border-color: #e2e8f0; color: #475569;
+        }
+        body.light-mode .theme-toggle:hover { background: #e2e8f0; color: #1e293b; }
+        body.light-mode .card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+        }
+        body.light-mode .kpi-value { color: #1e293b; }
+        body.light-mode .kpi-label { color: #64748b; }
+        body.light-mode .kpi-sub   { color: #94a3b8; }
+        body.light-mode .section-header { color: #1e293b; }
+        body.light-mode .filtros-bar { background: #ffffff; }
+        body.light-mode .mes-label-btn { color: #1e293b; }
+        body.light-mode .nav-mes-btn { color: #475569; background: #f8fafc; }
+        body.light-mode .nav-mes-btn:hover { background: #e2e8f0; }
+        body.light-mode .ext-date-header { background: #f8fafc; border-color: #e2e8f0; }
+        body.light-mode .ext-row { border-bottom-color: #f1f5f9; }
+        body.light-mode .ext-row:hover { background: #f8fafc; }
+        body.light-mode .data-table th { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+        body.light-mode .data-table td { color: #1e293b; border-color: #f1f5f9; }
+        body.light-mode .data-table tbody tr:hover td { background: #f8fafc; }
+        body.light-mode .seg-btn { background: #f1f5f9; color: #64748b; }
+        body.light-mode .seg-btn.ativo { background: #4f46e5; color: #fff; }
+        body.light-mode .fc-atalho-btn:not(.ativo) { background: #fff; border-color: #e2e8f0; color: #475569; }
+        body.light-mode .fc-atalho-btn:not(.ativo):hover { background: #f8fafc; }
+        body.light-mode .progress-bar { background: #e2e8f0; }
+        body.light-mode .badge { border-color: transparent; }
+        body.light-mode .text-muted { color: #64748b; }
+        body.light-mode .fw-600 { color: #1e293b; }
+
+        /* Light mode: sidebar permanece escuro (identidade visual) */
 
         /* ─── Page content ──────────────────────────────────────── */
         .page-content {
@@ -643,6 +715,7 @@
     @stack('styles')
 </head>
 <body>
+<script>if(localStorage.getItem('alfahome-theme')==='light')document.body.classList.add('light-mode');</script>
 
 {{-- ─── Sidebar ──────────────────────────────────────────────────────── --}}
 <aside class="sidebar" id="sidebar">
@@ -779,9 +852,27 @@
         </button>
         <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
         <div class="topbar-actions">
+            <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar modo claro/escuro">
+                <i class="fa-solid fa-sun  icon-sun"  style="font-size:15px;"></i>
+                <i class="fa-solid fa-moon icon-moon" style="font-size:15px;"></i>
+            </button>
             <img src="/alfa-home-logo-2.png" alt="AlfaHome" class="topbar-logo-mobile">
         </div>
     </header>
+    <script>
+        (function () {
+            var stored = localStorage.getItem('alfahome-theme');
+            if (stored === 'light') document.body.classList.add('light-mode');
+        })();
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('theme-toggle');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                var isLight = document.body.classList.toggle('light-mode');
+                localStorage.setItem('alfahome-theme', isLight ? 'light' : 'dark');
+            });
+        });
+    </script>
 
     <main class="page-content">
         @if(session('success'))
