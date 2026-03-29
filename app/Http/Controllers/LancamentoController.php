@@ -18,15 +18,19 @@ class LancamentoController extends Controller
 
     public function index(Request $request)
     {
-        $inicio  = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
-        $fim     = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
-        $bancoId = $request->get('banco_id');
-        $tipo    = $request->get('tipo', 'todos'); // todos | debito | credito
+        $inicio     = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
+        $fim        = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $bancoId    = $request->get('banco_id');
+        $tipo       = $request->get('tipo', 'todos'); // todos | debito | credito
+        $familiarId = $request->get('familiar_id') ? (int) $request->get('familiar_id') : null;
 
         // ── Despesas (débitos) ────────────────────────────────────────────
         $despesas = Despesa::with(['categoria', 'fornecedor', 'banco'])
             ->whereBetween('data_compra', [$inicio, $fim])
             ->when($bancoId, fn($q) => $q->where('forma_pagamento', $bancoId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->when($tipo === 'debito', fn($q) => $q)
             ->orderBy('data_compra')->orderBy('id')
             ->get()
@@ -53,6 +57,9 @@ class LancamentoController extends Controller
         $receitas = Receita::with(['categoria', 'banco'])
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->when($bancoId, fn($q) => $q->where('forma_recebimento', $bancoId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->orderBy('data_prevista_recebimento')->orderBy('id')
             ->get()
             ->map(fn($r) => [
@@ -97,7 +104,8 @@ class LancamentoController extends Controller
         return view('lancamentos.index', compact(
             'movimentacoes', 'totalEntradas', 'totalSaidas', 'saldoPeriodo',
             'bancos', 'categorias', 'familiares', 'fornecedores',
-            'inicio', 'fim', 'bancoId', 'tipo', 'meuFamiliarId', 'bancoBuscado'
+            'inicio', 'fim', 'bancoId', 'tipo', 'meuFamiliarId', 'bancoBuscado',
+            'familiarId'
         ));
     }
 

@@ -38,14 +38,18 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         $totalDespesas = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->sum('valor');
 
         $saldo = $totalReceitas - $totalDespesas;
@@ -59,14 +63,18 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$inicioAnterior, $fimAnterior])
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         $despesasAnterior = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$inicioAnterior, $fimAnterior])
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->sum('valor');
 
         $saldoAnterior = $receitasAnterior - $despesasAnterior;
@@ -90,7 +98,9 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         $despesasRealizadas = DB::table('despesas')
@@ -98,7 +108,9 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->sum('valor');
 
         // ─── Gráfico anual ────────────────────────────────────────────────────
@@ -112,7 +124,9 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_prevista_recebimento', $ano)
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->groupBy('mes')
             ->get();
 
@@ -125,7 +139,9 @@ class DashboardController extends Controller
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereYear('data_compra', $ano)
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->groupBy('mes')
             ->get();
 
@@ -141,7 +157,9 @@ class DashboardController extends Controller
             ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereBetween('despesas.data_compra', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('despesas.quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('despesas.quem_comprou', $familiarId)->orWhereNull('despesas.quem_comprou');
+            }))
             ->groupBy('categorias.nome')
             ->having('total', '>', 0)
             ->orderByDesc('total')
@@ -155,7 +173,9 @@ class DashboardController extends Controller
             ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
             ->whereBetween('receitas.data_prevista_recebimento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where('receitas.quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('receitas.quem_recebeu', $familiarId)->orWhereNull('receitas.quem_recebeu');
+            }))
             ->groupBy('categorias.nome')
             ->having('total', '>', 0)
             ->orderByDesc('total')
@@ -165,7 +185,7 @@ class DashboardController extends Controller
 
         $despesasPorFamiliar = DB::table('despesas')
             ->leftJoin('familiares', 'despesas.quem_comprou', '=', 'familiares.id')
-            ->selectRaw('COALESCE(familiares.nome, "Não especificado") as nome, SUM(despesas.valor) as total')
+            ->selectRaw('COALESCE(familiares.nome, "Todos da Casa") as nome, SUM(despesas.valor) as total')
             ->where('despesas.tenant_id', $tenantId)
             ->whereNull('despesas.deleted_at')
             ->whereBetween('despesas.data_compra', [$inicio, $fim])
@@ -181,14 +201,18 @@ class DashboardController extends Controller
             ->selectRaw("receitas.id, 'receita' as tipo, receitas.valor, receitas.data_prevista_recebimento as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
             ->where('receitas.tenant_id', $tenantId)
             ->whereNull('receitas.deleted_at')
-            ->when($familiarId, fn($q) => $q->where('receitas.quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('receitas.quem_recebeu', $familiarId)->orWhereNull('receitas.quem_recebeu');
+            }))
             ->union(
                 DB::table('despesas')
                     ->leftJoin('categorias', 'despesas.categoria_id', '=', 'categorias.id')
                     ->selectRaw("despesas.id, 'despesa' as tipo, despesas.valor, despesas.data_compra as data, COALESCE(categorias.nome, 'Sem categoria') as categoria_nome")
                     ->where('despesas.tenant_id', $tenantId)
                     ->whereNull('despesas.deleted_at')
-                    ->when($familiarId, fn($q) => $q->where('despesas.quem_comprou', $familiarId))
+                    ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('despesas.quem_comprou', $familiarId)->orWhereNull('despesas.quem_comprou');
+            }))
             )
             ->orderByDesc('data')
             ->limit(10)
@@ -270,7 +294,9 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_pagamento')
             ->whereBetween('data_pagamento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->sum('valor');
 
         $recebidoUltimoMes = DB::table('receitas')
@@ -278,21 +304,27 @@ class DashboardController extends Controller
             ->whereNull('deleted_at')
             ->whereNotNull('data_recebimento')
             ->whereBetween('data_recebimento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         $previsaoDespesasProxMes = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_compra', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
-            ->when($familiarId, fn($q) => $q->where('quem_comprou', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
             ->sum('valor');
 
         $previsaoReceitasProxMes = DB::table('receitas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
-            ->when($familiarId, fn($q) => $q->where('quem_recebeu', $familiarId))
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         return view('dashboard', compact(

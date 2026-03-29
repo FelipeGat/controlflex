@@ -12,17 +12,28 @@ use Illuminate\Validation\Rule;
 
 class ReceitaController extends Controller
 {
+    /** Tipos de recebimento aceitos */
+    private const TIPOS_PAGAMENTO = ['dinheiro', 'pix', 'transferencia', 'deposito', 'outros'];
+
     public function index(Request $request)
     {
-        $tenantId = Auth::user()->tenant_id;
-        $inicio = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
-        $fim    = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $tenantId   = Auth::user()->tenant_id;
+        $inicio     = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
+        $fim        = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $familiarId = $request->get('familiar_id') ? (int) $request->get('familiar_id') : null;
 
+        // Filtro por membro: inclui receitas do membro + receitas de "Todos da Casa" (NULL)
         $totalValor = Receita::whereBetween('data_prevista_recebimento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->sum('valor');
 
         $receitas = Receita::with(['familiar', 'categoria', 'banco'])
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
             ->orderByDesc('data_prevista_recebimento')
             ->orderByDesc('id')
             ->paginate(20)
@@ -32,7 +43,10 @@ class ReceitaController extends Controller
         $familiares = Familiar::orderBy('nome')->get();
         $bancos     = Banco::orderBy('nome')->get();
 
-        return view('receitas.index', compact('receitas', 'totalValor', 'categorias', 'familiares', 'bancos', 'inicio', 'fim'));
+        return view('receitas.index', compact(
+            'receitas', 'totalValor', 'categorias', 'familiares',
+            'bancos', 'inicio', 'fim', 'familiarId'
+        ));
     }
 
     public function store(Request $request)
@@ -47,6 +61,7 @@ class ReceitaController extends Controller
             'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
             'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
             'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
+            'tipo_pagamento'            => ['nullable', Rule::in(self::TIPOS_PAGAMENTO)],
             'parcelas'                  => 'nullable|integer|min:0|max:360',
             'frequencia'                => 'nullable|in:diaria,semanal,quinzenal,mensal,trimestral,semestral,anual',
         ]);
@@ -69,6 +84,7 @@ class ReceitaController extends Controller
             'categoria_id'              => ['nullable', Rule::exists('categorias', 'id')->where('tenant_id', $tenantId)],
             'quem_recebeu'              => ['nullable', Rule::exists('familiares', 'id')->where('tenant_id', $tenantId)],
             'forma_recebimento'         => ['nullable', Rule::exists('bancos', 'id')->where('tenant_id', $tenantId)],
+            'tipo_pagamento'            => ['nullable', Rule::in(self::TIPOS_PAGAMENTO)],
             'observacoes'               => 'nullable|string|max:2000',
         ]);
 
@@ -82,6 +98,7 @@ class ReceitaController extends Controller
                     'quem_recebeu'      => $request->quem_recebeu,
                     'categoria_id'      => $request->categoria_id,
                     'forma_recebimento' => $request->forma_recebimento,
+                    'tipo_pagamento'    => $request->tipo_pagamento,
                     'valor'             => $request->valor,
                     'data_recebimento'  => $request->data_recebimento ?: null,
                     'observacoes'       => $request->observacoes,
@@ -91,6 +108,7 @@ class ReceitaController extends Controller
                 'quem_recebeu'              => $request->quem_recebeu,
                 'categoria_id'              => $request->categoria_id,
                 'forma_recebimento'         => $request->forma_recebimento,
+                'tipo_pagamento'            => $request->tipo_pagamento,
                 'valor'                     => $request->valor,
                 'data_prevista_recebimento' => $request->data_prevista_recebimento,
                 'data_recebimento'          => $request->data_recebimento ?: null,

@@ -12,12 +12,15 @@ class Investimento extends Model
 
     protected $fillable = [
         'tenant_id', 'user_id', 'banco_id', 'nome_ativo', 'tipo_investimento',
-        'data_aporte', 'valor_aportado', 'quantidade_cotas', 'observacoes',
+        'data_aporte', 'valor_aportado', 'quantidade_cotas',
+        'percentual_mensal', 'percentual_anual', 'observacoes',
     ];
 
     protected $casts = [
         'valor_aportado'   => 'decimal:2',
         'quantidade_cotas' => 'decimal:6',
+        'percentual_mensal' => 'decimal:4',
+        'percentual_anual'  => 'decimal:4',
         'data_aporte'      => 'date',
     ];
 
@@ -29,5 +32,10 @@ class Investimento extends Model
     public function banco()
     {
         return $this->belongsTo(Banco::class);
+    }
+
+    public function rendimentos()
+    {
+        return $this->hasMany(InvestimentoRendimento::class)->orderBy('data');
     }
 }

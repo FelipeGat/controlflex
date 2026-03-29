@@ -128,6 +128,8 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::post('/investimentos', [InvestimentoController::class, 'store'])->name('investimentos.store')->middleware('permissao:investimentos,criar');
     Route::put('/investimentos/{investimento}', [InvestimentoController::class, 'update'])->name('investimentos.update')->middleware('permissao:investimentos,editar');
     Route::delete('/investimentos/{investimento}', [InvestimentoController::class, 'destroy'])->name('investimentos.destroy')->middleware('permissao:investimentos,excluir');
+    Route::post('/investimentos/{investimento}/rendimentos', [InvestimentoController::class, 'storeRendimento'])->name('investimentos.rendimentos.store')->middleware('permissao:investimentos,editar');
+    Route::delete('/investimentos/{investimento}/rendimentos/{rendimento}', [InvestimentoController::class, 'destroyRendimento'])->name('investimentos.rendimentos.destroy')->middleware('permissao:investimentos,excluir');
 
     // Membros → redirecionado para familiares (tela unificada)
     Route::get('/membros', fn() => redirect()->route('familiares.index'))->name('membros.index');

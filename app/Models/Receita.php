@@ -14,7 +14,8 @@ class Receita extends Model
     use SoftDeletes, BelongsToTenant;
 
     protected $fillable = [
-        'tenant_id', 'user_id', 'quem_recebeu', 'categoria_id', 'forma_recebimento',
+        'tenant_id', 'user_id', 'quem_recebeu', 'categoria_id',
+        'forma_recebimento', 'tipo_pagamento',
         'valor', 'data_prevista_recebimento', 'data_recebimento', 'observacoes',
         'recorrente', 'parcelas', 'frequencia', 'grupo_recorrencia_id',
     ];
@@ -74,12 +75,19 @@ class Receita extends Model
     /**
      * Cria uma ou múltiplas receitas dentro de uma transação atômica.
      * Se qualquer parcela falhar, nenhuma é persistida.
+     *
+     * parcelas = 1 → receita única
+     * parcelas > 1 → cria N lançamentos mensais com o mesmo valor
+     * parcelas = 0 → recorrência infinita (60 meses)
      */
     public static function criarComRecorrencia(array $data, int $userId): int
     {
-        $isRecorrente = ! empty($data['recorrente']);
-        $parcelas     = isset($data['parcelas']) ? (int) $data['parcelas'] : 1;
-        $frequencia   = $data['frequencia'] ?? 'mensal';
+        $parcelas      = isset($data['parcelas']) ? (int) $data['parcelas'] : 1;
+        $frequencia    = $data['frequencia'] ?? 'mensal';
+        $tipoPagamento = $data['tipo_pagamento'] ?? null;
+
+        // Ativa criação múltipla sempre que parcelas != 1 OU checkbox recorrente marcado
+        $isRecorrente = ! empty($data['recorrente']) || $parcelas === 0 || $parcelas > 1;
 
         $total = 1;
         if ($isRecorrente) {
@@ -89,23 +97,24 @@ class Receita extends Model
         $grupoId     = ($total > 1) ? Str::uuid()->toString() : null;
         $dataInicial = Carbon::parse($data['data_prevista_recebimento']);
 
-        DB::transaction(function () use ($data, $userId, $total, $grupoId, $dataInicial, $frequencia, $isRecorrente) {
+        DB::transaction(function () use ($data, $userId, $total, $grupoId, $dataInicial, $frequencia, $isRecorrente, $tipoPagamento) {
             for ($i = 0; $i < $total; $i++) {
                 $dataAtual = self::calcularData($dataInicial, $frequencia, $i);
 
                 self::create([
-                    'user_id'                    => $userId,
-                    'quem_recebeu'               => $data['quem_recebeu'] ?? null,
-                    'categoria_id'               => $data['categoria_id'] ?? null,
-                    'forma_recebimento'          => $data['forma_recebimento'] ?? null,
-                    'valor'                      => $data['valor'],
-                    'data_prevista_recebimento'  => $dataAtual->format('Y-m-d'),
-                    'data_recebimento'           => ! empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
-                    'recorrente'                 => $isRecorrente,
-                    'parcelas'                   => $total,
-                    'frequencia'                 => $frequencia,
-                    'observacoes'                => $data['observacoes'] ?? null,
-                    'grupo_recorrencia_id'       => $grupoId,
+                    'user_id'                   => $userId,
+                    'quem_recebeu'              => $data['quem_recebeu'] ?? null,
+                    'categoria_id'              => $data['categoria_id'] ?? null,
+                    'forma_recebimento'         => $data['forma_recebimento'] ?? null,
+                    'tipo_pagamento'            => $tipoPagamento,
+                    'valor'                     => $data['valor'],
+                    'data_prevista_recebimento' => $dataAtual->format('Y-m-d'),
+                    'data_recebimento'          => ! empty($data['data_recebimento']) ? $data['data_recebimento'] : null,
+                    'recorrente'                => $isRecorrente,
+                    'parcelas'                  => $total,
+                    'frequencia'                => $frequencia,
+                    'observacoes'               => $data['observacoes'] ?? null,
+                    'grupo_recorrencia_id'      => $grupoId,
                 ]);
             }
         });
