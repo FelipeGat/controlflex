@@ -102,4 +102,17 @@
 
 ---
 
-*Documentação gerada automaticamente em 25/03/2026.*
+
+---
+
+## 10. Histórico de Manutenção (mar/2026)
+
+### 29/03/2026
+- Correção de conexão do banco de dados no Docker: alinhamento das variáveis de ambiente do app e do serviço db.
+- Reset completo do banco de dados e seeders aplicados para ambiente limpo.
+- Correção de permissões e criação do diretório `storage/framework/sessions` para evitar erros de sessão.
+- Otimização de performance Docker no Windows: uso de volumes nomeados para `storage` e `vendor`, bind mount apenas para código-fonte.
+- Limpeza e otimização de cache de configuração e views do Laravel.
+- Testes de login, seed e performance realizados.
+
+*Documentação atualizada automaticamente em 29/03/2026.*
