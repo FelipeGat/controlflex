@@ -14,6 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AlfaHome">
     <meta name="theme-color" content="#0b1120" id="meta-theme-color">
+    <meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
     {{-- ─── End PWA ─────────────────────────────────────────────────── --}}
     <script>if(localStorage.getItem('alfahome-theme')==='dark')document.documentElement.classList.add('ah-dark-preload');</script>
     <style>.ah-dark-preload body,.ah-dark-preload{background:#0b1120 !important;color:#e2e8f0 !important;}</style>
@@ -314,7 +315,10 @@
         body.dark-mode .card {
             background: var(--color-bg-card, #1F2937);
             border-color: var(--color-border);
-            box-shadow: var(--shadow-card);
+            box-shadow: 0 6px 18px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.2);
+        }
+        body.dark-mode .card:hover {
+            box-shadow: 0 10px 28px rgba(0,0,0,.45), 0 3px 8px rgba(0,0,0,.25);
         }
         body.dark-mode .card-title { color: #e2e8f0; }
         body.dark-mode .card-title i { color: #64748b; }
@@ -495,8 +499,14 @@
             background: var(--color-bg-card, #fff);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-card);
-            padding: 18px;
-            box-shadow: var(--shadow-card);
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.03);
+            transition: transform .2s ease, box-shadow .2s ease,
+                        background-color .22s ease, border-color .22s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.09), 0 2px 6px rgba(0,0,0,.04);
         }
         .card-title {
             font-size: 14px; font-weight: 600; color: var(--color-text);
@@ -506,8 +516,8 @@
         .card-title i { color: var(--color-text-subtle); font-size: 13px; }
 
         /* ─── KPI ────────────────────────────────────────────────── */
-        .kpi-label { font-size: 11px; font-weight: 500; color: var(--color-text-muted); margin-bottom: 6px; letter-spacing: .01em; }
-        .kpi-value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
+        .kpi-label { font-size: 0.8rem; font-weight: 500; color: var(--color-text-muted); margin-bottom: 6px; letter-spacing: .02em; text-transform: uppercase; }
+        .kpi-value { font-size: 1.9rem; font-weight: 700; line-height: 1.05; letter-spacing: -.03em; }
         .kpi-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-border); }
         .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 
@@ -517,22 +527,34 @@
             padding: 7px 14px; font-size: 13px; font-weight: 500;
             border-radius: var(--radius-btn); border: none;
             cursor: pointer; text-decoration: none;
-            transition: background .15s, opacity .15s;
+            transition: background .18s ease, box-shadow .18s ease,
+                        transform .15s ease, filter .15s ease, color .15s ease;
             white-space: nowrap;
         }
-        .btn-primary { background: var(--color-primary); color: #fff; }
-        .btn-primary:hover { background: var(--color-primary-hover); color: #fff; }
-        .btn-success { background: #16a34a; color: #fff; }
-        .btn-success:hover { background: #15803d; color: #fff; }
-        .btn-amber { background: #d97706; color: #fff; }
-        .btn-amber:hover { background: #b45309; color: #fff; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary {
+            background: var(--color-primary); color: #fff; font-weight: 600;
+            box-shadow: 0 2px 6px rgba(79,70,229,.25);
+        }
+        .btn-primary:hover {
+            background: var(--color-primary-hover); color: #fff;
+            box-shadow: 0 6px 16px rgba(79,70,229,.35);
+            filter: brightness(1.05);
+        }
+        body.dark-mode .btn-primary:hover {
+            box-shadow: 0 0 16px rgba(99,102,241,.55);
+        }
+        .btn-success { background: #16a34a; color: #fff; box-shadow: 0 2px 6px rgba(22,163,74,.2); }
+        .btn-success:hover { background: #15803d; color: #fff; box-shadow: 0 6px 14px rgba(22,163,74,.3); }
+        .btn-amber { background: #d97706; color: #fff; box-shadow: 0 2px 6px rgba(217,119,6,.2); }
+        .btn-amber:hover { background: #b45309; color: #fff; box-shadow: 0 6px 14px rgba(217,119,6,.3); }
         .btn-secondary {
             background: var(--color-bg-card, #fff); color: var(--color-text-muted);
             border: 1px solid var(--color-border);
         }
         .btn-secondary:hover { background: var(--color-bg); color: var(--color-text); }
-        .btn-danger { background: var(--color-danger); color: #fff; }
-        .btn-danger:hover { background: #b91c1c; }
+        .btn-danger { background: var(--color-danger); color: #fff; box-shadow: 0 2px 6px rgba(220,38,38,.2); }
+        .btn-danger:hover { background: #b91c1c; box-shadow: 0 6px 14px rgba(220,38,38,.3); }
         .btn-ghost {
             background: none; border: none; cursor: pointer;
             color: var(--color-text-muted); padding: 5px 8px;
@@ -1080,6 +1102,14 @@
         </button>
         <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
         <div class="topbar-actions">
+            {{-- Push notification toggle --}}
+            <button id="push-toggle"
+                    onclick="alfaPushToggle(this)"
+                    title="Ativar notificações"
+                    aria-label="Ativar notificações push"
+                    style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg);color:#9ca3af;cursor:pointer;transition:background .15s,color .15s;flex-shrink:0;">
+                <i class="fa-regular fa-bell" style="font-size:15px;"></i>
+            </button>
             <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar modo claro/escuro">
                 <i class="fa-solid fa-sun  icon-sun"  style="font-size:15px;"></i>
                 <i class="fa-solid fa-moon icon-moon" style="font-size:15px;"></i>
@@ -1293,12 +1323,14 @@
     });
 </script>
 
-{{-- ─── PWA: Service Worker + Install Banner + theme-color sync ───────── --}}
+{{-- ─── PWA: SW · Install Banner · Push · Background Sync · Theme ─────── --}}
 <script>
 (function () {
     'use strict';
 
-    // ── Alpine component for install banner ──────────────────────────────
+    // ════════════════════════════════════════════════════════════════════
+    //  1. Alpine component — Install Banner
+    // ════════════════════════════════════════════════════════════════════
     window.pwaInstall = function () {
         return {
             visible: false,
@@ -1307,41 +1339,29 @@
             init() {
                 var self = this;
                 var dismissed = localStorage.getItem('pwa-dismissed');
-                var cooldown = 30 * 24 * 60 * 60 * 1000; // 30 days
-                if (dismissed && (Date.now() - parseInt(dismissed)) < cooldown) return;
+                if (dismissed && (Date.now() - parseInt(dismissed)) < 30 * 24 * 60 * 60 * 1000) return;
 
-                // Android Chrome: native install prompt
                 window.addEventListener('beforeinstallprompt', function (e) {
                     e.preventDefault();
                     self._prompt = e;
                     self.visible = true;
                 });
-
-                // Already installed → hide
                 window.addEventListener('appinstalled', function () {
-                    self.visible = false;
-                    self._prompt = null;
+                    self.visible = false; self._prompt = null;
                 });
 
-                // iOS fallback: show manual instructions if not in standalone
                 var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
                 var isStandalone = window.matchMedia('(display-mode: standalone)').matches
                                    || window.navigator.standalone === true;
-                if (isIOS && !isStandalone) {
-                    self.visible = true;
-                }
+                if (isIOS && !isStandalone) self.visible = true;
             },
 
             install() {
                 if (this._prompt) {
                     var self = this;
                     this._prompt.prompt();
-                    this._prompt.userChoice.then(function () {
-                        self._prompt = null;
-                        self.visible = false;
-                    });
+                    this._prompt.userChoice.then(function () { self._prompt = null; self.visible = false; });
                 } else {
-                    // iOS — no native prompt, show guidance
                     alert('Para instalar no iPhone:\nToque em compartilhar (⬆) → "Adicionar à Tela de Início"');
                     this.visible = false;
                 }
@@ -1354,31 +1374,241 @@
         };
     };
 
-    // ── Service Worker registration ───────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════
+    //  2. Service Worker registration + background sync listener
+    // ════════════════════════════════════════════════════════════════════
+    var _swReg = null;
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
             navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(function (reg) {
+                    _swReg = reg;
+                    // Pre-fetch dashboard snapshot into DATA_CACHE
+                    if (navigator.onLine) alfaFetchSnapshot();
+                })
                 .catch(function (err) {
                     console.warn('[PWA] SW registration failed:', err);
                 });
+
+            // Listen for sync-success messages from SW
+            navigator.serviceWorker.addEventListener('message', function (event) {
+                if (event.data && event.data.type === 'sync-success') {
+                    alfaShowToast('✅ Lançamento sincronizado com sucesso!', 'success');
+                }
+            });
         });
     }
 
-    // ── Sync theme-color meta with dark/light toggle ──────────────────────
+    // Pre-fetch API snapshot so offline.html always has fresh data
+    function alfaFetchSnapshot() {
+        fetch('/api/dashboard/snapshot', { credentials: 'include' }).catch(function () {});
+    }
+
+    // Refresh snapshot when user comes back online
+    window.addEventListener('online', function () {
+        alfaFetchSnapshot();
+        alfaShowToast('🟢 Conexão restaurada', 'success');
+    });
+    window.addEventListener('offline', function () {
+        alfaShowToast('🔴 Você está offline. Dados serão sincronizados ao reconectar.', 'warning');
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  3. Push Notifications
+    // ════════════════════════════════════════════════════════════════════
+    var VAPID_PUBLIC_KEY = document.querySelector('meta[name="vapid-public-key"]')?.content || '';
+
+    function urlBase64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var raw = atob(base64);
+        var arr = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return arr;
+    }
+
+    /**
+     * Call this to request push permission and subscribe.
+     * Exposed globally so UI buttons can call alfaSubscribePush().
+     */
+    window.alfaSubscribePush = async function () {
+        if (!('PushManager' in window) || !_swReg) {
+            alfaShowToast('Push não suportado neste navegador', 'warning');
+            return false;
+        }
+
+        var permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            alfaShowToast('Permissão de notificações negada', 'warning');
+            return false;
+        }
+
+        try {
+            var subscription = await _swReg.pushManager.subscribe({
+                userVisibleOnly:      true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+
+            await fetch('/api/push/subscribe', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+                body: JSON.stringify(subscription.toJSON()),
+            });
+
+            alfaShowToast('🔔 Notificações ativadas!', 'success');
+            localStorage.setItem('alfahome-push-enabled', '1');
+            return true;
+        } catch (err) {
+            console.error('[PWA] Push subscribe failed:', err);
+            alfaShowToast('Erro ao ativar notificações', 'error');
+            return false;
+        }
+    };
+
+    window.alfaUnsubscribePush = async function () {
+        if (!_swReg) return;
+        var sub = await _swReg.pushManager.getSubscription();
+        if (!sub) return;
+
+        await fetch('/api/push/unsubscribe', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'include',
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+        });
+        await sub.unsubscribe();
+        localStorage.removeItem('alfahome-push-enabled');
+        alfaShowToast('🔕 Notificações desativadas', 'info');
+    };
+
+    // ════════════════════════════════════════════════════════════════════
+    //  4. Background Sync — IndexedDB queue helpers
+    // ════════════════════════════════════════════════════════════════════
+    var IDB_NAME    = 'alfahome-offline';
+    var IDB_VERSION = 1;
+    var _idb        = null;
+
+    function openIDB() {
+        if (_idb) return Promise.resolve(_idb);
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(IDB_NAME, IDB_VERSION);
+            req.onupgradeneeded = function (e) {
+                var db = e.target.result;
+                if (!db.objectStoreNames.contains('despesas'))
+                    db.createObjectStore('despesas', { keyPath: 'client_queue_id' });
+                if (!db.objectStoreNames.contains('receitas'))
+                    db.createObjectStore('receitas', { keyPath: 'client_queue_id' });
+            };
+            req.onsuccess = function (e) { _idb = e.target.result; resolve(_idb); };
+            req.onerror   = function (e) { reject(e.target.error); };
+        });
+    }
+
+    /**
+     * Queue an offline item for background sync.
+     * storeName: 'despesas' | 'receitas'
+     * data: plain object with form fields
+     */
+    window.alfaQueueOffline = async function (storeName, data) {
+        var item = Object.assign({}, data, {
+            client_queue_id: storeName + '_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+        });
+
+        var db = await openIDB();
+        await new Promise(function (resolve, reject) {
+            var tx  = db.transaction(storeName, 'readwrite');
+            var req = tx.objectStore(storeName).put(item);
+            req.onsuccess = resolve;
+            req.onerror   = function (e) { reject(e.target.error); };
+        });
+
+        // Register background sync tag with SW
+        if (_swReg && 'SyncManager' in window) {
+            await _swReg.sync.register('sync-' + storeName);
+        }
+
+        alfaShowToast('📦 Salvo offline — será sincronizado ao reconectar', 'info');
+        return item.client_queue_id;
+    };
+
+    // ════════════════════════════════════════════════════════════════════
+    //  5. Toast utility (used by all PWA modules above)
+    // ════════════════════════════════════════════════════════════════════
+    window.alfaShowToast = function (message, type) {
+        var colors = {
+            success: 'rgba(34,197,94,.15)',
+            warning: 'rgba(245,158,11,.15)',
+            error:   'rgba(239,68,68,.15)',
+            info:    'rgba(59,130,246,.15)',
+        };
+        var borders = {
+            success: '#22c55e', warning: '#f59e0b', error: '#ef4444', info: '#3b82f6',
+        };
+        var t = type || 'info';
+
+        var el = document.createElement('div');
+        el.style.cssText = [
+            'position:fixed;bottom:80px;left:50%;transform:translateX(-50%)',
+            'z-index:99999;padding:10px 18px;border-radius:10px',
+            'font-size:13px;font-weight:600;max-width:calc(100vw - 32px)',
+            'color:#e5e7eb;text-align:center;white-space:nowrap',
+            'background:' + (colors[t] || colors.info),
+            'border:1px solid ' + (borders[t] || borders.info),
+            'backdrop-filter:blur(8px)',
+            'box-shadow:0 4px 16px rgba(0,0,0,.3)',
+            'transition:opacity .3s',
+        ].join(';');
+        el.textContent = message;
+        document.body.appendChild(el);
+        setTimeout(function () { el.style.opacity = '0'; }, 3200);
+        setTimeout(function () { el.remove(); }, 3600);
+    };
+
+    // ════════════════════════════════════════════════════════════════════
+    //  5b. Push toggle button logic (updates bell icon state)
+    // ════════════════════════════════════════════════════════════════════
+    window.alfaPushToggle = async function (btn) {
+        var enabled = localStorage.getItem('alfahome-push-enabled') === '1';
+        if (enabled) {
+            await window.alfaUnsubscribePush();
+            btn.querySelector('i').className = 'fa-regular fa-bell';
+            btn.style.color = '#9ca3af';
+        } else {
+            var ok = await window.alfaSubscribePush();
+            if (ok) {
+                btn.querySelector('i').className = 'fa-solid fa-bell';
+                btn.style.color = 'var(--color-primary, #4f46e5)';
+            }
+        }
+    };
+
+    // Restore push button state on load
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('push-toggle');
+        if (btn && localStorage.getItem('alfahome-push-enabled') === '1') {
+            btn.querySelector('i').className = 'fa-solid fa-bell';
+            btn.style.color = 'var(--color-primary, #4f46e5)';
+        }
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  6. Theme-color meta sync with dark/light toggle
+    // ════════════════════════════════════════════════════════════════════
     var themeColorMeta = document.getElementById('meta-theme-color');
     function syncThemeColor() {
         if (!themeColorMeta) return;
-        var isDark = document.body.classList.contains('dark-mode');
-        themeColorMeta.setAttribute('content', isDark ? '#0b1120' : '#ffffff');
+        themeColorMeta.setAttribute('content',
+            document.body.classList.contains('dark-mode') ? '#0b1120' : '#ffffff');
     }
     document.addEventListener('DOMContentLoaded', syncThemeColor);
     if (typeof MutationObserver !== 'undefined') {
-        new MutationObserver(function (mutations) {
-            mutations.forEach(function (m) {
-                if (m.attributeName === 'class') syncThemeColor();
-            });
+        new MutationObserver(function (m) {
+            m.forEach(function (r) { if (r.attributeName === 'class') syncThemeColor(); });
         }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     }
+
 })();
 </script>
 {{-- ─── End PWA ──────────────────────────────────────────────────────────── --}}
