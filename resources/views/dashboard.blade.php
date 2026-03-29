@@ -4,94 +4,82 @@
 
 @section('content')
 
-{{-- Filtros: datas à esquerda, membros à direita — tudo em uma linha --}}
-<div class="card mb-5" style="padding: 10px 16px;">
-    <style>
-        @media (max-width: 450px) {
-            .dashboard-filtros { justify-content: center !important; }
-            .dashboard-filtros > div:first-child { justify-content: center; margin-bottom: 12px; }
-            .dashboard-filtros .avatares-mobile { justify-content: center !important; }
-        }
-    </style>
-    <div class="d-flex align-center gap-2 flex-wrap dashboard-filtros" style="min-height:56px;justify-content:space-between;">
+{{-- ─── Filtros Dashboard ───────────────────────────────────────────────── --}}
+@php
+    $dtDB         = \Carbon\Carbon::parse($inicio);
+    $dtDBAnt      = $dtDB->copy()->subMonth();
+    $dtDBProx     = $dtDB->copy()->addMonth();
+    $mesNomeDB    = $dtDB->locale('pt_BR')->isoFormat('MMMM [de] YYYY');
+    $ehMesAtualDB = $dtDB->format('Y-m') === now()->format('Y-m');
+    $mesAtualIni  = now()->startOfMonth()->format('Y-m-d');
+    $mesAtualFim2 = now()->endOfMonth()->format('Y-m-d');
+    $filtroAtivo  = $familiarId || $inicio !== $mesAtualIni || $fim !== $mesAtualFim2;
 
-        {{-- Esquerda: todos os filtros agrupados --}}
-        <div class="d-flex align-center gap-2 flex-wrap" style="flex-shrink:1;min-width:0;">
-            <div class="d-flex align-center gap-1 flex-shrink-0">
-                <a href="{{ $linkMesAnt }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Mês anterior">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </a>
-                <a href="{{ route('dashboard', array_filter(['inicio' => now()->startOfMonth()->format('Y-m-d'), 'fim' => now()->endOfMonth()->format('Y-m-d'), 'familiar_id' => $familiarId])) }}"
-                   class="btn btn-primary" style="min-width:0;text-align:center;font-weight:700;font-size:13px;letter-spacing:.5px;white-space:nowrap;">
-                    {{ $nomeMes }} {{ $anoMes }}
-                </a>
-                <a href="{{ $linkMesProx }}" class="btn btn-secondary btn-sm" style="padding:6px 10px;font-size:15px;line-height:1;" title="Próximo mês">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </a>
+    $urlDBMesAnt  = route('dashboard', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtDBAnt->startOfMonth()->format('Y-m-d'), 'fim' => $dtDBAnt->copy()->endOfMonth()->format('Y-m-d')]));
+    $urlDBMesProx = route('dashboard', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtDBProx->startOfMonth()->format('Y-m-d'), 'fim' => $dtDBProx->copy()->endOfMonth()->format('Y-m-d')]));
+    $urlDBTodos   = route('dashboard', array_filter(['inicio' => $inicio, 'fim' => $fim]));
+@endphp
+
+<div class="card filtros-bar mb-5">
+    <div class="filtros-lanc">
+
+        {{-- Mês --}}
+        <div class="filtro-grupo filtro-grupo-centro">
+            <div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+                <a href="{{ $urlDBMesAnt }}" class="nav-mes-btn" title="Mês anterior"><i class="fa-solid fa-chevron-left" style="font-size:12px;"></i></a>
+                <span class="mes-label-btn">{{ ucfirst($mesNomeDB) }}</span>
+                <a href="{{ $urlDBMesProx }}" class="nav-mes-btn" title="Próximo mês"><i class="fa-solid fa-chevron-right" style="font-size:12px;"></i></a>
             </div>
-
-            <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-center gap-2 flex-wrap flex-shrink-0" style="min-width:0;">
-                @if($familiarId)<input type="hidden" name="familiar_id" value="{{ $familiarId }}">@endif
-                <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
-                <span style="color:#94a3b8;">—</span>
-                <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:130px;min-width:0;font-size:12px;">
-                <button type="submit" class="btn btn-secondary btn-sm" title="Filtrar período"><i class="fa-solid fa-filter"></i></button>
-            </form>
-
-            {{-- Botão Limpar Filtros --}}
-            @php
-                $mesAtualInicio = now()->startOfMonth()->format('Y-m-d');
-                $mesAtualFim    = now()->endOfMonth()->format('Y-m-d');
-                $filtroAtivo    = $familiarId || $inicio !== $mesAtualInicio || $fim !== $mesAtualFim;
-            @endphp
-            @if($filtroAtivo)
-            <a href="{{ route('dashboard') }}" class="btn btn-sm flex-shrink-0" title="Limpar todos os filtros"
-               style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; white-space:nowrap; font-size:12px; font-weight:600;">
-                <i class="fa-solid fa-xmark me-1"></i> Limpar filtros
-            </a>
-            @endif
+            <div style="display:flex;gap:6px;">
+                @if(!$ehMesAtualDB)
+                <a href="{{ route('dashboard') }}"
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #e2e8f0;background:#fff;color:#64748b;">
+                    <i class="fa-solid fa-rotate-left"></i> Mês Atual
+                </a>
+                @endif
+                @if($filtroAtivo)
+                <a href="{{ route('dashboard') }}"
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #fca5a5;background:#fee2e2;color:#ef4444;">
+                    <i class="fa-solid fa-xmark"></i> Limpar
+                </a>
+                @endif
+            </div>
         </div>
 
-        {{-- Direita: avatares dos membros --}}
-        <div class="d-flex align-center gap-2 avatares-mobile" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;justify-content:center;">
-            @foreach($familiares as $fam)
-            @php
-                $isSelected = $familiarId === $fam->id;
-                $iniciais = implode('', array_map(fn($p) => strtoupper(substr($p, 0, 1)), array_slice(explode(' ', $fam->nome), 0, 2)));
-                $cores = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
-                $cor = $cores[$fam->id % count($cores)];
-            @endphp
-            <a href="{{ $isSelected
-                    ? route('dashboard', array_filter(['inicio' => $inicio, 'fim' => $fim]))
-                    : route('dashboard', array_filter(['inicio' => $inicio, 'fim' => $fim, 'familiar_id' => $fam->id])) }}"
-               class="d-flex flex-column align-center gap-1 text-decoration-none"
-               title="{{ $fam->nome }} {{ $isSelected ? '(clique para ver todos)' : '' }}"
-               style="text-align:center;">
-                <div style="
-                    width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0;
-                    border: 3px solid {{ $isSelected ? $cor : 'transparent' }};
-                    box-shadow: {{ $isSelected ? '0 0 0 2px '.$cor.'44' : 'none' }};
-                    outline: {{ $isSelected ? 'none' : '2px solid #e2e8f0' }};
-                    transition: all .2s;
-                ">
-                    @if($fam->foto)
-                        <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}"
-                             style="width:100%;height:100%;object-fit:cover;">
-                    @else
-                        <div style="
-                            width:100%; height:100%;
-                            background: {{ $cor }};
-                            color:#fff; font-weight:700; font-size:13px;
-                            display:flex; align-items:center; justify-content:center;
-                        ">{{ $iniciais }}</div>
-                    @endif
-                </div>
-                <span style="font-size:10px; color: {{ $isSelected ? $cor : '#64748b' }}; font-weight: {{ $isSelected ? '700' : '400' }}; max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.2;">
-                    {{ explode(' ', $fam->nome)[0] }}
-                </span>
-            </a>
-            @endforeach
+        {{-- Membros --}}
+        @if($familiares->isNotEmpty())
+        <div class="filtro-grupo filtro-grupo-members">
+            <div class="av-grupo">
+                <a href="{{ $urlDBTodos }}" class="av-item" title="Todos da Casa">
+                    <div class="av-circulo" style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};outline:{{ !$familiarId ? 'none' : '2px solid #e2e8f0' }};background:{{ !$familiarId ? 'var(--color-primary)' : '#f1f5f9' }};box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
+                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? '#fff' : '#64748b' }};"></i>
+                    </div>
+                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
+                </a>
+                @foreach($familiares as $fam)
+                @php
+                    $dbSel  = $familiarId === $fam->id;
+                    $dbIni  = implode('', array_map(fn($p) => strtoupper(substr($p,0,1)), array_slice(explode(' ',$fam->nome),0,2)));
+                    $dbCors = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
+                    $dbCor  = $dbCors[$fam->id % count($dbCors)];
+                    $dbUrl  = $dbSel
+                        ? route('dashboard', array_filter(['inicio'=>$inicio,'fim'=>$fim]))
+                        : route('dashboard', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id]));
+                @endphp
+                <a href="{{ $dbUrl }}" class="av-item" title="{{ $fam->nome }}">
+                    <div class="av-circulo" style="border:3px solid {{ $dbSel ? $dbCor : 'transparent' }};outline:{{ $dbSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $dbSel ? '0 0 0 2px '.$dbCor.'44' : 'none' }};">
+                        @if($fam->foto)
+                            <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <div style="width:100%;height:100%;background:{{ $dbCor }};color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;border-radius:50%;">{{ $dbIni }}</div>
+                        @endif
+                    </div>
+                    <span class="av-nome" style="color:{{ $dbSel ? $dbCor : '#94a3b8' }};font-weight:{{ $dbSel ? '700' : '400' }};">{{ explode(' ',$fam->nome)[0] }}</span>
+                </a>
+                @endforeach
+            </div>
         </div>
+        @endif
 
     </div>
 </div>

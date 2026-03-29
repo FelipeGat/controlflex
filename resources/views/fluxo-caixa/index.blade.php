@@ -5,47 +5,54 @@
 @section('content')
 
 {{-- ─── Filtro de período ─────────────────────────────────────────────────── --}}
-<form method="GET" action="{{ route('fluxo-caixa.index') }}" id="form-periodo">
-<div class="card" style="margin-bottom:18px;padding:12px 16px;">
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;">
+<div class="card filtros-bar">
+    <div class="filtros-lanc" style="flex-wrap:wrap;gap:12px;">
 
-        {{-- Atalhos de período --}}
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            @foreach(['semana' => 'Esta Semana', 'mes' => 'Este Mês'] as $key => $label)
-            <a href="{{ route('fluxo-caixa.index', ['periodo' => $key]) }}"
-               style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;
-                      background:{{ $periodo === $key ? 'var(--color-primary)' : '#f1f5f9' }};
-                      color:{{ $periodo === $key ? '#fff' : 'var(--color-text-muted)' }};">
-                {{ $label }}
-            </a>
-            @endforeach
-            <span style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
-                         background:{{ $periodo === 'custom' ? 'var(--color-primary)' : '#f1f5f9' }};
-                         color:{{ $periodo === 'custom' ? '#fff' : 'var(--color-text-muted)' }};">
-                Personalizado
-            </span>
+        {{-- Atalhos: segmented control --}}
+        <div class="filtro-grupo">
+            <div class="seg-control">
+                @foreach(['semana' => '<i class="fa-solid fa-calendar-week"></i> Esta Semana', 'mes' => '<i class="fa-solid fa-calendar"></i> Este Mês'] as $key => $label)
+                <a href="{{ route('fluxo-caixa.index', ['periodo' => $key]) }}"
+                   class="seg-btn" style="text-decoration:none;
+                          background:{{ $periodo === $key ? 'var(--color-primary)' : '#fff' }};
+                          color:{{ $periodo === $key ? '#fff' : '#64748b' }};">
+                    {!! $label !!}
+                </a>
+                @endforeach
+            </div>
         </div>
 
-        <input type="hidden" name="periodo" value="custom">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:140px;font-size:12px;">
-            <span style="color:var(--color-text-muted);font-size:12px;">até</span>
-            <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:140px;font-size:12px;">
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-filter"></i> Filtrar
-            </button>
-        </div>
+        {{-- Período personalizado --}}
+        <form method="GET" action="{{ route('fluxo-caixa.index') }}" id="form-periodo">
+            <input type="hidden" name="periodo" value="custom">
+            <div class="filtro-grupo" style="flex-wrap:wrap;gap:6px;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;">Personalizado</span>
+                <input type="date" name="inicio" value="{{ $inicio }}" class="form-control" style="max-width:138px;font-size:12px;">
+                <span style="color:#94a3b8;font-size:12px;">→</span>
+                <input type="date" name="fim" value="{{ $fim }}" class="form-control" style="max-width:138px;font-size:12px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-check"></i> Aplicar
+                </button>
+            </div>
+        </form>
+
     </div>
 
     {{-- Período exibido --}}
-    <div style="font-size:11px;color:var(--color-text-subtle);margin-top:8px;">
-        <i class="fa-regular fa-calendar"></i>
-        {{ \Carbon\Carbon::parse($inicio)->locale('pt_BR')->isoFormat('D [de] MMM') }}
-        →
-        {{ \Carbon\Carbon::parse($fim)->locale('pt_BR')->isoFormat('D [de] MMM [de] YYYY') }}
+    <div style="font-size:11px;color:#94a3b8;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
+        <i class="fa-regular fa-calendar" style="color:#cbd5e1;"></i>
+        <span>
+            {{ \Carbon\Carbon::parse($inicio)->locale('pt_BR')->isoFormat('D [de] MMMM') }}
+            <span style="color:#cbd5e1;margin:0 4px;">→</span>
+            {{ \Carbon\Carbon::parse($fim)->locale('pt_BR')->isoFormat('D [de] MMMM [de] YYYY') }}
+        </span>
+        @if($periodo === 'semana' || $periodo === 'mes')
+        <span style="background:{{ $periodo === 'semana' ? '#ede9fe' : '#dbeafe' }};color:{{ $periodo === 'semana' ? '#7c3aed' : '#1d4ed8' }};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;">
+            {{ $periodo === 'semana' ? 'Esta Semana' : 'Este Mês' }}
+        </span>
+        @endif
     </div>
 </div>
-</form>
 
 {{-- ─── KPIs ──────────────────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(180px,100%),1fr));gap:12px;margin-bottom:20px;">

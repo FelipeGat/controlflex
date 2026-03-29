@@ -34,238 +34,492 @@
         'inicio' => now()->startOfMonth()->format('Y-m-d'),
         'fim'    => now()->endOfMonth()->format('Y-m-d'),
     ]));
+    $urlHoje = route('lancamentos.index', array_merge(request()->except(['inicio','fim']), [
+        'inicio' => now()->format('Y-m-d'),
+        'fim'    => now()->format('Y-m-d'),
+    ]));
+    $ehHoje = $inicio === now()->format('Y-m-d') && $fim === now()->format('Y-m-d');
 @endphp
 
-<div class="card" style="padding:14px 16px;margin-bottom:18px;">
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;">
+<style>
+/* ── Filtros Lançamentos — regras específicas desta página ── */
+/* Wrapper esquerdo: bancos + separador + tipo agrupados no desktop */
+.filtro-esquerda { display:flex; align-items:center; gap:10px; flex-shrink:0; }
 
-        {{-- Navegação de mês --}}
-        <div style="display:flex;align-items:center;gap:0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;flex-shrink:0;">
-            <a href="{{ $urlMesAnterior }}" class="nav-mes-btn" title="Mês anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-            <div id="mes-label" style="padding:6px 14px;font-weight:700;font-size:13px;color:var(--color-text);min-width:0;text-align:center;white-space:nowrap;cursor:pointer;user-select:none;" onclick="toggleDatePicker()" title="Clique para escolher uma data">
-                {{ ucfirst($mesNome) }}
-            </div>
-            <a href="{{ $urlMesProximo }}" class="nav-mes-btn" title="Próximo mês">
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
-        </div>
+/* Mobile: reordenamento e tipo full-width */
+@media (max-width:640px) {
+    .filtro-esquerda { display:contents; } /* filhos entram no flex pai */
+    .filtro-grupo-centro  { order:1; padding-top:2px; }
+    .filtro-grupo-tipo    { order:2; justify-content:stretch; }
+    .filtro-grupo-tipo form { width:100%; }
+    .filtro-grupo-tipo .seg-control { width:100%; }
+    .filtro-grupo-tipo .seg-btn { flex:1; text-align:center; }
+    .filtro-grupo-bancos  { order:3; justify-content:center; }
+}
+</style>
 
-        @if(!$ehMesAtual)
-        <a href="{{ $urlMesAtualReal }}" style="font-size:12px;color:var(--color-primary);text-decoration:none;font-weight:600;white-space:nowrap;" title="Voltar para o mês atual">
-            <i class="fa-solid fa-rotate-left"></i> Mês Atual
-        </a>
-        @endif
+<div class="card" style="padding:12px 16px;margin-bottom:18px;position:relative;">
+    <div class="filtros-lanc">
 
-        <div style="width:1px;height:28px;background:#e2e8f0;flex-shrink:0;" class="hide-mobile"></div>
+        {{-- ─ WRAPPER ESQUERDO (desktop: lado esquerdo | mobile: display:contents) ─ --}}
+        <div class="filtro-esquerda">
 
-        {{-- Filtros --}}
-        <form method="GET" action="{{ route('lancamentos.index') }}" id="form-filtro" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1;justify-content:center;">
-            <input type="hidden" name="inicio" id="f-inicio" value="{{ $inicio }}">
-            <input type="hidden" name="fim"    id="f-fim"    value="{{ $fim }}">
+            {{-- Bolinhas de banco --}}
+            @php
+                $todasContasUrl = route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'tipo'=>$tipo,'familiar_id'=>$familiarId]));
+            @endphp
+            <div class="filtro-grupo filtro-grupo-bancos">
+                <div class="av-grupo">
+                    <a href="{{ $todasContasUrl }}" class="av-item" title="Todas as contas">
+                        <div class="av-circulo"
+                             style="border:3px solid {{ !$bancoId ? 'var(--color-primary)' : 'transparent' }};
+                                    outline:{{ !$bancoId ? 'none' : '2px solid #e2e8f0' }};
+                                    background:{{ !$bancoId ? 'var(--color-primary)' : '#f1f5f9' }};
+                                    box-shadow:{{ !$bancoId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
+                            <i class="fa-solid fa-wallet" style="font-size:13px;color:{{ !$bancoId ? '#fff' : '#64748b' }};"></i>
+                        </div>
+                        <span class="av-nome" style="color:{{ !$bancoId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$bancoId ? '700' : '400' }};">Todas</span>
+                    </a>
 
-            {{-- Date picker oculto --}}
-            <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:0;right:0;max-width:360px;">
-                <div style="font-size:12px;color:#64748b;margin-bottom:10px;font-weight:600;">Período personalizado</div>
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                    <div>
-                        <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">De</div>
-                        <input type="date" id="dp-inicio" value="{{ $inicio }}" class="form-control" style="max-width:148px;">
-                    </div>
-                    <div>
-                        <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Até</div>
-                        <input type="date" id="dp-fim" value="{{ $fim }}" class="form-control" style="max-width:148px;">
-                    </div>
-                    <button type="button" onclick="aplicarPeriodoCustom()" class="btn btn-primary btn-sm" style="margin-top:14px;">
-                        <i class="fa-solid fa-check"></i> Aplicar
-                    </button>
+                    @foreach($bancos as $b)
+                    @php
+                        $bSel   = $bancoId == $b->id;
+                        $bCor   = $b->cor ?: '#64748b';
+                        $bUrl   = $bSel
+                            ? route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'tipo'=>$tipo,'familiar_id'=>$familiarId]))
+                            : route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'tipo'=>$tipo,'familiar_id'=>$familiarId,'banco_id'=>$b->id]));
+                        $bIcone = match(true) {
+                            $b->eh_dinheiro ?? false        => 'fa-money-bill-wave',
+                            $b->tem_cartao_credito ?? false => 'fa-credit-card',
+                            $b->tem_poupanca ?? false       => 'fa-piggy-bank',
+                            default                         => 'fa-building-columns',
+                        };
+                    @endphp
+                    <a href="{{ $bUrl }}" class="av-item" title="{{ $b->nome }}">
+                        <div class="av-circulo"
+                             style="border:3px solid {{ $bSel ? $bCor : 'transparent' }};
+                                    outline:{{ $bSel ? 'none' : '2px solid #e2e8f0' }};
+                                    box-shadow:{{ $bSel ? '0 0 0 2px '.$bCor.'44' : 'none' }};
+                                    background:{{ $bSel ? $bCor : '#f1f5f9' }};">
+                            @if($b->logo)
+                                <img src="{{ Storage::url($b->logo) }}" alt="{{ $b->nome }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                            @else
+                                <i class="fa-solid {{ $bIcone }}" style="font-size:13px;color:{{ $bSel ? '#fff' : $bCor }};"></i>
+                            @endif
+                        </div>
+                        <span class="av-nome" style="color:{{ $bSel ? $bCor : '#94a3b8' }};font-weight:{{ $bSel ? '700' : '400' }};">{{ explode(' ', $b->nome)[0] }}</span>
+                    </a>
+                    @endforeach
                 </div>
             </div>
 
-            <select name="banco_id" class="form-control" style="max-width:190px;min-width:0;font-size:13px;flex:1;" onchange="this.form.submit()">
-                <option value="">Todas as contas</option>
-                @foreach($bancos as $b)
-                <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
-                @endforeach
-            </select>
+            <div class="separador-v" style="width:1px;height:30px;background:#e2e8f0;flex-shrink:0;align-self:center;"></div>
 
-            <div style="display:flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-                @foreach(['todos' => 'Todos', 'debito' => '↓ Saídas', 'credito' => '↑ Entradas'] as $val => $label)
-                <button type="submit" name="tipo" value="{{ $val }}"
-                    style="padding:6px 12px;font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;
-                           background:{{ $tipo === $val ? 'var(--color-primary)' : '#fff' }};
-                           color:{{ $tipo === $val ? '#fff' : '#64748b' }};
-                           transition:background .15s;">
-                    {{ $label }}
+            {{-- Botões Todos / Saídas / Entradas --}}
+            <div class="filtro-grupo filtro-grupo-tipo">
+                <form method="GET" action="{{ route('lancamentos.index') }}" id="form-filtro">
+                    <input type="hidden" name="inicio"      id="f-inicio"  value="{{ $inicio }}">
+                    <input type="hidden" name="fim"         id="f-fim"     value="{{ $fim }}">
+                    <input type="hidden" name="banco_id"    value="{{ $bancoId }}">
+                    <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
+
+                    {{-- Date picker oculto --}}
+                    <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:16px;max-width:340px;">
+                        <div style="font-size:12px;color:#64748b;margin-bottom:10px;font-weight:600;">Período personalizado</div>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">De</div><input type="date" id="dp-inicio" value="{{ $inicio }}" class="form-control" style="max-width:148px;"></div>
+                            <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Até</div><input type="date" id="dp-fim" value="{{ $fim }}" class="form-control" style="max-width:148px;"></div>
+                            <button type="button" onclick="aplicarPeriodoCustom()" class="btn btn-primary btn-sm" style="margin-top:14px;"><i class="fa-solid fa-check"></i> Aplicar</button>
+                        </div>
+                    </div>
+
+                    <div class="seg-control">
+                        @foreach(['todos' => 'Todos', 'debito' => '↓ Saídas', 'credito' => '↑ Entradas'] as $val => $label)
+                        <button type="submit" name="tipo" value="{{ $val }}" class="seg-btn"
+                            style="background:{{ $tipo === $val ? 'var(--color-primary)' : '#fff' }};
+                                   color:{{ $tipo === $val ? '#fff' : '#64748b' }};">
+                            {{ $label }}
+                        </button>
+                        @endforeach
+                    </div>
+                </form>
+            </div>
+
+        </div>{{-- /filtro-esquerda --}}
+
+        {{-- ─ CENTRO: navegação de mês + Hoje ─ --}}
+        <div class="filtro-grupo filtro-grupo-centro">
+            <div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+                <a href="{{ $urlMesAnterior }}" class="nav-mes-btn" title="Mês anterior"><i class="fa-solid fa-chevron-left" style="font-size:12px;"></i></a>
+                <button type="button" class="mes-label-btn" onclick="toggleDatePicker()" title="Clique para personalizar período">
+                    {{ $ehHoje ? 'Hoje' : ucfirst($mesNome) }}
                 </button>
+                <a href="{{ $urlMesProximo }}" class="nav-mes-btn" title="Próximo mês"><i class="fa-solid fa-chevron-right" style="font-size:12px;"></i></a>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <a href="{{ $urlHoje }}"
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
+                          border:1px solid {{ $ehHoje ? 'var(--color-primary)' : '#e2e8f0' }};
+                          background:{{ $ehHoje ? 'var(--color-primary)' : '#fff' }};
+                          color:{{ $ehHoje ? '#fff' : '#64748b' }};transition:all .15s;">
+                    <i class="fa-solid fa-calendar-day"></i> Hoje
+                </a>
+                @if(!$ehMesAtual && !$ehHoje)
+                <a href="{{ $urlMesAtualReal }}"
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #e2e8f0;background:#fff;color:#64748b;transition:all .15s;">
+                    <i class="fa-solid fa-rotate-left"></i> Mês Atual
+                </a>
+                @endif
+            </div>
+        </div>
+
+        {{-- ─ DIREITA: avatares dos membros ─ --}}
+        @if($familiares->isNotEmpty())
+        @php $todasUrl = route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'banco_id'=>$bancoId,'tipo'=>$tipo])); @endphp
+        <div class="filtro-grupo filtro-grupo-members">
+            <div class="av-grupo">
+                <a href="{{ $todasUrl }}" class="av-item" title="Todos os membros">
+                    <div class="av-circulo"
+                         style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};
+                                outline:{{ !$familiarId ? 'none' : '2px solid #e2e8f0' }};
+                                background:{{ !$familiarId ? 'var(--color-primary)' : '#f1f5f9' }};
+                                box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
+                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? '#fff' : '#64748b' }};"></i>
+                    </div>
+                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
+                </a>
+
+                @foreach($familiares as $fam)
+                @php
+                    $isSelected = $familiarId === $fam->id;
+                    $iniciais   = implode('', array_map(fn($p) => strtoupper(substr($p, 0, 1)), array_slice(explode(' ', $fam->nome), 0, 2)));
+                    $cores      = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
+                    $cor        = $cores[$fam->id % count($cores)];
+                    $famUrl     = $isSelected
+                        ? route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'banco_id'=>$bancoId,'tipo'=>$tipo]))
+                        : route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'banco_id'=>$bancoId,'tipo'=>$tipo,'familiar_id'=>$fam->id]));
+                @endphp
+                <a href="{{ $famUrl }}" class="av-item" title="{{ $fam->nome }}">
+                    <div class="av-circulo"
+                         style="border:3px solid {{ $isSelected ? $cor : 'transparent' }};
+                                outline:{{ $isSelected ? 'none' : '2px solid #e2e8f0' }};
+                                box-shadow:{{ $isSelected ? '0 0 0 2px '.$cor.'44' : 'none' }};">
+                        @if($fam->foto)
+                            <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <div style="width:100%;height:100%;background:{{ $cor }};color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:50%;">{{ $iniciais }}</div>
+                        @endif
+                    </div>
+                    <span class="av-nome" style="color:{{ $isSelected ? $cor : '#94a3b8' }};font-weight:{{ $isSelected ? '700' : '400' }};">{{ explode(' ', $fam->nome)[0] }}</span>
+                </a>
                 @endforeach
             </div>
-        </form>
+        </div>
+        @endif
+
     </div>
 </div>
 
-<style>
-.nav-mes-btn {
-    display:flex;align-items:center;justify-content:center;
-    width:34px;height:34px;
-    color:#64748b;text-decoration:none;
-    background:#fff;transition:background .15s;
-}
-.nav-mes-btn:hover { background:#f1f5f9;color:var(--color-primary); }
-</style>
-
 {{-- ─── Cards de resumo ──────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:12px;margin-bottom:20px;">
-    <div class="card" style="padding:16px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> Entradas</div>
-        <div class="fw-700 kpi-value" style="color:#16a34a;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+    <div class="card" style="padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> Entradas</div>
+        <div class="fw-700" style="color:#16a34a;font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
     </div>
-    <div class="card" style="padding:16px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> Saídas</div>
-        <div class="fw-700 kpi-value" style="color:#dc2626;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
+    <div class="card" style="padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> Saídas</div>
+        <div class="fw-700" style="color:#dc2626;font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
     </div>
-    <div class="card" style="padding:16px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fa-solid fa-scale-balanced" style="color:#7c3aed;"></i> Saldo do Período</div>
-        <div class="fw-700 kpi-value" style="color:{{ $saldoPeriodo >= 0 ? '#16a34a' : '#dc2626' }};">
+    <div class="card" style="padding:12px;text-align:center;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><i class="fa-solid fa-scale-balanced" style="color:#7c3aed;"></i> Saldo</div>
+        <div class="fw-700" style="color:{{ $saldoPeriodo >= 0 ? '#16a34a' : '#dc2626' }};font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">
             R$ {{ number_format($saldoPeriodo, 2, ',', '.') }}
         </div>
     </div>
 </div>
 
 {{-- ─── Botões de ação ──────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:12px;margin-bottom:24px;">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;">
     <button onclick="openModal('modal-manual')" class="btn-acao" style="border-color:var(--color-primary);background:#f5f3ff;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
         <div class="btn-acao-icon" style="background:var(--color-primary);"><i class="fa-solid fa-pen-to-square" style="color:#fff;font-size:18px;"></i></div>
-        <div><div style="font-weight:700;font-size:13px;color:var(--color-text);">Lançamento Manual</div><div style="font-size:10px;color:var(--color-text-muted);margin-top:2px;">Despesa ou receita</div></div>
+        <div class="btn-acao-txt"><span class="btn-acao-titulo">Lançamento Manual</span><span class="btn-acao-sub">Despesa ou receita</span></div>
     </button>
     <button onclick="document.getElementById('camera-input').click()" class="btn-acao" style="border-color:#16a34a;background:#f0fdf4;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
         <div class="btn-acao-icon" style="background:#16a34a;"><i class="fa-solid fa-receipt" style="color:#fff;font-size:18px;"></i></div>
-        <div><div style="font-weight:700;font-size:13px;color:var(--color-text);">Cupom / NF</div><div style="font-size:10px;color:var(--color-text-muted);margin-top:2px;">Escanear ou foto</div></div>
+        <div class="btn-acao-txt"><span class="btn-acao-titulo">Cupom / NF</span><span class="btn-acao-sub">Escanear ou foto</span></div>
     </button>
     <button onclick="openModal('modal-importar')" class="btn-acao" style="border-color:#0891b2;background:#ecfeff;" onmouseover="this.style.background='#cffafe'" onmouseout="this.style.background='#ecfeff'">
         <div class="btn-acao-icon" style="background:#0891b2;"><i class="fa-solid fa-file-arrow-up" style="color:#fff;font-size:18px;"></i></div>
-        <div><div style="font-weight:700;font-size:13px;color:var(--color-text);">Importar Extrato</div><div style="font-size:10px;color:var(--color-text-muted);margin-top:2px;">OFX / CSV</div></div>
+        <div class="btn-acao-txt"><span class="btn-acao-titulo">Importar Extrato</span><span class="btn-acao-sub">OFX / CSV</span></div>
     </button>
 </div>
 
 <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
 <style>
-.btn-acao { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border-radius:12px;border:2px dashed;cursor:pointer;transition:background .15s; }
-.btn-acao-icon { width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center; }
+.btn-acao {
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;padding:18px 10px;border-radius:12px;border:2px dashed;
+    cursor:pointer;transition:background .15s;
+}
+.btn-acao-icon { width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.btn-acao-txt  { display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center; }
+.btn-acao-titulo { font-weight:700;font-size:13px;color:var(--color-text);line-height:1.2; }
+.btn-acao-sub    { font-size:10px;color:var(--color-text-muted); }
+
+@media (max-width:480px) {
+    .btn-acao { padding:10px 6px;gap:5px; }
+    .btn-acao-icon { width:34px;height:34px; }
+    .btn-acao-icon i { font-size:14px !important; }
+    .btn-acao-titulo { font-size:11px; }
+    .btn-acao-sub { display:none; }
+}
 </style>
 
-{{-- ─── Tabela de Extrato ────────────────────────────────────────────────── --}}
-<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div class="card-title" style="margin:0;">
-            <i class="fa-solid fa-list-ul"></i> Extrato
-            @if($bancoBuscado) — <span style="color:var(--color-primary);">{{ $bancoBuscado->nome }}</span>@endif
+{{-- ─── Extrato ──────────────────────────────────────────────────────────── --}}
+<style>
+/* ── Extrato redesenhado ─────────────────────────────────── */
+.ext-card { padding:0; overflow:hidden; }
+.ext-header { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-bottom:1px solid #f1f5f9; }
+
+/* Cabeçalho de data */
+.ext-date-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:6px 16px;
+    background:#f8fafc;
+    border-top:1px solid #f1f5f9;
+    border-bottom:1px solid #f1f5f9;
+    position:sticky; top:0; z-index:2;
+}
+.ext-date-label { font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
+
+/* Linha de lançamento */
+.ext-row {
+    display:flex; align-items:center; gap:12px;
+    padding:11px 16px;
+    border-bottom:1px solid #f8fafc;
+    transition:background .12s;
+    position:relative;
+}
+.ext-row:hover { background:#fafbff; }
+.ext-row:last-of-type { border-bottom:none; }
+
+/* Faixa colorida lateral */
+.ext-row::before {
+    content:''; position:absolute; left:0; top:8px; bottom:8px;
+    width:3px; border-radius:0 3px 3px 0;
+}
+.ext-credito::before { background:#16a34a; }
+.ext-debito::before  { background:#ef4444; }
+
+/* Ícone de categoria */
+.ext-icone {
+    width:40px; height:40px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+}
+.ext-icone.ext-credito { background:#f0fdf4; }
+.ext-icone.ext-debito  { background:#fff1f2; }
+
+/* Texto principal */
+.ext-info { flex:1; min-width:0; }
+.ext-desc {
+    font-size:13px; font-weight:600; color:#1e293b;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    line-height:1.3;
+}
+.ext-meta { display:flex; align-items:center; gap:5px; margin-top:4px; flex-wrap:wrap; }
+.ext-conta-pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:#94a3b8; }
+.ext-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.ext-tag {
+    font-size:10px; padding:1px 7px; border-radius:20px;
+    font-weight:600; line-height:1.6; white-space:nowrap;
+}
+.ext-tag-cat  { background:#f1f5f9; color:#475569; }
+.ext-tag-rec  { background:#ede9fe; color:#7c3aed; }
+.ext-tag-doc  { background:#e0f2fe; color:#0369a1; }
+
+/* Valor + status */
+.ext-valor-col { text-align:right; flex-shrink:0; min-width:100px; }
+.ext-valor { font-size:14px; font-weight:700; white-space:nowrap; line-height:1.2; }
+.ext-valor.ext-credito { color:#16a34a; }
+.ext-valor.ext-debito  { color:#ef4444; }
+.ext-status {
+    font-size:10px; font-weight:600; margin-top:3px;
+    display:flex; align-items:center; justify-content:flex-end; gap:3px;
+}
+.s-ok   { color:#16a34a; }
+.s-venc { color:#ef4444; }
+.s-pend { color:#d97706; }
+
+/* Botão excluir */
+.ext-del-btn {
+    opacity:0; transition:opacity .15s;
+    background:none; border:none; cursor:pointer;
+    color:#94a3b8; padding:6px; border-radius:6px; line-height:1;
+}
+.ext-del-btn:hover { background:#fff1f2; color:#ef4444; }
+.ext-row:hover .ext-del-btn { opacity:1; }
+
+/* Rodapé totais */
+.ext-footer {
+    display:flex; align-items:center; gap:16px;
+    padding:10px 16px; background:#f8fafc;
+    border-top:2px solid #f1f5f9;
+}
+.ext-footer-item { display:flex; align-items:center; gap:6px; }
+.ext-footer-dot  { width:8px; height:8px; border-radius:50%; }
+
+@media (max-width:640px) {
+    .ext-row { padding:10px 14px 10px 18px; gap:10px; }
+    .ext-icone { width:36px; height:36px; border-radius:9px; }
+    .ext-desc { font-size:12px; }
+    .ext-valor { font-size:13px; }
+    .ext-valor-col { min-width:80px; }
+    .ext-del-btn { opacity:1; }
+    .ext-tag-cat { display:none; }
+}
+</style>
+
+<div class="card ext-card">
+
+    {{-- Cabeçalho do card --}}
+    <div class="ext-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-list-ul" style="color:#94a3b8;font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:#1e293b;">Extrato</span>
+            @if($bancoBuscado)
+            <span style="font-size:12px;color:var(--color-primary);font-weight:600;">— {{ $bancoBuscado->nome }}</span>
+            @endif
         </div>
-        <span style="font-size:12px;color:#64748b;">{{ count($movimentacoes) }} lançamento(s)</span>
+        <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">
+            {{ count($movimentacoes) }} lançamentos
+        </span>
     </div>
 
     @if(count($movimentacoes) > 0)
-    <div class="table-wrapper">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="width:90px;">Data</th>
-                    <th>Descrição</th>
-                    <th class="hide-mobile">Categoria</th>
-                    <th class="hide-mobile">Conta</th>
-                    <th style="text-align:right;">Saída</th>
-                    <th style="text-align:right;">Entrada</th>
-                    <th class="hide-mobile">Status</th>
-                    <th style="width:36px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($movimentacoes as $mov)
-                <tr style="border-left:3px solid {{ $mov['tipo'] === 'credito' ? '#16a34a' : '#dc2626' }};">
-                    <td style="white-space:nowrap;font-size:12px;color:#64748b;">
-                        {{ $mov['data_fmt'] }}
-                    </td>
-                    <td>
-                        <div class="fw-600" style="font-size:13px;">
-                            {{ Str::limit($mov['descricao'], 55) }}
-                        </div>
-                        <div style="display:flex;gap:6px;margin-top:2px;flex-wrap:wrap;">
-                            @if($mov['recorrente'])
-                            <span style="font-size:10px;color:#7c3aed;"><i class="fa-solid fa-rotate"></i> Recorrente</span>
-                            @endif
-                            @if($mov['origem'] === 'qr_ocr' || $mov['origem'] === 'ocr')
-                            <span style="font-size:10px;color:#0891b2;"><i class="fa-solid fa-camera"></i> Cupom</span>
-                            @elseif($mov['origem'] === 'importacao_extrato')
-                            <span style="font-size:10px;color:#0891b2;"><i class="fa-solid fa-file-import"></i> Importado</span>
-                            @endif
-                            @if($mov['numero_doc'])
-                            <span style="font-size:10px;color:#94a3b8;">Nº {{ $mov['numero_doc'] }}</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td class="hide-mobile">
-                        @if($mov['categoria'])
-                        <span class="badge badge-slate"><i class="fa-solid {{ $mov['categoria_icone'] }}"></i> {{ $mov['categoria'] }}</span>
-                        @else <span class="text-subtle">—</span>
-                        @endif
-                    </td>
-                    <td class="hide-mobile">
-                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;">
-                            <span style="width:8px;height:8px;border-radius:50%;background:{{ $mov['conta_cor'] }};display:inline-block;"></span>
-                            {{ $mov['conta'] }}
-                        </span>
-                    </td>
-                    <td style="text-align:right;white-space:nowrap;">
-                        @if($mov['tipo'] === 'debito')
-                        <span class="fw-700" style="color:#dc2626;">- R$ {{ number_format($mov['valor'], 2, ',', '.') }}</span>
-                        @else <span class="text-subtle">—</span>
-                        @endif
-                    </td>
-                    <td style="text-align:right;white-space:nowrap;">
-                        @if($mov['tipo'] === 'credito')
-                        <span class="fw-700" style="color:#16a34a;">+ R$ {{ number_format($mov['valor'], 2, ',', '.') }}</span>
-                        @else <span class="text-subtle">—</span>
-                        @endif
-                    </td>
-                    <td class="hide-mobile">
-                        @php $st = $mov['status']; @endphp
-                        @if($st === 'pago' || $st === 'recebido')
-                            <span class="badge badge-green"><i class="fa-solid fa-check"></i> {{ $mov['tipo'] === 'credito' ? 'Recebido' : 'Pago' }}</span>
-                        @elseif($st === 'vencido')
-                            <span class="badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i> Vencido</span>
-                        @else
-                            <span class="badge badge-amber">{{ $mov['tipo'] === 'credito' ? 'A Receber' : 'A Pagar' }}</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($mov['model'] === 'despesa')
-                        <form method="POST" action="{{ route('despesas.destroy', $mov['id']) }}" onsubmit="return confirm('Excluir este lançamento?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-ghost btn-icon btn-sm text-red" title="Excluir"><i class="fa-solid fa-trash" style="font-size:11px;"></i></button>
-                        </form>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr style="background:#f8fafc;">
-                    <td colspan="4" class="fw-600" style="font-size:12px;color:#64748b;">Total do período</td>
-                    <td style="text-align:right;" class="fw-700" style="color:#dc2626;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</td>
-                    <td style="text-align:right;" class="fw-700" style="color:#16a34a;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</td>
-                    <td colspan="2"></td>
-                </tr>
-            </tfoot>
-        </table>
+    @php
+        $movsPorData = [];
+        foreach ($movimentacoes as $mov) {
+            $movsPorData[$mov['data_fmt']][] = $mov;
+        }
+    @endphp
+
+    @foreach($movsPorData as $dataFmt => $movsDia)
+    @php
+        $dt = $movsDia[0]['data']; // Carbon instance
+        $isHoje  = $dt->copy()->startOfDay()->equalTo(now()->startOfDay());
+        $isOntem = $dt->copy()->startOfDay()->equalTo(now()->subDay()->startOfDay());
+        if ($isHoje)       $dataLabel = 'Hoje · ' . $dataFmt;
+        elseif ($isOntem)  $dataLabel = 'Ontem · ' . $dataFmt;
+        else               $dataLabel = $dt->locale('pt_BR')->isoFormat('dddd, D [de] MMMM');
+        $totalDia = array_sum(array_map(fn($m) => $m['tipo'] === 'credito' ? $m['valor'] : -$m['valor'], $movsDia));
+    @endphp
+
+    {{-- Cabeçalho do dia --}}
+    <div class="ext-date-header">
+        <span class="ext-date-label">{{ $dataLabel }}</span>
+        <span style="font-size:11.5px;font-weight:700;color:{{ $totalDia >= 0 ? '#16a34a' : '#ef4444' }};">
+            {{ $totalDia >= 0 ? '+' : '−' }} R$ {{ number_format(abs($totalDia), 2, ',', '.') }}
+        </span>
     </div>
+
+    @foreach($movsDia as $mov)
+    @php
+        $st = $mov['status'];
+        $stOk    = in_array($st, ['pago', 'recebido']);
+        $stClass = $stOk ? 's-ok' : ($st === 'vencido' ? 's-venc' : 's-pend');
+        $stLabel = $stOk
+            ? ($mov['tipo'] === 'credito' ? 'Recebido' : 'Pago')
+            : ($st === 'vencido' ? 'Vencido' : ($mov['tipo'] === 'credito' ? 'A receber' : 'A pagar'));
+        $stIcon  = $stOk ? 'fa-check' : ($st === 'vencido' ? 'fa-triangle-exclamation' : 'fa-clock');
+        $catIcone = $mov['categoria_icone'] ?: ($mov['tipo'] === 'credito' ? 'fa-circle-dollar-sign' : 'fa-cart-shopping');
+    @endphp
+
+    <div class="ext-row ext-{{ $mov['tipo'] }}">
+
+        {{-- Ícone da categoria --}}
+        <div class="ext-icone ext-{{ $mov['tipo'] }}">
+            <i class="fa-solid {{ $catIcone }}"
+               style="font-size:16px;color:{{ $mov['tipo'] === 'credito' ? '#16a34a' : '#ef4444' }};"></i>
+        </div>
+
+        {{-- Descrição + meta --}}
+        <div class="ext-info">
+            <div class="ext-desc" title="{{ $mov['descricao'] }}">{{ $mov['descricao'] }}</div>
+            <div class="ext-meta">
+                <span class="ext-conta-pill">
+                    <span class="ext-dot" style="background:{{ $mov['conta_cor'] }};"></span>
+                    {{ $mov['conta'] }}
+                </span>
+                @if($mov['categoria'])
+                <span class="ext-tag ext-tag-cat">{{ $mov['categoria'] }}</span>
+                @endif
+                @if($mov['recorrente'])
+                <span class="ext-tag ext-tag-rec"><i class="fa-solid fa-rotate" style="font-size:8px;"></i> Recorrente</span>
+                @endif
+                @if(in_array($mov['origem'], ['qr_ocr', 'ocr']))
+                <span class="ext-tag ext-tag-doc"><i class="fa-solid fa-camera" style="font-size:8px;"></i> Cupom</span>
+                @elseif($mov['origem'] === 'importacao_extrato')
+                <span class="ext-tag ext-tag-doc"><i class="fa-solid fa-file-import" style="font-size:8px;"></i> Importado</span>
+                @endif
+                @if($mov['numero_doc'])
+                <span class="ext-tag ext-tag-cat">Nº {{ $mov['numero_doc'] }}</span>
+                @endif
+            </div>
+        </div>
+
+        {{-- Valor + status --}}
+        <div class="ext-valor-col">
+            <div class="ext-valor ext-{{ $mov['tipo'] }}">
+                {{ $mov['tipo'] === 'credito' ? '+' : '−' }} R$ {{ number_format($mov['valor'], 2, ',', '.') }}
+            </div>
+            <div class="ext-status {{ $stClass }}">
+                <i class="fa-solid {{ $stIcon }}" style="font-size:8px;"></i> {{ $stLabel }}
+            </div>
+        </div>
+
+        {{-- Excluir --}}
+        <div style="flex-shrink:0;width:28px;">
+            @if($mov['model'] === 'despesa')
+            <form method="POST" action="{{ route('despesas.destroy', $mov['id']) }}"
+                  onsubmit="return confirm('Excluir este lançamento?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="ext-del-btn" title="Excluir">
+                    <i class="fa-solid fa-trash" style="font-size:12px;"></i>
+                </button>
+            </form>
+            @endif
+        </div>
+
+    </div>
+    @endforeach
+    @endforeach
+
+    {{-- Totais do período --}}
+    <div class="ext-footer">
+        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <div class="ext-footer-item">
+            <span class="ext-footer-dot" style="background:#ef4444;"></span>
+            <span style="font-size:12.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalSaidas, 2, ',', '.') }}</span>
+        </div>
+        <div style="width:1px;height:16px;background:#e2e8f0;"></div>
+        <div class="ext-footer-item">
+            <span class="ext-footer-dot" style="background:#16a34a;"></span>
+            <span style="font-size:12.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalEntradas, 2, ',', '.') }}</span>
+        </div>
+    </div>
+
     @else
-    <div class="empty-state" style="text-align:center;padding:40px;">
-        <i class="fa-solid fa-receipt" style="font-size:36px;color:var(--color-text-subtle);margin-bottom:12px;display:block;"></i>
-        <p style="color:var(--color-text-muted);font-size:13px;">Nenhum lançamento encontrado para o período.<br>Use os botões acima para registrar movimentações.</p>
+    <div style="text-align:center;padding:48px 20px;">
+        <div style="width:56px;height:56px;border-radius:14px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-receipt" style="font-size:22px;color:#94a3b8;"></i>
+        </div>
+        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhum lançamento encontrado</p>
+        <p style="font-size:12px;color:#94a3b8;">Use os botões acima para registrar movimentações.</p>
     </div>
     @endif
+
 </div>
 
 {{-- ─── Loading overlay ────────────────────────────────────────────────── --}}
@@ -313,14 +567,55 @@
                         <select name="onde_comprou" class="form-control"><option value="">— Selecione —</option>@foreach($fornecedores as $f)<option value="{{ $f->id }}">{{ $f->nome }}</option>@endforeach</select>
                     </div>
                     <div class="form-group"><label class="form-label">Quem Comprou</label>
-                        <select name="quem_comprou" class="form-control"><option value="">— Selecione —</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
+                        <select name="quem_comprou" class="form-control"><option value="">🏠 Todos da Casa</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
                     </div>
-                    <div class="form-group"><label class="form-label">Forma de Pagamento</label>
-                        <select name="forma_pagamento" class="form-control" id="manual-banco">
+                    <div class="form-group"><label class="form-label">Conta / Banco</label>
+                        <select name="forma_pagamento" class="form-control" id="manual-banco"
+                                onchange="onBancoChangeLanc(this,'manual-tipo-pag','manual-info-cartao','manual-parcelas-row','manual-parcelas-input')">
                             <option value="">— Selecione —</option>
-                            @foreach($bancos as $b)<option value="{{ $b->id }}" data-nome="{{ strtolower($b->nome) }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>@endforeach
+                            @foreach($bancos as $b)
+                                <option value="{{ $b->id }}"
+                                    data-nome="{{ strtolower($b->nome) }}"
+                                    data-credito="{{ $b->tem_cartao_credito ? 1 : 0 }}"
+                                    data-fechamento="{{ $b->dia_fechamento_cartao ?? '' }}"
+                                    data-vencimento="{{ $b->dia_vencimento_cartao ?? '' }}"
+                                    data-limite="{{ $b->limite_cartao ?? 0 }}"
+                                    {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
+                            @endforeach
                         </select>
                     </div>
+                    <div class="form-group"><label class="form-label">Forma de Pagamento</label>
+                        <select name="tipo_pagamento" class="form-control" id="manual-tipo-pag"
+                                onchange="onTipoPagLanc(this,'manual-banco','manual-info-cartao','manual-parcelas-row','manual-parcelas-input')">
+                            <option value="">— Selecione —</option>
+                            <option value="dinheiro">💵 Dinheiro</option>
+                            <option value="pix">⚡ Pix</option>
+                            <option value="debito">💳 Cartão de Débito</option>
+                            <option value="credito">💳 Cartão de Crédito</option>
+                            <option value="transferencia">🔄 Transferência Bancária</option>
+                        </select>
+                    </div>
+
+                    {{-- Bloco cartão de crédito: aparece quando tipo = credito --}}
+                    <div id="manual-info-cartao" style="display:none;grid-column:span 2;">
+                        <div id="manual-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;margin-bottom:10px;line-height:1.6;">
+                            <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                            <strong>Compra no Cartão de Crédito</strong><br>
+                            <span id="manual-aviso-fatura-texto">Configure o dia de fechamento e vencimento do cartão nas configurações do banco para cálculo automático de faturas.</span>
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:flex-end;">
+                            <div style="flex:1;">
+                                <label class="form-label">Nº de Parcelas</label>
+                                <input type="number" name="parcelas" id="manual-parcelas-input" value="1" min="1" max="48" class="form-control"
+                                       oninput="onParcelasLanc(this,'manual-aviso-fatura-texto','manual-banco')">
+                            </div>
+                            <div style="flex:1;">
+                                <label class="form-label" style="color:#64748b;font-size:11px;">Valor por parcela</label>
+                                <div id="manual-valor-parcela" style="padding:8px 12px;background:#f1f5f9;border-radius:6px;font-weight:700;color:#1e293b;font-size:13px;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group" style="grid-column:span 2;">
                         <label class="form-label">Observações</label>
                         <textarea name="observacoes" class="form-control" rows="2" maxlength="120" placeholder="Descrição do lançamento..."></textarea>
@@ -347,12 +642,22 @@
                         </select>
                     </div>
                     <div class="form-group"><label class="form-label">Quem Recebeu</label>
-                        <select name="quem_recebeu" class="form-control"><option value="">— Selecione —</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
+                        <select name="quem_recebeu" class="form-control"><option value="">🏠 Todos da Casa</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
                     </div>
                     <div class="form-group"><label class="form-label">Conta de Destino</label>
                         <select name="forma_recebimento" class="form-control">
                             <option value="">— Selecione —</option>
                             @foreach($bancos as $b)<option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Forma de Recebimento</label>
+                        <select name="tipo_pagamento" class="form-control">
+                            <option value="">— Selecione —</option>
+                            <option value="dinheiro">💵 Dinheiro</option>
+                            <option value="pix">⚡ Pix</option>
+                            <option value="transferencia">🔄 Transferência Bancária</option>
+                            <option value="deposito">🏦 Depósito Bancário</option>
+                            <option value="outros">📌 Outros</option>
                         </select>
                     </div>
                     <div class="form-group" style="grid-column:span 2;">
@@ -398,14 +703,54 @@
                         </select>
                     </div>
                     <div class="form-group"><label class="form-label">Quem Comprou</label>
-                        <select name="quem_comprou" class="form-control"><option value="">— Selecione —</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
+                        <select name="quem_comprou" class="form-control"><option value="">🏠 Todos da Casa</option>@foreach($familiares as $fam)<option value="{{ $fam->id }}" {{ $fam->id == $meuFamiliarId ? 'selected' : '' }}>{{ $fam->nome }}</option>@endforeach</select>
                     </div>
-                    <div class="form-group"><label class="form-label">Forma de Pagamento</label>
-                        <select name="forma_pagamento" id="scan-banco" class="form-control">
+                    <div class="form-group"><label class="form-label">Conta / Banco</label>
+                        <select name="forma_pagamento" id="scan-banco" class="form-control"
+                                onchange="onBancoChangeLanc(this,'scan-tipo-pagamento','scan-info-cartao','scan-parcelas-row','scan-parcelas-input')">
                             <option value="">— Selecione —</option>
-                            @foreach($bancos as $b)<option value="{{ $b->id }}" data-nome="{{ strtolower($b->nome) }}">{{ $b->nome }}</option>@endforeach
+                            @foreach($bancos as $b)
+                                <option value="{{ $b->id }}"
+                                    data-nome="{{ strtolower($b->nome) }}"
+                                    data-credito="{{ $b->tem_cartao_credito ? 1 : 0 }}"
+                                    data-fechamento="{{ $b->dia_fechamento_cartao ?? '' }}"
+                                    data-vencimento="{{ $b->dia_vencimento_cartao ?? '' }}"
+                                    data-limite="{{ $b->limite_cartao ?? 0 }}">{{ $b->nome }}</option>
+                            @endforeach
                         </select>
                     </div>
+                    <div class="form-group"><label class="form-label">Forma de Pagamento</label>
+                        <select name="tipo_pagamento" id="scan-tipo-pagamento" class="form-control"
+                                onchange="onTipoPagLanc(this,'scan-banco','scan-info-cartao','scan-parcelas-row','scan-parcelas-input')">
+                            <option value="">— Selecione —</option>
+                            <option value="dinheiro">💵 Dinheiro</option>
+                            <option value="pix">⚡ Pix</option>
+                            <option value="debito">💳 Cartão de Débito</option>
+                            <option value="credito">💳 Cartão de Crédito</option>
+                            <option value="transferencia">🔄 Transferência Bancária</option>
+                        </select>
+                    </div>
+
+                    {{-- Bloco cartão de crédito (cupom) --}}
+                    <div id="scan-info-cartao" style="display:none;grid-column:span 2;">
+                        <div id="scan-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;margin-bottom:10px;line-height:1.6;">
+                            <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                            <strong>Compra no Cartão de Crédito</strong><br>
+                            <span id="scan-aviso-fatura-texto">Configure o fechamento e vencimento do cartão nas configurações do banco.</span>
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:flex-end;">
+                            <div style="flex:1;">
+                                <label class="form-label">Nº de Parcelas</label>
+                                <input type="number" name="parcelas" id="scan-parcelas-input" value="1" min="1" max="48" class="form-control"
+                                       oninput="onParcelasLanc(this,'scan-aviso-fatura-texto','scan-banco')">
+                            </div>
+                            <div style="flex:1;">
+                                <label class="form-label" style="color:#64748b;font-size:11px;">Valor por parcela</label>
+                                <div id="scan-valor-parcela" style="padding:8px 12px;background:#f1f5f9;border-radius:6px;font-weight:700;color:#1e293b;font-size:13px;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group" style="grid-column:span 2;"><label class="form-label">Observações</label>
                         <textarea name="observacoes" id="scan-obs" class="form-control" rows="2" maxlength="120"></textarea>
                     </div>
@@ -736,6 +1081,156 @@ document.addEventListener('click', function(e) {
     if (!wrapper.contains(e.target) && e.target !== label && !label.contains(e.target)) {
         wrapper.style.display = 'none';
     }
+});
+
+// ── Cartão de Crédito: lógica de parcelas e faturas ─────────────────────────
+
+/**
+ * Calcula a data do primeiro vencimento da fatura com base na data de compra.
+ * Regra real: se a compra foi ANTES ou NO dia de fechamento → próxima fatura (1 mês).
+ *             se a compra foi APÓS o fechamento → fatura do mês seguinte (2 meses).
+ */
+function calcularPrimeiroVencimento(dataCompraStr, diaFechamento, diaVencimento) {
+    if (!dataCompraStr || !diaFechamento || !diaVencimento) return null;
+    const compra = new Date(dataCompraStr + 'T12:00:00');
+    const diaCompra = compra.getDate();
+    let ano  = compra.getFullYear();
+    let mes  = compra.getMonth(); // 0-based
+
+    if (diaCompra <= diaFechamento) {
+        // Dentro do ciclo atual → vence no mês seguinte
+        mes += 1;
+    } else {
+        // Passou do fechamento → próximo ciclo → vence em 2 meses
+        mes += 2;
+    }
+    // Normaliza mês/ano
+    if (mes > 11) { ano += Math.floor(mes / 12); mes = mes % 12; }
+    const d = new Date(ano, mes, diaVencimento);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function textoAvisoFatura(bancoSelect, idTexto, nParcelas) {
+    const opt = bancoSelect ? bancoSelect.options[bancoSelect.selectedIndex] : null;
+    const txtEl = document.getElementById(idTexto);
+    if (!opt || !opt.value || !txtEl) return;
+
+    const fechamento = opt.dataset.fechamento;
+    const vencimento = opt.dataset.vencimento;
+    const limite     = parseFloat(opt.dataset.limite) || 0;
+
+    if (!fechamento || !vencimento) {
+        txtEl.innerHTML = '⚠️ Configure o dia de fechamento e vencimento do cartão nas configurações do banco.';
+        return;
+    }
+
+    // Tenta pegar a data de compra do formulário próximo
+    const dataInputs = bancoSelect.closest('form').querySelectorAll('input[type="date"]');
+    let dataCompraStr = '';
+    dataInputs.forEach(inp => {
+        if (inp.name === 'data_compra' || inp.name === 'data_prevista_recebimento') {
+            dataCompraStr = inp.value;
+        }
+    });
+    if (!dataCompraStr) dataCompraStr = new Date().toISOString().substring(0,10);
+
+    const primeiroVenc = calcularPrimeiroVencimento(dataCompraStr, parseInt(fechamento), parseInt(vencimento));
+    const compraDay   = parseInt(dataCompraStr.split('-')[2]);
+    const aviso       = compraDay > parseInt(fechamento)
+        ? `⚠️ Compra feita após o fechamento (dia ${fechamento}) — entra na <strong>próxima fatura</strong>.`
+        : `✅ Compra dentro do ciclo atual (fechamento dia ${fechamento}).`;
+
+    const parcelaInfo = nParcelas > 1
+        ? `<br>📅 <strong>${nParcelas}x</strong> — 1ª parcela vence em <strong>${primeiroVenc}</strong>`
+        : `<br>📅 Vencimento da fatura: <strong>${primeiroVenc}</strong>`;
+
+    const limiteInfo = limite > 0
+        ? `<br>💳 Limite do cartão: <strong>R$ ${limite.toFixed(2).replace('.',',')}</strong>`
+        : '';
+
+    txtEl.innerHTML = aviso + parcelaInfo + limiteInfo;
+}
+
+/**
+ * Chamado quando o banco é alterado — atualiza dicas de cartão se já estiver em modo crédito.
+ */
+function onBancoChangeLanc(bancoSelect, idTipoPag, idInfoDiv, idParcelasRow, idParcelasInput) {
+    const tipo = document.getElementById(idTipoPag);
+    if (tipo && tipo.value === 'credito') {
+        const n = parseInt(document.getElementById(idParcelasInput)?.value) || 1;
+        textoAvisoFatura(bancoSelect, idInfoDiv.replace('-info-cartao','-aviso-fatura-texto'), n);
+    }
+}
+
+/**
+ * Chamado quando o tipo de pagamento é alterado.
+ * Mostra/oculta bloco de cartão de crédito e preenche as dicas.
+ */
+function onTipoPagLanc(tipoPagSelect, idBanco, idInfoDiv, idParcelasRow, idParcelasInput) {
+    const infoDiv     = document.getElementById(idInfoDiv);
+    const bancoSelect = document.getElementById(idBanco);
+    const isCredito   = tipoPagSelect.value === 'credito';
+
+    if (infoDiv) infoDiv.style.display = isCredito ? 'block' : 'none';
+
+    if (isCredito) {
+        const n = parseInt(document.getElementById(idParcelasInput)?.value) || 1;
+        // deriva o id do span de texto do aviso
+        const idTexto = idInfoDiv.replace('-info-cartao', '-aviso-fatura-texto');
+        textoAvisoFatura(bancoSelect, idTexto, n);
+        atualizarValorParcela(idBanco, idParcelasInput, idInfoDiv);
+    }
+}
+
+/**
+ * Chamado ao alterar o número de parcelas — atualiza aviso e valor/parcela.
+ */
+function onParcelasLanc(parcelasInput, idTexto, idBanco) {
+    const bancoSelect = document.getElementById(idBanco);
+    const n           = parseInt(parcelasInput.value) || 1;
+    textoAvisoFatura(bancoSelect, idTexto, n);
+
+    // Atualiza campo valor/parcela — busca o campo valor do mesmo form
+    const form  = parcelasInput.closest('form');
+    const valor = parseFloat(form.querySelector('input[name="valor"]')?.value) || 0;
+    // id do div de valor parcela = prefixo do form
+    const prefix = parcelasInput.id.replace('-parcelas-input','');
+    const divVP  = document.getElementById(prefix + '-valor-parcela');
+    if (divVP && valor > 0) {
+        const vp = (valor / n).toFixed(2).replace('.',',');
+        divVP.textContent = n > 1 ? `R$ ${vp} × ${n}` : `R$ ${valor.toFixed(2).replace('.',',')} (à vista)`;
+    }
+}
+
+function atualizarValorParcela(idBanco, idParcelasInput, idInfoDiv) {
+    const form     = document.getElementById(idBanco)?.closest('form');
+    if (!form) return;
+    const valor    = parseFloat(form.querySelector('input[name="valor"]')?.value) || 0;
+    const n        = parseInt(document.getElementById(idParcelasInput)?.value) || 1;
+    const prefix   = idParcelasInput.replace('-parcelas-input','');
+    const divVP    = document.getElementById(prefix + '-valor-parcela');
+    if (divVP && valor > 0) {
+        const vp = (valor / n).toFixed(2).replace('.',',');
+        divVP.textContent = n > 1 ? `R$ ${vp} × ${n}` : `R$ ${valor.toFixed(2).replace('.',',')} (à vista)`;
+    }
+}
+
+// Atualiza valor/parcela ao digitar o valor quando cartão crédito está ativo
+document.addEventListener('DOMContentLoaded', function() {
+    ['form-despesa','form-cupom'].forEach(function(formId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        const valorInput = form.querySelector('input[name="valor"]');
+        if (!valorInput) return;
+        valorInput.addEventListener('input', function() {
+            const tipoPag = form.querySelector('select[name="tipo_pagamento"]');
+            if (!tipoPag || tipoPag.value !== 'credito') return;
+            const prefix      = formId === 'form-despesa' ? 'manual' : 'scan';
+            const parcelasInp = document.getElementById(prefix + '-parcelas-input');
+            const idBanco     = formId === 'form-despesa' ? 'manual-banco' : 'scan-banco';
+            if (parcelasInp) onParcelasLanc(parcelasInp, prefix + '-aviso-fatura-texto', idBanco);
+        });
+    });
 });
 
 function mostrarLoading(msg) {

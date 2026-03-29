@@ -203,6 +203,7 @@
             border-color: rgba(255,255,255,.1);
         }
         .topbar-actions .btn-secondary:hover { background: rgba(255,255,255,.14); color: #e2e8f0; }
+        .topbar-logo-mobile { display: none; height: 26px; width: auto; object-fit: contain; opacity: .92; }
 
         /* ─── Page content ──────────────────────────────────────── */
         .page-content {
@@ -458,6 +459,48 @@
         /* ─── Badge yellow (alias) ───────────────────────────────── */
         .badge-yellow { background: #fef3c7; color: #92400e; }
 
+        /* ─── Filter Bar (shared across pages) ───────────────────── */
+        .filtros-bar  { padding:12px 16px; margin-bottom:18px; }
+        .filtros-lanc { display:flex; align-items:center; gap:10px; justify-content:space-between; }
+        .filtro-grupo { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+        .filtro-grupo-centro { justify-content:center; }
+
+        /* Avatares */
+        .av-grupo   { display:flex; align-items:flex-start; gap:6px; flex-wrap:wrap; }
+        .av-item    { display:flex; flex-direction:column; align-items:center; gap:3px; text-decoration:none; flex-shrink:0; transition:opacity .15s; }
+        .av-item:hover { opacity:.8; }
+        .av-circulo { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:all .2s; flex-shrink:0; }
+        .av-nome    { font-size:9.5px; white-space:nowrap; max-width:42px; overflow:hidden; text-overflow:ellipsis; color:#94a3b8; text-align:center; }
+
+        /* Month nav */
+        .nav-mes-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; color:#64748b; text-decoration:none; background:#fff; transition:background .15s; }
+        .nav-mes-btn:hover { background:#f1f5f9; color:var(--color-primary); }
+        .mes-label-btn { padding:6px 16px; font-weight:700; font-size:13px; color:var(--color-text); white-space:nowrap; cursor:pointer; user-select:none; background:#fff; border:none; font-family:inherit; }
+
+        /* Segmented control */
+        .seg-control { display:flex; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; }
+        .seg-btn { padding:6px 13px; font-size:12px; font-weight:600; border:none; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s; }
+
+        /* Vertical separator */
+        .separador-v { width:1px; height:30px; background:#e2e8f0; flex-shrink:0; align-self:center; }
+
+        /* Mobile — shared filter rules */
+        @media (max-width:640px) {
+            .filtros-lanc       { flex-direction:column; align-items:stretch; gap:0; }
+            .filtro-grupo       { width:100%; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+            .filtro-grupo:last-child { border-bottom:none; padding-bottom:2px; }
+            .filtro-grupo-centro  { justify-content:space-between; }
+            .filtro-grupo-members { justify-content:center; order:4; }
+            .filtro-grupo-bancos  { order:3; }
+            .filtro-grupo-tipo    { order:2; }
+            .av-grupo  { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; gap:10px; padding-bottom:2px; justify-content:center; }
+            .av-grupo::-webkit-scrollbar { display:none; }
+            .av-circulo { width:40px; height:40px; }
+            .av-nome    { font-size:10px; max-width:44px; }
+            .separador-v { display:none !important; }
+            .seg-btn { padding:8px 4px; font-size:13px; }
+        }
+
         /* ─── Responsive ──────────────────────────────────────────── */
         @media (max-width: 1024px) {
             .grid-4 { grid-template-columns: repeat(2, 1fr); }
@@ -473,6 +516,7 @@
             .main-content { margin-left: 0 !important; }
             .sidebar-collapse-btn { display: none; }
             .topbar-hamburger { display: flex; }
+            .topbar-logo-mobile { display: block; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .grid-4 { grid-template-columns: 1fr 1fr; }
             .page-content { padding: 14px 12px calc(var(--bottom-nav-h) + 14px); }
@@ -682,7 +726,9 @@
             <i class="fa-solid fa-bars"></i>
         </button>
         <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
-        <div class="topbar-actions"></div>
+        <div class="topbar-actions">
+            <img src="/alfa-home-logo-2.png" alt="AlfaHome" class="topbar-logo-mobile">
+        </div>
     </header>
 
     <main class="page-content">
