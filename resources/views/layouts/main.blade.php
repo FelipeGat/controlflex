@@ -6,8 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'AlfaHome') }} — @yield('title', 'Dashboard')</title>
     <link rel="icon" type="image/png" href="/favicon.png">
-    <script>if(localStorage.getItem('alfahome-theme')==='light')document.documentElement.classList.add('ah-light-preload');</script>
-    <style>.ah-light-preload body,.ah-light-preload{background:#f8fafc;}</style>
+    <script>if(localStorage.getItem('alfahome-theme')==='dark')document.documentElement.classList.add('ah-dark-preload');</script>
+    <style>.ah-dark-preload body,.ah-dark-preload{background:#0b1120 !important;color:#e2e8f0 !important;}</style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -207,7 +207,7 @@
         .topbar-actions .btn-secondary:hover { background: rgba(255,255,255,.14); color: #e2e8f0; }
         .topbar-logo-mobile { display: none; height: 26px; width: auto; object-fit: contain; opacity: .92; }
 
-        /* ─── Botão Tema (light / dark) ─────────────────────────── */
+        /* ─── Botão Tema ─────────────────────────────────────────── */
         .theme-toggle {
             display: flex; align-items: center; justify-content: center;
             width: 36px; height: 36px;
@@ -220,62 +220,208 @@
             flex-shrink: 0;
         }
         .theme-toggle:hover { background: rgba(255,255,255,.14); color: #e2e8f0; border-color: rgba(255,255,255,.22); }
+        /* Padrão (claro): mostra lua → clicar vai para escuro */
         .theme-toggle .icon-sun  { display: none; }
         .theme-toggle .icon-moon { display: block; }
-        body.light-mode .theme-toggle .icon-sun  { display: block; }
-        body.light-mode .theme-toggle .icon-moon { display: none; }
+        /* Dark mode: mostra sol → clicar vai para claro */
+        body.dark-mode .theme-toggle .icon-sun  { display: block; }
+        body.dark-mode .theme-toggle .icon-moon { display: none; }
+        body.dark-mode .theme-toggle { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.12); color: #94a3b8; }
+        body.dark-mode .theme-toggle:hover { background: rgba(255,255,255,.14); color: #e2e8f0; }
 
-        /* ─── Light mode overrides ───────────────────────────────── */
-        body.light-mode {
-            --color-bg: #f8fafc;
-            --color-text: #1e293b;
-            --color-text-muted: #64748b;
-            --color-text-subtle: #94a3b8;
-            --color-border: #e2e8f0;
+        /* ═══════════════════════════════════════════════════════════
+           DARK MODE COMPLETO — cobre todos os elementos do sistema
+           ═══════════════════════════════════════════════════════════ */
+        body.dark-mode {
+            --color-bg: #0b1120;
+            --color-border: #1e2e44;
+            --color-text: #e2e8f0;
+            --color-text-muted: #94a3b8;
+            --color-text-subtle: #64748b;
+            --shadow-card: 0 1px 4px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.3);
             background: var(--color-bg);
             color: var(--color-text);
         }
-        body.light-mode .topbar {
-            background: #ffffff;
-            border-bottom-color: #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,.06);
-        }
-        body.light-mode .topbar-title { color: #1e293b; }
-        body.light-mode .topbar-hamburger { color: #475569; }
-        body.light-mode .topbar-hamburger:hover { background: #f1f5f9; }
-        body.light-mode .theme-toggle {
-            background: #f1f5f9; border-color: #e2e8f0; color: #475569;
-        }
-        body.light-mode .theme-toggle:hover { background: #e2e8f0; color: #1e293b; }
-        body.light-mode .card {
-            background: #ffffff;
-            border-color: #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-        }
-        body.light-mode .kpi-value { color: #1e293b; }
-        body.light-mode .kpi-label { color: #64748b; }
-        body.light-mode .kpi-sub   { color: #94a3b8; }
-        body.light-mode .section-header { color: #1e293b; }
-        body.light-mode .filtros-bar { background: #ffffff; }
-        body.light-mode .mes-label-btn { color: #1e293b; }
-        body.light-mode .nav-mes-btn { color: #475569; background: #f8fafc; }
-        body.light-mode .nav-mes-btn:hover { background: #e2e8f0; }
-        body.light-mode .ext-date-header { background: #f8fafc; border-color: #e2e8f0; }
-        body.light-mode .ext-row { border-bottom-color: #f1f5f9; }
-        body.light-mode .ext-row:hover { background: #f8fafc; }
-        body.light-mode .data-table th { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
-        body.light-mode .data-table td { color: #1e293b; border-color: #f1f5f9; }
-        body.light-mode .data-table tbody tr:hover td { background: #f8fafc; }
-        body.light-mode .seg-btn { background: #f1f5f9; color: #64748b; }
-        body.light-mode .seg-btn.ativo { background: #4f46e5; color: #fff; }
-        body.light-mode .fc-atalho-btn:not(.ativo) { background: #fff; border-color: #e2e8f0; color: #475569; }
-        body.light-mode .fc-atalho-btn:not(.ativo):hover { background: #f8fafc; }
-        body.light-mode .progress-bar { background: #e2e8f0; }
-        body.light-mode .badge { border-color: transparent; }
-        body.light-mode .text-muted { color: #64748b; }
-        body.light-mode .fw-600 { color: #1e293b; }
 
-        /* Light mode: sidebar permanece escuro (identidade visual) */
+        /* ── Topbar ── */
+        body.dark-mode .topbar {
+            background: #111c2e;
+            border-bottom-color: #1e2e44;
+            box-shadow: 0 1px 0 rgba(255,255,255,.04);
+        }
+        body.dark-mode .topbar-title { color: #e2e8f0; }
+        body.dark-mode .topbar-hamburger { color: #94a3b8; }
+        body.dark-mode .topbar-hamburger:hover { background: rgba(255,255,255,.06); }
+
+        /* ── Cards ── */
+        body.dark-mode .card {
+            background: #111c2e;
+            border-color: #1e2e44;
+            box-shadow: 0 1px 4px rgba(0,0,0,.45);
+        }
+        body.dark-mode .card-title { color: #e2e8f0; }
+        body.dark-mode .card-title i { color: #64748b; }
+
+        /* ── KPIs ── */
+        body.dark-mode .kpi-value { color: #e2e8f0; }
+        body.dark-mode .kpi-label { color: #94a3b8; }
+        body.dark-mode .kpi-sub   { color: #64748b; border-top-color: #1e2e44; }
+        body.dark-mode .kpi-icon  { opacity: .9; }
+
+        /* ── Títulos e textos gerais ── */
+        body.dark-mode .section-header { color: #e2e8f0; }
+        body.dark-mode .section-header h2 { color: #e2e8f0; }
+        body.dark-mode .text-muted   { color: #94a3b8; }
+        body.dark-mode .text-subtle  { color: #64748b; }
+        body.dark-mode .fw-600 { color: #e2e8f0; }
+        body.dark-mode p, body.dark-mode span, body.dark-mode label,
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+        body.dark-mode h4, body.dark-mode h5 { color: inherit; }
+
+        /* ── Botões secundários / ghost ── */
+        body.dark-mode .btn-secondary {
+            background: #172135; color: #94a3b8; border-color: #1e2e44;
+        }
+        body.dark-mode .btn-secondary:hover { background: #1e2e44; color: #e2e8f0; }
+        body.dark-mode .btn-ghost { color: #94a3b8; }
+        body.dark-mode .btn-ghost:hover { background: #172135; color: #e2e8f0; }
+
+        /* ── Badges ── */
+        body.dark-mode .badge-green, body.dark-mode .badge-success {
+            background: rgba(22,163,74,.18); color: #4ade80; }
+        body.dark-mode .badge-red, body.dark-mode .badge-danger {
+            background: rgba(220,38,38,.18); color: #f87171; }
+        body.dark-mode .badge-amber, body.dark-mode .badge-warning, body.dark-mode .badge-yellow {
+            background: rgba(217,119,6,.18); color: #fbbf24; }
+        body.dark-mode .badge-blue, body.dark-mode .badge-info {
+            background: rgba(37,99,235,.18); color: #60a5fa; }
+        body.dark-mode .badge-slate, body.dark-mode .badge-gray {
+            background: rgba(71,85,105,.22); color: #94a3b8; }
+        body.dark-mode .badge-purple {
+            background: rgba(109,40,217,.18); color: #a78bfa; }
+
+        /* ── Alertas ── */
+        body.dark-mode .alert-success {
+            background: rgba(22,163,74,.12); color: #4ade80; border-color: rgba(22,163,74,.3); }
+        body.dark-mode .alert-danger {
+            background: rgba(220,38,38,.12); color: #f87171; border-color: rgba(220,38,38,.3); }
+
+        /* ── Formulários ── */
+        body.dark-mode .form-control {
+            background: #0f1826; border-color: #1e2e44;
+            color: #e2e8f0;
+        }
+        body.dark-mode .form-control::placeholder { color: #475569; }
+        body.dark-mode .form-control:focus {
+            border-color: var(--color-primary); background: #111c2e;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+        }
+        body.dark-mode select.form-control option { background: #111c2e; color: #e2e8f0; }
+        body.dark-mode .form-label { color: #94a3b8; }
+        body.dark-mode .form-check { color: #e2e8f0; }
+
+        /* ── Tabelas (.table) ── */
+        body.dark-mode .table thead th {
+            background: #0f1826; color: #64748b; border-bottom-color: #1e2e44;
+        }
+        body.dark-mode .table tbody td {
+            color: #e2e8f0; border-bottom-color: #172135;
+        }
+        body.dark-mode .table tbody tr:hover td { background: rgba(255,255,255,.025); }
+
+        /* ── Modal ── */
+        body.dark-mode .modal-backdrop { background: rgba(0,0,0,.75); }
+        body.dark-mode .modal {
+            background: #111c2e; border: 1px solid #1e2e44;
+            box-shadow: 0 24px 48px rgba(0,0,0,.6);
+        }
+        body.dark-mode .modal-header { border-bottom-color: #1e2e44; }
+        body.dark-mode .modal-header h3 { color: #e2e8f0; }
+        body.dark-mode .modal-close { color: #64748b; }
+        body.dark-mode .modal-close:hover { background: #172135; color: #94a3b8; }
+        body.dark-mode .modal-body { color: #e2e8f0; }
+        body.dark-mode .modal-footer { border-top-color: #1e2e44; }
+
+        /* ── Progress bar ── */
+        body.dark-mode .progress-bar { background: #172135; }
+
+        /* ── Empty state ── */
+        body.dark-mode .empty-state { color: #64748b; }
+
+        /* ── Bottom nav ── */
+        body.dark-mode .bottom-nav { background: #111c2e; border-top-color: #1e2e44; }
+        body.dark-mode .bottom-nav a { color: #64748b; }
+        body.dark-mode .bottom-nav a.active,
+        body.dark-mode .bottom-nav a:hover { color: var(--color-primary); }
+
+        /* ── Extrato (ext-*) ── */
+        body.dark-mode .ext-header { border-bottom-color: #1e2e44; }
+        body.dark-mode .ext-date-header {
+            background: #0f1826; border-color: #1e2e44; }
+        body.dark-mode .ext-date-label { color: #64748b; }
+        body.dark-mode .ext-row { border-bottom-color: #172135; }
+        body.dark-mode .ext-row:hover { background: rgba(255,255,255,.025); }
+        body.dark-mode .ext-icone.ext-credito { background: rgba(22,163,74,.15); }
+        body.dark-mode .ext-icone.ext-debito  { background: rgba(239,68,68,.15); }
+        body.dark-mode .ext-desc { color: #e2e8f0; }
+        body.dark-mode .ext-conta-pill { color: #64748b; }
+        body.dark-mode .ext-tag-cat { background: #172135; color: #64748b; }
+        body.dark-mode .ext-tag-rec { background: rgba(109,40,217,.15); color: #a78bfa; }
+        body.dark-mode .ext-tag-doc { background: rgba(3,105,161,.15); color: #60a5fa; }
+        body.dark-mode .ext-del-btn  { color: #64748b; }
+        body.dark-mode .ext-edit-btn { color: #64748b; }
+        body.dark-mode .ext-del-btn:hover  { background: rgba(239,68,68,.15); color: #f87171; }
+        body.dark-mode .ext-edit-btn:hover { background: rgba(79,70,229,.15); color: #818cf8; }
+        body.dark-mode .ext-footer { background: #0f1826; border-top-color: #1e2e44; }
+
+        /* ── Filtros ── */
+        body.dark-mode .filtros-bar { background: #111c2e; border-color: #1e2e44; }
+        body.dark-mode .mes-label-btn { color: #e2e8f0; background: transparent; border: none; }
+        body.dark-mode .nav-mes-btn { color: #94a3b8; background: #0f1826; }
+        body.dark-mode .nav-mes-btn:hover { background: #1e2e44; color: var(--color-primary); }
+        body.dark-mode .seg-control { border-color: #1e2e44; }
+        body.dark-mode .seg-btn { background: #0f1826; color: #94a3b8; }
+        body.dark-mode .seg-btn.ativo { background: var(--color-primary); color: #fff; }
+        body.dark-mode .separador-v { background: #1e2e44; }
+        body.dark-mode .filtro-grupo { border-bottom-color: #1e2e44; }
+        body.dark-mode .av-nome { color: #64748b; }
+
+        /* ── Fluxo de Caixa filtros ── */
+        body.dark-mode .fc-atalho-btn:not(.ativo) {
+            background: #0f1826; border-color: #1e2e44; color: #94a3b8; }
+        body.dark-mode .fc-atalho-btn:not(.ativo):hover { background: #172135; color: #e2e8f0; }
+        body.dark-mode .fc-periodo-label { color: #64748b; border-top-color: #1e2e44; }
+
+        /* ── Dashboard saldos ── */
+        body.dark-mode .db-section-label { color: #64748b; }
+        body.dark-mode .db-section-label::after { background: #1e2e44; }
+        body.dark-mode .db-banco-nome { color: #e2e8f0; }
+        body.dark-mode .db-banco-tipo { color: #64748b; }
+        body.dark-mode .db-banco-item { border-bottom-color: #172135; }
+
+        /* ── Investimentos KPI ── */
+        body.dark-mode .inv-kpi-row .card { background: #111c2e; border-color: #1e2e44; }
+
+        /* ── Fluxo de Caixa KPI ── */
+        body.dark-mode .fc-kpi-grid .card { background: #111c2e; border-color: #1e2e44; }
+
+        /* ── Sidebar tooltip (collapsed) ── */
+        body.dark-mode .sidebar.collapsed .sidebar-link:hover::after {
+            background: #172135; color: #e2e8f0; border: 1px solid #1e2e44; }
+
+        /* ── Paginação ── */
+        body.dark-mode nav[role="navigation"] { color: #94a3b8; }
+        body.dark-mode nav[role="navigation"] a,
+        body.dark-mode nav[role="navigation"] button { color: #94a3b8; border-color: #1e2e44; background: #111c2e; }
+        body.dark-mode nav[role="navigation"] span[aria-current] { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+        /* ── Transições suaves de tema ── */
+        body, .card, .topbar, .modal, .form-control, .btn-secondary,
+        .table thead th, .table tbody td, .bottom-nav,
+        .ext-row, .ext-date-header, .ext-footer, .filtros-bar,
+        .mes-label-btn, .nav-mes-btn, .seg-btn, .progress-bar {
+            transition: background-color .22s ease, border-color .22s ease, color .18s ease;
+        }
 
         /* ─── Page content ──────────────────────────────────────── */
         .page-content {
@@ -715,7 +861,7 @@
     @stack('styles')
 </head>
 <body>
-<script>if(localStorage.getItem('alfahome-theme')==='light')document.body.classList.add('light-mode');</script>
+<script>if(localStorage.getItem('alfahome-theme')==='dark')document.body.classList.add('dark-mode');</script>
 
 {{-- ─── Sidebar ──────────────────────────────────────────────────────── --}}
 <aside class="sidebar" id="sidebar">
@@ -860,16 +1006,31 @@
         </div>
     </header>
     <script>
-        (function () {
-            var stored = localStorage.getItem('alfahome-theme');
-            if (stored === 'light') document.body.classList.add('light-mode');
-        })();
         document.addEventListener('DOMContentLoaded', function () {
             var btn = document.getElementById('theme-toggle');
             if (!btn) return;
             btn.addEventListener('click', function () {
-                var isLight = document.body.classList.toggle('light-mode');
-                localStorage.setItem('alfahome-theme', isLight ? 'light' : 'dark');
+                var isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('alfahome-theme', isDark ? 'dark' : 'light');
+                /* Atualiza cores padrão do Chart.js para os gráficos já renderizados */
+                if (typeof Chart !== 'undefined') {
+                    var tickColor  = isDark ? '#64748b' : '#94a3b8';
+                    var gridColor  = isDark ? '#1e2e44' : '#f1f5f9';
+                    Chart.defaults.color = tickColor;
+                    Chart.defaults.borderColor = gridColor;
+                    /* Re-renderiza todos os charts registrados */
+                    Object.values(Chart.instances || {}).forEach(function(c) {
+                        if (c.options.scales) {
+                            Object.values(c.options.scales).forEach(function(s) {
+                                if (s.ticks)  s.ticks.color  = tickColor;
+                                if (s.grid)   s.grid.color   = gridColor;
+                            });
+                        }
+                        if (c.options.plugins && c.options.plugins.legend && c.options.plugins.legend.labels)
+                            c.options.plugins.legend.labels.color = tickColor;
+                        c.update('none');
+                    });
+                }
             });
         });
     </script>
