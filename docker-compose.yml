@@ -37,8 +37,10 @@ services:
       - "8443:443"
     volumes:
       - ./:/var/www:cached
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./ssl/archive/home.alfasolucoes.cloud:/etc/nginx/ssl:ro
+      - storage-data:/var/www/storage
+      - vendor-data:/var/www/vendor
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl/live/home.alfasolucoes.cloud:/etc/nginx/ssl:ro
     depends_on:
       - app
     networks:

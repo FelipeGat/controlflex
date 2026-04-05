@@ -97,6 +97,7 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     // Categorias
     Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index')->middleware('permissao:categorias,ver');
     Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store')->middleware('permissao:categorias,criar');
+    Route::post('/categorias/rapido', [CategoriaController::class, 'storeRapido'])->name('categorias.store-rapido')->middleware('permissao:categorias,criar');
 
     Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update')->middleware('permissao:categorias,editar');
     Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy')->middleware('permissao:categorias,excluir');
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     // Fornecedores
     Route::get('/fornecedores', [FornecedorController::class, 'index'])->name('fornecedores.index')->middleware('permissao:fornecedores,ver');
     Route::post('/fornecedores', [FornecedorController::class, 'store'])->name('fornecedores.store')->middleware('permissao:fornecedores,criar');
+    Route::post('/fornecedores/rapido', [FornecedorController::class, 'storeRapido'])->name('fornecedores.store-rapido')->middleware('permissao:fornecedores,criar');
 
     Route::put('/fornecedores/{fornecedor}', [FornecedorController::class, 'update'])->name('fornecedores.update')->middleware('permissao:fornecedores,editar');
     Route::delete('/fornecedores/{fornecedor}', [FornecedorController::class, 'destroy'])->name('fornecedores.destroy')->middleware('permissao:fornecedores,excluir');

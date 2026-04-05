@@ -226,11 +226,14 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Data Prevista *</label>
-                        <input type="date" name="data_prevista_recebimento" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="data_prevista_recebimento" id="rec-novo-dpr" class="form-control" value="{{ date('Y-m-d') }}" required onchange="recNovoSyncPago()">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Data do Recebimento</label>
-                        <input type="date" name="data_recebimento" class="form-control">
+                    <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:6px;">
+                            <input type="checkbox" id="rec-novo-marcar-recebida" onchange="toggleMarcarRecebida(this)" style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;">
+                            Marcar como recebida
+                        </label>
+                        <input type="date" name="data_recebimento" id="rec-novo-dr" class="form-control" style="display:none;">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Quem Recebeu</label>
@@ -243,12 +246,17 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" class="form-control" id="rec-novo-categoria_id" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-receita','rec-novo-categoria_id')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta de Recebimento</label>
@@ -339,12 +347,17 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" id="r-edit-cat" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" id="r-edit-cat" class="form-control" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-receita','r-edit-cat')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta</label>
@@ -459,6 +472,25 @@
 
 @push('scripts')
 <script>
+// ── Marcar como recebida (nova receita) ──────────────────────────────────────
+function toggleMarcarRecebida(cb) {
+    const dataField = document.getElementById('rec-novo-dr');
+    if (cb.checked) {
+        dataField.value = document.getElementById('rec-novo-dpr').value;
+        dataField.style.display = '';
+    } else {
+        dataField.value = '';
+        dataField.style.display = 'none';
+    }
+}
+
+function recNovoSyncPago() {
+    const cb = document.getElementById('rec-novo-marcar-recebida');
+    if (cb && cb.checked) {
+        document.getElementById('rec-novo-dr').value = document.getElementById('rec-novo-dpr').value;
+    }
+}
+
 // ── Parcelas (nova receita) ────────────────────────────────────────────────────
 function onParcelasChangeReceita(inputParcelas, idRecorrente, idFreqRow) {
     const val      = parseInt(inputParcelas.value) || 1;
@@ -520,6 +552,49 @@ function confirmarExclusaoReceita(escopoFixo) {
     document.getElementById('r-escopo-excluir').value = escopo;
     document.getElementById('form-excluir-receita').submit();
     closeModal('modal-confirmar-exclusao-receita');
+}
+
+// ── Cadastro rápido (categoria) ──────────────────────────────────────────────
+function criarRapido(tipo, selectId) {
+    const labels = {
+        'categoria-receita': 'Nova Categoria (Receita)',
+        'categoria-despesa': 'Nova Categoria (Despesa)',
+        'fornecedor': 'Novo Fornecedor',
+    };
+    const nome = prompt(labels[tipo] || 'Nome:');
+    if (!nome || !nome.trim()) return;
+
+    let url, body;
+    if (tipo === 'fornecedor') {
+        url = '/fornecedores/rapido';
+        body = JSON.stringify({ nome: nome.trim() });
+    } else {
+        const tipoCategoria = tipo === 'categoria-receita' ? 'RECEITA' : 'DESPESA';
+        url = '/categorias/rapido';
+        body = JSON.stringify({ nome: nome.trim(), tipo: tipoCategoria });
+    }
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+        body: body,
+    })
+    .then(r => { if (!r.ok) throw r; return r.json(); })
+    .then(data => {
+        const seletores = document.querySelectorAll('select[name="categoria_id"]');
+        seletores.forEach(sel => {
+            const opt = new Option(data.nome, data.id);
+            sel.appendChild(opt);
+        });
+
+        const selectOrigem = document.getElementById(selectId);
+        if (selectOrigem) selectOrigem.value = data.id;
+    })
+    .catch(() => alert('Erro ao cadastrar. Verifique se você tem permissão.'));
 }
 </script>
 @endpush
