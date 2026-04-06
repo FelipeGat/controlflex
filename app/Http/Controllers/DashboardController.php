@@ -235,10 +235,13 @@ class DashboardController extends Controller
             ->orderBy('nome')
             ->get()
             ->map(function ($cartao) use ($tenantId, $inicio, $fim) {
+                // Conta apenas despesas pagas com cartão de crédito (tipo_pagamento = 'credito')
+                // Evita somar pix/boleto/débito que também usam o mesmo banco como conta corrente
                 $cartao->gastos_periodo = (float) DB::table('despesas')
                     ->where('tenant_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('forma_pagamento', $cartao->id)
+                    ->where('tipo_pagamento', 'credito')
                     ->whereBetween('data_compra', [$inicio, $fim])
                     ->sum('valor');
                 $cartao->limite_disponivel = (float) $cartao->limite_cartao - $cartao->gastos_periodo;
