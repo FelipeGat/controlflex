@@ -13,11 +13,15 @@
     $ehMesAtualR = $dtR->format('Y-m') === now()->format('Y-m');
     $ehHojeR     = $inicio === now()->format('Y-m-d') && $fim === now()->format('Y-m-d');
 
+    $filtrosAtivosR = array_filter(['familiar_id'=>$familiarId,'banco_id'=>$bancoId,'categoria_id'=>$categoriaId,'tipo_pagamento'=>$tipoPag]);
+
     $urlRMesAnt  = route('receitas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtRAnt->startOfMonth()->format('Y-m-d'), 'fim' => $dtRAnt->copy()->endOfMonth()->format('Y-m-d')]));
     $urlRMesProx = route('receitas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtRProx->startOfMonth()->format('Y-m-d'), 'fim' => $dtRProx->copy()->endOfMonth()->format('Y-m-d')]));
-    $urlRHoje    = route('receitas.index', array_filter(['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d'), 'familiar_id' => $familiarId]));
-    $urlRMesAtu  = route('receitas.index', array_filter(['familiar_id' => $familiarId]));
-    $urlRTodas   = route('receitas.index', array_filter(['inicio' => $inicio, 'fim' => $fim]));
+    $urlRHoje    = route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d')])));
+    $urlRMesAtu  = route('receitas.index', array_filter($filtrosAtivosR));
+    $urlRTodas   = route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio' => $inicio, 'fim' => $fim])));
+
+    $temFiltroAtivoR = $bancoId || $categoriaId || $tipoPag;
 @endphp
 
 <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:12px;">
@@ -70,8 +74,8 @@
                     $rCors = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
                     $rCor  = $rCors[$fam->id % count($rCors)];
                     $rUrl  = $rSel
-                        ? route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim]))
-                        : route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id]));
+                        ? route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio'=>$inicio,'fim'=>$fim])))
+                        : route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id])));
                 @endphp
                 <a href="{{ $rUrl }}" class="av-item" title="{{ $fam->nome }}">
                     <div class="av-circulo" style="border:3px solid {{ $rSel ? $rCor : 'transparent' }};outline:{{ $rSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $rSel ? '0 0 0 2px '.$rCor.'44' : 'none' }};">
@@ -90,6 +94,52 @@
 
     </div>
 </div>
+
+{{-- ─── Filtros avançados: Banco / Categoria / Tipo ──────────────────────── --}}
+<form method="GET" action="{{ route('receitas.index') }}" id="form-filtros-rec"
+      style="margin-bottom:12px;">
+    <input type="hidden" name="inicio"      value="{{ $inicio }}">
+    <input type="hidden" name="fim"         value="{{ $fim }}">
+    <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        {{-- Banco / Conta de recebimento --}}
+        <select name="banco_id" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $bancoId ? '#f0fdf4' : '#fff' }};color:{{ $bancoId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:150px;">
+            <option value="">Todas as contas</option>
+            @foreach($bancos as $b)
+                <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Categoria --}}
+        <select name="categoria_id" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $categoriaId ? '#f0fdf4' : '#fff' }};color:{{ $categoriaId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todas as categorias</option>
+            @foreach($categorias as $c)
+                <option value="{{ $c->id }}" {{ $categoriaId == $c->id ? 'selected' : '' }}>{{ $c->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Tipo de Recebimento --}}
+        <select name="tipo_pagamento" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPag ? '#f0fdf4' : '#fff' }};color:{{ $tipoPag ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todos os tipos</option>
+            <option value="dinheiro"    {{ $tipoPag === 'dinheiro'    ? 'selected' : '' }}>Dinheiro</option>
+            <option value="pix"         {{ $tipoPag === 'pix'         ? 'selected' : '' }}>Pix</option>
+            <option value="transferencia"{{ $tipoPag === 'transferencia'? 'selected' : '' }}>Transferência</option>
+            <option value="deposito"    {{ $tipoPag === 'deposito'    ? 'selected' : '' }}>Depósito</option>
+            <option value="outros"      {{ $tipoPag === 'outros'      ? 'selected' : '' }}>Outros</option>
+        </select>
+
+        @if($temFiltroAtivoR)
+        <a href="{{ route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
+           style="font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;white-space:nowrap;">
+            <i class="fa-solid fa-xmark"></i> Limpar filtros
+        </a>
+        @endif
+    </div>
+</form>
 
 @php
     $receitasPorData = collect($receitas->items())->groupBy(fn($r) => $r->data_prevista_recebimento->format('d/m/Y'));

@@ -14,28 +14,39 @@ use Illuminate\Validation\Rule;
 class DespesaController extends Controller
 {
     /** Tipos de pagamento aceitos pelo sistema */
-    private const TIPOS_PAGAMENTO = ['dinheiro', 'pix', 'debito', 'credito', 'transferencia'];
+    private const TIPOS_PAGAMENTO = ['dinheiro', 'pix', 'debito', 'credito', 'transferencia', 'boleto'];
 
     public function index(Request $request)
     {
-        $tenantId   = Auth::user()->tenant_id;
-        $inicio     = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
-        $fim        = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
-        $familiarId = $request->get('familiar_id') ? (int) $request->get('familiar_id') : null;
+        $tenantId     = Auth::user()->tenant_id;
+        $inicio       = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
+        $fim          = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $familiarId   = $request->get('familiar_id')   ? (int) $request->get('familiar_id')   : null;
+        $fornecedorId = $request->get('fornecedor_id') ? (int) $request->get('fornecedor_id') : null;
+        $bancoId      = $request->get('banco_id')      ? (int) $request->get('banco_id')      : null;
+        $categoriaId  = $request->get('categoria_id')  ? (int) $request->get('categoria_id')  : null;
+        $tipoPag      = $request->get('tipo_pagamento') ?: null;
 
-        // Filtro por membro: inclui despesas do membro + despesas de "Todos da Casa" (NULL)
         $baseQuery = Despesa::whereBetween('data_compra', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+            ->when($familiarId,   fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
-            }));
+            }))
+            ->when($fornecedorId, fn($q) => $q->where('onde_comprou', $fornecedorId))
+            ->when($bancoId,      fn($q) => $q->where('forma_pagamento', $bancoId))
+            ->when($categoriaId,  fn($q) => $q->where('categoria_id', $categoriaId))
+            ->when($tipoPag,      fn($q) => $q->where('tipo_pagamento', $tipoPag));
 
         $totalValor = (clone $baseQuery)->sum('valor');
 
         $despesas = Despesa::with(['familiar', 'fornecedor', 'categoria', 'banco'])
             ->whereBetween('data_compra', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+            ->when($familiarId,   fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
             }))
+            ->when($fornecedorId, fn($q) => $q->where('onde_comprou', $fornecedorId))
+            ->when($bancoId,      fn($q) => $q->where('forma_pagamento', $bancoId))
+            ->when($categoriaId,  fn($q) => $q->where('categoria_id', $categoriaId))
+            ->when($tipoPag,      fn($q) => $q->where('tipo_pagamento', $tipoPag))
             ->orderByDesc('data_compra')
             ->orderByDesc('id')
             ->paginate(20)
@@ -48,7 +59,8 @@ class DespesaController extends Controller
 
         return view('despesas.index', compact(
             'despesas', 'totalValor', 'categorias', 'familiares',
-            'fornecedores', 'bancos', 'inicio', 'fim', 'familiarId'
+            'fornecedores', 'bancos', 'inicio', 'fim',
+            'familiarId', 'fornecedorId', 'bancoId', 'categoriaId', 'tipoPag'
         ));
     }
 
@@ -70,8 +82,8 @@ class DespesaController extends Controller
             'frequencia'      => 'nullable|in:diaria,semanal,quinzenal,mensal,trimestral,semestral,anual',
         ]);
 
-        // Validar saldo/limite da conta selecionada
-        if ($request->forma_pagamento && $request->tipo_pagamento) {
+        // Validar saldo/limite apenas quando a despesa já é criada como paga
+        if ($request->data_pagamento && $request->forma_pagamento && $request->tipo_pagamento) {
             $erro = $this->validarDisponibilidade(
                 (int) $request->forma_pagamento,
                 (float) $request->valor,   // valor total (antes de dividir em parcelas)
@@ -116,8 +128,8 @@ class DespesaController extends Controller
             'observacoes'     => 'nullable|string|max:2000',
         ]);
 
-        // Validar disponibilidade ao alterar valor ou forma/tipo de pagamento
-        if ($request->forma_pagamento && $request->tipo_pagamento) {
+        // Validar disponibilidade apenas quando a despesa está sendo marcada como paga
+        if ($request->data_pagamento && $request->forma_pagamento && $request->tipo_pagamento) {
             $mesmoCartao = ((int) $request->forma_pagamento === (int) $despesa->forma_pagamento);
             $erro = $this->validarDisponibilidade(
                 (int) $request->forma_pagamento,

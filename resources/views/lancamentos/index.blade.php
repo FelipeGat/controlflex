@@ -122,6 +122,7 @@
                     <input type="hidden" name="fim"         id="f-fim"     value="{{ $fim }}">
                     <input type="hidden" name="banco_id"    value="{{ $bancoId }}">
                     <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
+                    <input type="hidden" name="tipo_pagamento" id="f-tipo-pag" value="{{ $tipoPagamento }}">
 
                     {{-- Date picker oculto --}}
                     <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:16px;max-width:340px;">
@@ -143,6 +144,21 @@
                         @endforeach
                     </div>
                 </form>
+            </div>
+
+            {{-- Filtro por tipo de pagamento --}}
+            <div style="display:flex;align-items:center;">
+                <select id="sel-tipo-pag"
+                        onchange="document.getElementById('f-tipo-pag').value=this.value;document.getElementById('form-filtro').submit()"
+                        style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPagamento ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPagamento ? '#eff6ff' : '#fff' }};color:{{ $tipoPagamento ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:130px;">
+                    <option value="">Todos os tipos</option>
+                    <option value="dinheiro"     {{ $tipoPagamento === 'dinheiro'     ? 'selected' : '' }}>Dinheiro</option>
+                    <option value="pix"          {{ $tipoPagamento === 'pix'          ? 'selected' : '' }}>Pix</option>
+                    <option value="debito"       {{ $tipoPagamento === 'debito'       ? 'selected' : '' }}>Cartão Débito</option>
+                    <option value="credito"      {{ $tipoPagamento === 'credito'      ? 'selected' : '' }}>Cartão Crédito</option>
+                    <option value="transferencia"{{ $tipoPagamento === 'transferencia'? 'selected' : '' }}>Transferência</option>
+                    <option value="boleto"       {{ $tipoPagamento === 'boleto'       ? 'selected' : '' }}>Boleto</option>
+                </select>
             </div>
 
         </div>{{-- /filtro-esquerda --}}
@@ -489,6 +505,7 @@
                             <option value="debito">💳 Cartão de Débito</option>
                             <option value="credito">💳 Cartão de Crédito</option>
                             <option value="transferencia">🔄 Transferência Bancária</option>
+                            <option value="boleto">🧾 Boleto Bancário</option>
                         </select>
                     </div>
 
@@ -624,6 +641,7 @@
                             <option value="debito">💳 Cartão de Débito</option>
                             <option value="credito">💳 Cartão de Crédito</option>
                             <option value="transferencia">🔄 Transferência Bancária</option>
+                            <option value="boleto">🧾 Boleto Bancário</option>
                         </select>
                     </div>
 
