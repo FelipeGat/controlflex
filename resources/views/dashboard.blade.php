@@ -228,11 +228,12 @@
 <div class="db-section-label"><i class="fa-solid fa-circle-dot" style="font-size:8px;color:#16a34a;"></i> Período Selecionado</div>
 
 <div class="db-kpi-row" style="margin-bottom:20px;">
+    {{-- ── Receitas: destaque no Realizado, previsto em menor ── --}}
     <div class="card" style="border-top: 3px solid #16a34a;">
         <div class="d-flex justify-between align-center">
             <div>
-                <div class="kpi-label">Receitas Previstas</div>
-                <div class="kpi-value text-green">R$ {{ number_format($totalReceitas, 2, ',', '.') }}</div>
+                <div class="kpi-label">Receitas Realizadas</div>
+                <div class="kpi-value text-green">R$ {{ number_format($receitasRealizadas, 2, ',', '.') }}</div>
                 <div class="mt-1">
                     @if($variacaoReceitas >= 0)
                         <span class="badge badge-green"><i class="fa-solid fa-arrow-up"></i> {{ number_format($variacaoReceitas, 1) }}%</span>
@@ -247,15 +248,16 @@
             </div>
         </div>
         <div class="kpi-sub">
-            Realizado: <strong class="text-green">R$ {{ number_format($receitasRealizadas, 2, ',', '.') }}</strong>
+            Previsto: <strong style="color:#64748b">R$ {{ number_format($totalReceitas, 2, ',', '.') }}</strong>
         </div>
     </div>
 
+    {{-- ── Despesas: destaque no Realizado, previsto em menor ── --}}
     <div class="card" style="border-top: 3px solid #dc2626;">
         <div class="d-flex justify-between align-center">
             <div>
-                <div class="kpi-label">Despesas Previstas</div>
-                <div class="kpi-value text-red">R$ {{ number_format($totalDespesas, 2, ',', '.') }}</div>
+                <div class="kpi-label">Despesas Realizadas</div>
+                <div class="kpi-value text-red">R$ {{ number_format($despesasRealizadas, 2, ',', '.') }}</div>
                 <div class="mt-1">
                     @if($variacaoDespesas <= 0)
                         <span class="badge badge-green"><i class="fa-solid fa-arrow-down"></i> {{ number_format(abs($variacaoDespesas), 1) }}%</span>
@@ -270,10 +272,12 @@
             </div>
         </div>
         <div class="kpi-sub">
-            Realizado: <strong class="text-red">R$ {{ number_format($despesasRealizadas, 2, ',', '.') }}</strong>
+            Previsto: <strong style="color:#64748b">R$ {{ number_format($totalDespesas, 2, ',', '.') }}</strong>
         </div>
     </div>
 
+    {{-- ── Saldo: destaque no saldo previsto, sub = saldo realizado ── --}}
+    @php $saldoRealizado = $receitasRealizadas - $despesasRealizadas; @endphp
     <div class="card" style="border-top: 3px solid {{ $saldo >= 0 ? '#4f46e5' : '#dc2626' }};">
         <div class="d-flex justify-between align-center">
             <div>
@@ -295,29 +299,77 @@
             </div>
         </div>
         <div class="kpi-sub">
-            Total Investido: <strong style="color:#6d28d9">R$ {{ number_format($totalInvestido, 2, ',', '.') }}</strong>
+            Saldo real:
+            <strong style="color:{{ $saldoRealizado >= 0 ? '#16a34a' : '#dc2626' }}">
+                {{ $saldoRealizado >= 0 ? '+' : '' }}R$ {{ number_format($saldoRealizado, 2, ',', '.') }}
+            </strong>
         </div>
     </div>
 </div>
 
 {{-- Info cards --}}
 <div class="grid-4 mb-5">
+
+    {{-- Pago — Último Mês · Em aberto em menor destaque --}}
     <div class="card">
         <div class="kpi-label">Pago — Último Mês</div>
         <div class="kpi-value text-red mt-1">R$ {{ number_format($pagamentoUltimoMes, 2, ',', '.') }}</div>
+        @if($apagarUltimoMes > 0)
+        <div class="kpi-sub" style="margin-top:6px;">
+            Em aberto: <strong style="color:#f59e0b">R$ {{ number_format($apagarUltimoMes, 2, ',', '.') }}</strong>
+        </div>
+        @else
+        <div class="kpi-sub" style="margin-top:6px;color:#16a34a;">
+            <i class="fa-solid fa-check" style="font-size:9px;"></i> Tudo pago
+        </div>
+        @endif
     </div>
+
+    {{-- Recebido — Último Mês · Em aberto em menor destaque --}}
     <div class="card">
         <div class="kpi-label">Recebido — Último Mês</div>
         <div class="kpi-value text-green mt-1">R$ {{ number_format($recebidoUltimoMes, 2, ',', '.') }}</div>
+        @if($aReceberUltimoMes > 0)
+        <div class="kpi-sub" style="margin-top:6px;">
+            A receber: <strong style="color:#f59e0b">R$ {{ number_format($aReceberUltimoMes, 2, ',', '.') }}</strong>
+        </div>
+        @else
+        <div class="kpi-sub" style="margin-top:6px;color:#16a34a;">
+            <i class="fa-solid fa-check" style="font-size:9px;"></i> Tudo recebido
+        </div>
+        @endif
     </div>
+
+    {{-- À Pagar — Próx. Mês · Já pago em menor destaque --}}
     <div class="card">
         <div class="kpi-label">À Pagar — Próx. Mês</div>
         <div class="kpi-value text-amber mt-1">R$ {{ number_format($previsaoDespesasProxMes, 2, ',', '.') }}</div>
+        @if($pagoProximoMes > 0)
+        <div class="kpi-sub" style="margin-top:6px;">
+            Já pago: <strong style="color:#16a34a">R$ {{ number_format($pagoProximoMes, 2, ',', '.') }}</strong>
+        </div>
+        @else
+        <div class="kpi-sub" style="margin-top:6px;color:#94a3b8;">
+            Nenhum pago ainda
+        </div>
+        @endif
     </div>
+
+    {{-- À Receber — Próx. Mês · Já recebido em menor destaque --}}
     <div class="card">
         <div class="kpi-label">À Receber — Próx. Mês</div>
         <div class="kpi-value mt-1" style="color:#4f46e5">R$ {{ number_format($previsaoReceitasProxMes, 2, ',', '.') }}</div>
+        @if($recebidoProximoMes > 0)
+        <div class="kpi-sub" style="margin-top:6px;">
+            Já recebido: <strong style="color:#16a34a">R$ {{ number_format($recebidoProximoMes, 2, ',', '.') }}</strong>
+        </div>
+        @else
+        <div class="kpi-sub" style="margin-top:6px;color:#94a3b8;">
+            Nenhum recebido ainda
+        </div>
+        @endif
     </div>
+
 </div>
 
 {{-- Gráfico: Fluxo de caixa (100%) --}}
