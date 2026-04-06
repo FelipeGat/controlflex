@@ -48,7 +48,7 @@
                         @endif
                     </td>
                     <td>
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2">
                             <button class="btn btn-secondary btn-sm btn-icon"
                                 onclick="editarPlano({{ $plano->id }}, '{{ addslashes($plano->nome) }}', '{{ $plano->slug }}', '{{ addslashes($plano->descricao ?? '') }}', '{{ $plano->preco_mensal }}', '{{ $plano->preco_anual }}', '{{ $plano->max_usuarios }}', '{{ $plano->max_bancos }}', {{ $plano->ativo ? 'true' : 'false' }})"
                                 title="Editar">

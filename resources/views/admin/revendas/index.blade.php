@@ -49,7 +49,7 @@
                     <td class="hide-mobile">{{ $revenda->tenants_count }}</td>
                     <td class="text-muted hide-mobile">{{ $revenda->admin?->email ?? '—' }}</td>
                     <td>
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2">
                             <button class="btn btn-secondary btn-sm btn-icon"
                                 onclick="editarRevenda({{ $revenda->id }}, '{{ addslashes($revenda->nome) }}', '{{ addslashes($revenda->cnpj ?? '') }}', '{{ addslashes($revenda->email ?? '') }}', '{{ addslashes($revenda->telefone ?? '') }}')"
                                 title="Editar">

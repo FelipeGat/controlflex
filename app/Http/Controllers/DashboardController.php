@@ -253,7 +253,7 @@ class DashboardController extends Controller
 
         $totalGastosCartoes = $cartoes->sum('gastos_periodo');
         $totalLimiteCartoes = $cartoes->sum('limite_cartao');
-        $totalFaturaCartoes = $cartoes->sum('saldo_cartao');
+        $totalFaturaCartoes = $cartoes->sum('gastos_periodo');
 
         // ─── Investimentos ────────────────────────────────────────────────────
 
