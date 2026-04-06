@@ -196,25 +196,40 @@ class Despesa extends Model
      * Calcula a data de vencimento da primeira parcela do cartão.
      *
      * Regra brasileira padrão:
-     *   compra_dia <= fechamento_dia → fatura do mês atual → vence no mês seguinte
-     *   compra_dia >  fechamento_dia → fatura do mês seguinte → vence em 2 meses
+     *   Determina em quantos meses a fatura vence a partir do mês da compra.
      *
-     * Exemplo (fechamento dia 20, vencimento dia 5):
-     *   Compra dia 15/03 → cai na fatura de março → vence 05/04
-     *   Compra dia 25/03 → cai na fatura de abril → vence 05/05
+     *   Caso A — vencimento > fechamento (ex: fecha dia 02, paga dia 12):
+     *     O pagamento ocorre no MESMO mês do fechamento.
+     *     compra_dia <= fechamento → fatura fecha este mês → paga este mês  (+0 meses)
+     *     compra_dia >  fechamento → fatura fecha no mês seguinte → paga mês seguinte (+1 mês)
+     *
+     *   Caso B — vencimento <= fechamento (ex: fecha dia 20, paga dia 05):
+     *     O pagamento ocorre no mês SEGUINTE ao fechamento.
+     *     compra_dia <= fechamento → fatura fecha este mês → paga mês seguinte (+1 mês)
+     *     compra_dia >  fechamento → fatura fecha no mês seguinte → paga em 2 meses (+2 meses)
+     *
+     * Exemplos:
+     *   Fechamento 02, Vencimento 12 — compra 11/03 → 12/04  (11 > 2 → +1 mês)
+     *   Fechamento 02, Vencimento 12 — compra 01/03 → 12/03  (1 ≤ 2  → +0 meses)
+     *   Fechamento 20, Vencimento 05 — compra 15/03 → 05/04  (15 ≤ 20 → +1 mês)
+     *   Fechamento 20, Vencimento 05 — compra 25/03 → 05/05  (25 > 20 → +2 meses)
      */
     public static function calcularPrimeiroVencimentoCartao(
         Carbon $dataCompra,
         int $diaFechamento,
         int $diaVencimento
     ): Carbon {
+        // Se vencimento > fechamento: pagamento ocorre no mesmo mês do fechamento (offset base = 0)
+        // Se vencimento <= fechamento: pagamento ocorre no mês seguinte ao fechamento (offset base = 1)
+        $mesesBase = ($diaVencimento > $diaFechamento) ? 0 : 1;
+
         if ($dataCompra->day <= $diaFechamento) {
-            // Compra dentro do ciclo atual → vence no próximo mês
-            return $dataCompra->copy()->addMonthNoOverflow()->setDay($diaVencimento);
+            // Compra dentro do ciclo atual → vence com offset base
+            return $dataCompra->copy()->addMonthsNoOverflow($mesesBase)->setDay($diaVencimento);
         }
 
-        // Compra após o fechamento → vai para o próximo ciclo → vence em 2 meses
-        return $dataCompra->copy()->addMonthsNoOverflow(2)->setDay($diaVencimento);
+        // Compra após o fechamento → cai no próximo ciclo → vence com offset base + 1
+        return $dataCompra->copy()->addMonthsNoOverflow($mesesBase + 1)->setDay($diaVencimento);
     }
 
     /**

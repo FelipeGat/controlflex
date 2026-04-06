@@ -17,23 +17,32 @@ class ReceitaController extends Controller
 
     public function index(Request $request)
     {
-        $tenantId   = Auth::user()->tenant_id;
-        $inicio     = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
-        $fim        = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
-        $familiarId = $request->get('familiar_id') ? (int) $request->get('familiar_id') : null;
+        $tenantId    = Auth::user()->tenant_id;
+        $inicio      = $request->get('inicio', now()->startOfMonth()->format('Y-m-d'));
+        $fim         = $request->get('fim', now()->endOfMonth()->format('Y-m-d'));
+        $familiarId  = $request->get('familiar_id')  ? (int) $request->get('familiar_id')  : null;
+        $bancoId     = $request->get('banco_id')     ? (int) $request->get('banco_id')     : null;
+        $categoriaId = $request->get('categoria_id') ? (int) $request->get('categoria_id') : null;
+        $tipoPag     = $request->get('tipo_pagamento') ?: null;
 
-        // Filtro por membro: inclui receitas do membro + receitas de "Todos da Casa" (NULL)
-        $totalValor = Receita::whereBetween('data_prevista_recebimento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+        $baseQuery = Receita::whereBetween('data_prevista_recebimento', [$inicio, $fim])
+            ->when($familiarId,  fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
             }))
-            ->sum('valor');
+            ->when($bancoId,     fn($q) => $q->where('forma_recebimento', $bancoId))
+            ->when($categoriaId, fn($q) => $q->where('categoria_id', $categoriaId))
+            ->when($tipoPag,     fn($q) => $q->where('tipo_pagamento', $tipoPag));
+
+        $totalValor = (clone $baseQuery)->sum('valor');
 
         $receitas = Receita::with(['familiar', 'categoria', 'banco'])
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
-            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+            ->when($familiarId,  fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
             }))
+            ->when($bancoId,     fn($q) => $q->where('forma_recebimento', $bancoId))
+            ->when($categoriaId, fn($q) => $q->where('categoria_id', $categoriaId))
+            ->when($tipoPag,     fn($q) => $q->where('tipo_pagamento', $tipoPag))
             ->orderByDesc('data_prevista_recebimento')
             ->orderByDesc('id')
             ->paginate(20)
@@ -45,7 +54,8 @@ class ReceitaController extends Controller
 
         return view('receitas.index', compact(
             'receitas', 'totalValor', 'categorias', 'familiares',
-            'bancos', 'inicio', 'fim', 'familiarId'
+            'bancos', 'inicio', 'fim',
+            'familiarId', 'bancoId', 'categoriaId', 'tipoPag'
         ));
     }
 

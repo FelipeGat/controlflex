@@ -40,6 +40,21 @@ class FornecedorController extends Controller
         return back()->with('success', 'Fornecedor cadastrado com sucesso!');
     }
 
+    public function storeRapido(Request $request)
+    {
+        $request->validate([
+            'nome' => 'required|string|max:150',
+        ]);
+
+        $fornecedor = Fornecedor::create([
+            'user_id' => Auth::id(),
+            'nome'    => $request->nome,
+            'icone'   => 'fa-store',
+        ]);
+
+        return response()->json(['id' => $fornecedor->id, 'nome' => $fornecedor->nome]);
+    }
+
     public function update(Request $request, Fornecedor $fornecedor)
     {
         $this->authorize('update', $fornecedor);

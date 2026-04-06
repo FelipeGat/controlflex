@@ -33,6 +33,23 @@ class CategoriaController extends Controller
         return back()->with('success', 'Categoria criada com sucesso!');
     }
 
+    public function storeRapido(Request $request)
+    {
+        $request->validate([
+            'nome' => 'required|string|max:100',
+            'tipo' => 'required|in:RECEITA,DESPESA',
+        ]);
+
+        $categoria = Categoria::create([
+            'user_id' => Auth::id(),
+            'nome' => $request->nome,
+            'tipo' => $request->tipo,
+            'icone' => 'fa-tag',
+        ]);
+
+        return response()->json(['id' => $categoria->id, 'nome' => $categoria->nome]);
+    }
+
     public function update(Request $request, Categoria $categoria)
     {
         $this->authorize('update', $categoria);

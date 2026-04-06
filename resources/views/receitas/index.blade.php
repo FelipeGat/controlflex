@@ -13,11 +13,15 @@
     $ehMesAtualR = $dtR->format('Y-m') === now()->format('Y-m');
     $ehHojeR     = $inicio === now()->format('Y-m-d') && $fim === now()->format('Y-m-d');
 
+    $filtrosAtivosR = array_filter(['familiar_id'=>$familiarId,'banco_id'=>$bancoId,'categoria_id'=>$categoriaId,'tipo_pagamento'=>$tipoPag]);
+
     $urlRMesAnt  = route('receitas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtRAnt->startOfMonth()->format('Y-m-d'), 'fim' => $dtRAnt->copy()->endOfMonth()->format('Y-m-d')]));
     $urlRMesProx = route('receitas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtRProx->startOfMonth()->format('Y-m-d'), 'fim' => $dtRProx->copy()->endOfMonth()->format('Y-m-d')]));
-    $urlRHoje    = route('receitas.index', array_filter(['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d'), 'familiar_id' => $familiarId]));
-    $urlRMesAtu  = route('receitas.index', array_filter(['familiar_id' => $familiarId]));
-    $urlRTodas   = route('receitas.index', array_filter(['inicio' => $inicio, 'fim' => $fim]));
+    $urlRHoje    = route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d')])));
+    $urlRMesAtu  = route('receitas.index', array_filter($filtrosAtivosR));
+    $urlRTodas   = route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio' => $inicio, 'fim' => $fim])));
+
+    $temFiltroAtivoR = $bancoId || $categoriaId || $tipoPag;
 @endphp
 
 <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:12px;">
@@ -70,8 +74,8 @@
                     $rCors = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
                     $rCor  = $rCors[$fam->id % count($rCors)];
                     $rUrl  = $rSel
-                        ? route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim]))
-                        : route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id]));
+                        ? route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio'=>$inicio,'fim'=>$fim])))
+                        : route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id])));
                 @endphp
                 <a href="{{ $rUrl }}" class="av-item" title="{{ $fam->nome }}">
                     <div class="av-circulo" style="border:3px solid {{ $rSel ? $rCor : 'transparent' }};outline:{{ $rSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $rSel ? '0 0 0 2px '.$rCor.'44' : 'none' }};">
@@ -90,6 +94,52 @@
 
     </div>
 </div>
+
+{{-- ─── Filtros avançados: Banco / Categoria / Tipo ──────────────────────── --}}
+<form method="GET" action="{{ route('receitas.index') }}" id="form-filtros-rec"
+      style="margin-bottom:12px;">
+    <input type="hidden" name="inicio"      value="{{ $inicio }}">
+    <input type="hidden" name="fim"         value="{{ $fim }}">
+    <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        {{-- Banco / Conta de recebimento --}}
+        <select name="banco_id" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $bancoId ? '#f0fdf4' : '#fff' }};color:{{ $bancoId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:150px;">
+            <option value="">Todas as contas</option>
+            @foreach($bancos as $b)
+                <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Categoria --}}
+        <select name="categoria_id" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $categoriaId ? '#f0fdf4' : '#fff' }};color:{{ $categoriaId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todas as categorias</option>
+            @foreach($categorias as $c)
+                <option value="{{ $c->id }}" {{ $categoriaId == $c->id ? 'selected' : '' }}>{{ $c->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Tipo de Recebimento --}}
+        <select name="tipo_pagamento" onchange="document.getElementById('form-filtros-rec').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPag ? '#f0fdf4' : '#fff' }};color:{{ $tipoPag ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todos os tipos</option>
+            <option value="dinheiro"    {{ $tipoPag === 'dinheiro'    ? 'selected' : '' }}>Dinheiro</option>
+            <option value="pix"         {{ $tipoPag === 'pix'         ? 'selected' : '' }}>Pix</option>
+            <option value="transferencia"{{ $tipoPag === 'transferencia'? 'selected' : '' }}>Transferência</option>
+            <option value="deposito"    {{ $tipoPag === 'deposito'    ? 'selected' : '' }}>Depósito</option>
+            <option value="outros"      {{ $tipoPag === 'outros'      ? 'selected' : '' }}>Outros</option>
+        </select>
+
+        @if($temFiltroAtivoR)
+        <a href="{{ route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
+           style="font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;white-space:nowrap;">
+            <i class="fa-solid fa-xmark"></i> Limpar filtros
+        </a>
+        @endif
+    </div>
+</form>
 
 @php
     $receitasPorData = collect($receitas->items())->groupBy(fn($r) => $r->data_prevista_recebimento->format('d/m/Y'));
@@ -226,11 +276,14 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Data Prevista *</label>
-                        <input type="date" name="data_prevista_recebimento" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="data_prevista_recebimento" id="rec-novo-dpr" class="form-control" value="{{ date('Y-m-d') }}" required onchange="recNovoSyncPago()">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Data do Recebimento</label>
-                        <input type="date" name="data_recebimento" class="form-control">
+                    <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:6px;">
+                            <input type="checkbox" id="rec-novo-marcar-recebida" onchange="toggleMarcarRecebida(this)" style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;">
+                            Marcar como recebida
+                        </label>
+                        <input type="date" name="data_recebimento" id="rec-novo-dr" class="form-control" style="display:none;">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Quem Recebeu</label>
@@ -243,12 +296,17 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" class="form-control" id="rec-novo-categoria_id" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-receita','rec-novo-categoria_id')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta de Recebimento</label>
@@ -339,12 +397,17 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" id="r-edit-cat" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" id="r-edit-cat" class="form-control" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-receita','r-edit-cat')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta</label>
@@ -459,6 +522,25 @@
 
 @push('scripts')
 <script>
+// ── Marcar como recebida (nova receita) ──────────────────────────────────────
+function toggleMarcarRecebida(cb) {
+    const dataField = document.getElementById('rec-novo-dr');
+    if (cb.checked) {
+        dataField.value = document.getElementById('rec-novo-dpr').value;
+        dataField.style.display = '';
+    } else {
+        dataField.value = '';
+        dataField.style.display = 'none';
+    }
+}
+
+function recNovoSyncPago() {
+    const cb = document.getElementById('rec-novo-marcar-recebida');
+    if (cb && cb.checked) {
+        document.getElementById('rec-novo-dr').value = document.getElementById('rec-novo-dpr').value;
+    }
+}
+
 // ── Parcelas (nova receita) ────────────────────────────────────────────────────
 function onParcelasChangeReceita(inputParcelas, idRecorrente, idFreqRow) {
     const val      = parseInt(inputParcelas.value) || 1;
@@ -520,6 +602,49 @@ function confirmarExclusaoReceita(escopoFixo) {
     document.getElementById('r-escopo-excluir').value = escopo;
     document.getElementById('form-excluir-receita').submit();
     closeModal('modal-confirmar-exclusao-receita');
+}
+
+// ── Cadastro rápido (categoria) ──────────────────────────────────────────────
+function criarRapido(tipo, selectId) {
+    const labels = {
+        'categoria-receita': 'Nova Categoria (Receita)',
+        'categoria-despesa': 'Nova Categoria (Despesa)',
+        'fornecedor': 'Novo Fornecedor',
+    };
+    const nome = prompt(labels[tipo] || 'Nome:');
+    if (!nome || !nome.trim()) return;
+
+    let url, body;
+    if (tipo === 'fornecedor') {
+        url = '/fornecedores/rapido';
+        body = JSON.stringify({ nome: nome.trim() });
+    } else {
+        const tipoCategoria = tipo === 'categoria-receita' ? 'RECEITA' : 'DESPESA';
+        url = '/categorias/rapido';
+        body = JSON.stringify({ nome: nome.trim(), tipo: tipoCategoria });
+    }
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+        body: body,
+    })
+    .then(r => { if (!r.ok) throw r; return r.json(); })
+    .then(data => {
+        const seletores = document.querySelectorAll('select[name="categoria_id"]');
+        seletores.forEach(sel => {
+            const opt = new Option(data.nome, data.id);
+            sel.appendChild(opt);
+        });
+
+        const selectOrigem = document.getElementById(selectId);
+        if (selectOrigem) selectOrigem.value = data.id;
+    })
+    .catch(() => alert('Erro ao cadastrar. Verifique se você tem permissão.'));
 }
 </script>
 @endpush

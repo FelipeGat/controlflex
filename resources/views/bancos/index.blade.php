@@ -307,6 +307,37 @@ $bancosTemplate = [
                 <input type="hidden" name="cor" id="b-edit-cor">
                 <input type="hidden" name="codigo_banco" id="b-edit-codigo">
 
+                {{-- Banco Picker (trocar logo) --}}
+                <div style="margin-bottom:16px;">
+                    <label class="form-label" style="margin-bottom:8px;">Banco / Logo</label>
+                    <div id="edit-banco-atual" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <div id="edit-logo-preview" style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f9fa;flex-shrink:0;">
+                            <i class="fa-solid fa-building-columns" style="color:#64748b;font-size:16px;"></i>
+                        </div>
+                        <span id="edit-logo-nome" style="font-size:13px;font-weight:600;color:var(--color-text);">—</span>
+                        <button type="button" onclick="toggleEditBancoPicker()" class="btn btn-secondary btn-sm" style="margin-left:auto;">
+                            <i class="fa-solid fa-arrows-rotate"></i> Trocar
+                        </button>
+                    </div>
+                    <div id="edit-banco-picker" style="display:none;">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;max-height:220px;overflow-y:auto;">
+                            @foreach($bancosTemplate as $bt)
+                            <button type="button"
+                                class="banco-picker-btn edit-picker-btn"
+                                data-nome="{{ $bt['nome'] }}"
+                                data-logo="{{ $bt['logo'] }}"
+                                data-cor="{{ $bt['cor'] }}"
+                                data-codigo="{{ $bt['codigo_banco'] ?? '' }}"
+                                onclick="selecionarBancoEditar(this)"
+                                style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:#fff;cursor:pointer;transition:all .15s;">
+                                <img src="{{ asset('img/bancos/' . $bt['logo']) }}" alt="{{ $bt['nome'] }}" style="width:32px;height:32px;object-fit:contain;">
+                                <span style="font-size:10px;font-weight:600;color:var(--color-text);text-align:center;line-height:1.2;">{{ $bt['nome'] }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nome *</label>
@@ -528,8 +559,51 @@ function editarBanco(id, data) {
     document.getElementById('b-edit-cartao').checked   = !!data.tem_cartao_credito;
     document.getElementById('b-edit-dinheiro').checked = !!data.eh_dinheiro;
 
+    // Atualiza preview da logo atual
+    atualizarEditLogoPreview(data.logo, data.nome);
+    document.getElementById('edit-banco-picker').style.display = 'none';
+
+    // Destaca o banco selecionado no picker
+    document.querySelectorAll('.edit-picker-btn').forEach(b => {
+        b.style.borderColor = (b.dataset.logo === data.logo) ? (b.dataset.cor || 'var(--color-primary)') : 'var(--color-border)';
+        b.style.background = (b.dataset.logo === data.logo) ? '#f8f9fa' : '#fff';
+    });
+
     toggleCamposEditar();
     openModal('modal-editar-banco');
+}
+
+function atualizarEditLogoPreview(logo, nome) {
+    const container = document.getElementById('edit-logo-preview');
+    const nomeEl = document.getElementById('edit-logo-nome');
+    if (logo) {
+        container.innerHTML = `<img src="/img/bancos/${logo}" alt="${nome}" style="width:32px;height:32px;object-fit:contain;">`;
+    } else {
+        container.innerHTML = '<i class="fa-solid fa-building-columns" style="color:#64748b;font-size:16px;"></i>';
+    }
+    nomeEl.textContent = nome || '—';
+}
+
+function toggleEditBancoPicker() {
+    const picker = document.getElementById('edit-banco-picker');
+    picker.style.display = picker.style.display === 'none' ? '' : 'none';
+}
+
+function selecionarBancoEditar(btn) {
+    document.querySelectorAll('.edit-picker-btn').forEach(b => {
+        b.style.borderColor = 'var(--color-border)';
+        b.style.background = '#fff';
+    });
+    btn.style.borderColor = btn.dataset.cor || 'var(--color-primary)';
+    btn.style.background = '#f8f9fa';
+
+    document.getElementById('b-edit-nome').value   = btn.dataset.nome;
+    document.getElementById('b-edit-logo').value   = btn.dataset.logo;
+    document.getElementById('b-edit-cor').value    = btn.dataset.cor;
+    document.getElementById('b-edit-codigo').value = btn.dataset.codigo;
+
+    atualizarEditLogoPreview(btn.dataset.logo, btn.dataset.nome);
+    document.getElementById('edit-banco-picker').style.display = 'none';
 }
 
 function ajustarSaldo(id, saldo) {

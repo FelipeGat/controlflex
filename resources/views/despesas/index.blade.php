@@ -13,11 +13,16 @@
     $ehMesAtualD = $dtD->format('Y-m') === now()->format('Y-m');
     $ehHojeD     = $inicio === now()->format('Y-m-d') && $fim === now()->format('Y-m-d');
 
+    // Mantém todos os filtros ativos ao navegar entre meses
+    $filtrosAtivos = array_filter(['familiar_id'=>$familiarId,'fornecedor_id'=>$fornecedorId,'banco_id'=>$bancoId,'categoria_id'=>$categoriaId,'tipo_pagamento'=>$tipoPag]);
+
     $urlDMesAnt  = route('despesas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtDAnt->startOfMonth()->format('Y-m-d'), 'fim' => $dtDAnt->copy()->endOfMonth()->format('Y-m-d')]));
     $urlDMesProx = route('despesas.index', array_merge(request()->except(['inicio','fim']), ['inicio' => $dtDProx->startOfMonth()->format('Y-m-d'), 'fim' => $dtDProx->copy()->endOfMonth()->format('Y-m-d')]));
-    $urlDHoje    = route('despesas.index', array_filter(['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d'), 'familiar_id' => $familiarId]));
-    $urlDMesAtu  = route('despesas.index', array_filter(['familiar_id' => $familiarId]));
-    $urlDTodas   = route('despesas.index', array_filter(['inicio' => $inicio, 'fim' => $fim]));
+    $urlDHoje    = route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio' => now()->format('Y-m-d'), 'fim' => now()->format('Y-m-d')])));
+    $urlDMesAtu  = route('despesas.index', array_filter($filtrosAtivos));
+    $urlDTodas   = route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio' => $inicio, 'fim' => $fim])));
+
+    $temFiltroAtivo = $fornecedorId || $bancoId || $categoriaId || $tipoPag;
 @endphp
 
 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
@@ -71,8 +76,8 @@
                     $dCors = ['#6366f1','#0ea5e9','#16a34a','#f59e0b','#ef4444','#8b5cf6','#14b8a6'];
                     $dCor  = $dCors[$fam->id % count($dCors)];
                     $dUrl  = $dSel
-                        ? route('despesas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim]))
-                        : route('despesas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id]));
+                        ? route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio'=>$inicio,'fim'=>$fim])))
+                        : route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id])));
                 @endphp
                 <a href="{{ $dUrl }}" class="av-item" title="{{ $fam->nome }}">
                     <div class="av-circulo" style="border:3px solid {{ $dSel ? $dCor : 'transparent' }};outline:{{ $dSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $dSel ? '0 0 0 2px '.$dCor.'44' : 'none' }};">
@@ -91,6 +96,62 @@
 
     </div>
 </div>
+
+{{-- ─── Filtros avançados: Fornecedor / Banco / Categoria / Tipo ─────────── --}}
+<form method="GET" action="{{ route('despesas.index') }}" id="form-filtros-desp"
+      style="margin-bottom:12px;">
+    <input type="hidden" name="inicio"      value="{{ $inicio }}">
+    <input type="hidden" name="fim"         value="{{ $fim }}">
+    <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        {{-- Fornecedor --}}
+        <select name="fornecedor_id" onchange="document.getElementById('form-filtros-desp').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $fornecedorId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $fornecedorId ? '#eff6ff' : '#fff' }};color:{{ $fornecedorId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:150px;">
+            <option value="">Todos os fornecedores</option>
+            @foreach($fornecedores as $f)
+                <option value="{{ $f->id }}" {{ $fornecedorId == $f->id ? 'selected' : '' }}>{{ $f->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Banco / Conta --}}
+        <select name="banco_id" onchange="document.getElementById('form-filtros-desp').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $bancoId ? '#eff6ff' : '#fff' }};color:{{ $bancoId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todas as contas</option>
+            @foreach($bancos as $b)
+                <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Categoria --}}
+        <select name="categoria_id" onchange="document.getElementById('form-filtros-desp').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $categoriaId ? '#eff6ff' : '#fff' }};color:{{ $categoriaId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todas as categorias</option>
+            @foreach($categorias as $c)
+                <option value="{{ $c->id }}" {{ $categoriaId == $c->id ? 'selected' : '' }}>{{ $c->nome }}</option>
+            @endforeach
+        </select>
+
+        {{-- Tipo de Pagamento --}}
+        <select name="tipo_pagamento" onchange="document.getElementById('form-filtros-desp').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPag ? '#eff6ff' : '#fff' }};color:{{ $tipoPag ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+            <option value="">Todos os tipos</option>
+            <option value="dinheiro"     {{ $tipoPag === 'dinheiro'     ? 'selected' : '' }}>Dinheiro</option>
+            <option value="pix"          {{ $tipoPag === 'pix'          ? 'selected' : '' }}>Pix</option>
+            <option value="debito"       {{ $tipoPag === 'debito'       ? 'selected' : '' }}>Cartão Débito</option>
+            <option value="credito"      {{ $tipoPag === 'credito'      ? 'selected' : '' }}>Cartão Crédito</option>
+            <option value="transferencia"{{ $tipoPag === 'transferencia'? 'selected' : '' }}>Transferência</option>
+            <option value="boleto"       {{ $tipoPag === 'boleto'       ? 'selected' : '' }}>Boleto</option>
+        </select>
+
+        @if($temFiltroAtivo)
+        <a href="{{ route('despesas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
+           style="font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;white-space:nowrap;">
+            <i class="fa-solid fa-xmark"></i> Limpar filtros
+        </a>
+        @endif
+    </div>
+</form>
 
 @php
     $despesasPorData = collect($despesas->items())->groupBy(fn($d) => $d->data_compra->format('d/m/Y'));
@@ -230,11 +291,14 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Data da Despesa *</label>
-                        <input type="date" name="data_compra" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="data_compra" id="novo-data_compra" class="form-control" value="{{ date('Y-m-d') }}" required onchange="despNovoSyncPago();despesaAtualizarInfoCartao();">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Data do Pagamento</label>
-                        <input type="date" name="data_pagamento" class="form-control">
+                    <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:6px;">
+                            <input type="checkbox" id="novo-marcar-pago" onchange="toggleMarcarPago(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-primary);">
+                            Marcar como pago
+                        </label>
+                        <input type="date" name="data_pagamento" id="novo-data_pagamento" class="form-control" style="display:none;">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Quem</label>
@@ -247,21 +311,31 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Onde</label>
-                        <select name="onde_comprou" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($fornecedores as $f)
-                                <option value="{{ $f->id }}">{{ $f->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="onde_comprou" class="form-control" id="novo-onde_comprou" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($fornecedores as $f)
+                                    <option value="{{ $f->id }}">{{ $f->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('fornecedor','novo-onde_comprou')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Novo fornecedor">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" class="form-control" id="novo-categoria_id" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-despesa','novo-categoria_id')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta / Banco</label>
@@ -289,6 +363,7 @@
                             <option value="debito">💳 Cartão de Débito</option>
                             <option value="credito">💳 Cartão de Crédito</option>
                             <option value="transferencia">🔄 Transferência Bancária</option>
+                            <option value="boleto">🧾 Boleto Bancário</option>
                         </select>
                     </div>
 
@@ -382,21 +457,31 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Onde</label>
-                        <select name="onde_comprou" id="edit-onde_comprou" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($fornecedores as $f)
-                                <option value="{{ $f->id }}">{{ $f->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="onde_comprou" id="edit-onde_comprou" class="form-control" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($fornecedores as $f)
+                                    <option value="{{ $f->id }}">{{ $f->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('fornecedor','edit-onde_comprou')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Novo fornecedor">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Categoria</label>
-                        <select name="categoria_id" id="edit-categoria_id" class="form-control">
-                            <option value="">— Selecione —</option>
-                            @foreach($categorias as $c)
-                                <option value="{{ $c->id }}">{{ $c->nome }}</option>
-                            @endforeach
-                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <select name="categoria_id" id="edit-categoria_id" class="form-control" style="flex:1;">
+                                <option value="">— Selecione —</option>
+                                @foreach($categorias as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nome }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" onclick="criarRapido('categoria-despesa','edit-categoria_id')" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:6px 10px;" title="Nova categoria">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Conta / Banco</label>
@@ -416,6 +501,7 @@
                             <option value="debito">💳 Cartão de Débito</option>
                             <option value="credito">💳 Cartão de Crédito</option>
                             <option value="transferencia">🔄 Transferência Bancária</option>
+                            <option value="boleto">🧾 Boleto Bancário</option>
                         </select>
                     </div>
 
@@ -511,6 +597,25 @@
 
 @push('scripts')
 <script>
+// ── Marcar como pago (nova despesa) ──────────────────────────────────────────
+function toggleMarcarPago(cb) {
+    const dataField  = document.getElementById('novo-data_pagamento');
+    if (cb.checked) {
+        dataField.value = document.getElementById('novo-data_compra').value;
+        dataField.style.display = '';
+    } else {
+        dataField.value = '';
+        dataField.style.display = 'none';
+    }
+}
+
+function despNovoSyncPago() {
+    const cb = document.getElementById('novo-marcar-pago');
+    if (cb && cb.checked) {
+        document.getElementById('novo-data_pagamento').value = document.getElementById('novo-data_compra').value;
+    }
+}
+
 // ── Cartão de Crédito — Modal Nova Despesa ────────────────────────────────────
 
 function despesaCalcVencimento(dataCompraStr, diaFechamento, diaVencimento) {
@@ -518,7 +623,10 @@ function despesaCalcVencimento(dataCompraStr, diaFechamento, diaVencimento) {
     const compra   = new Date(dataCompraStr + 'T12:00:00');
     const diaComp  = compra.getDate();
     let ano = compra.getFullYear(), mes = compra.getMonth();
-    mes += (diaComp <= diaFechamento) ? 1 : 2;
+    // Se vencimento > fechamento: paga no mesmo mês do fechamento (offset base 0)
+    // Se vencimento <= fechamento: paga no mês seguinte ao fechamento (offset base 1)
+    const mesesBase = (diaVencimento > diaFechamento) ? 0 : 1;
+    mes += (diaComp <= diaFechamento) ? mesesBase : mesesBase + 1;
     if (mes > 11) { ano += Math.floor(mes / 12); mes = mes % 12; }
     return new Date(ano, mes, diaVencimento).toLocaleDateString('pt-BR');
 }
@@ -579,6 +687,9 @@ function despesaAtualizarInfoCartao() {
     const freqRow = document.getElementById('novo-frequencia-row');
     if (recRow) recRow.style.display = 'none';
     if (freqRow) freqRow.style.display = 'none';
+    // Desabilita o campo de parcelas da recorrência para não sobrescrever o do cartão
+    const parcelasRec = document.getElementById('novo-parcelas-rec');
+    if (parcelasRec) parcelasRec.disabled = true;
 }
 
 function despesaOnBancoChange(sel) {
@@ -599,6 +710,9 @@ function despesaOnTipoPagChange(sel) {
         // Permite configurar recorrência manual para outros tipos
         if (recRow)  recRow.style.display  = '';
         if (freqRow) freqRow.style.display = 'none'; // oculto até mudar parcelas
+        // Reabilita o campo de parcelas da recorrência
+        const parcelasRec = document.getElementById('novo-parcelas-rec');
+        if (parcelasRec) parcelasRec.disabled = false;
     }
 }
 
@@ -611,7 +725,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('#modal-nova-despesa form');
     if (!form) return;
     form.querySelector('input[name="valor"]')?.addEventListener('input', despesaAtualizarInfoCartao);
-    form.querySelector('input[name="data_compra"]')?.addEventListener('change', despesaAtualizarInfoCartao);
 });
 
 // ── Recorrência manual (não cartão) ──────────────────────────────────────────
@@ -677,6 +790,54 @@ function confirmarExclusaoDespesa(escopoFixo) {
     document.getElementById('escopo-excluir').value = escopo;
     document.getElementById('form-excluir-despesa').submit();
     closeModal('modal-confirmar-exclusao-despesa');
+}
+
+// ── Cadastro rápido (categoria / fornecedor) ─────────────────────────────────
+function criarRapido(tipo, selectId) {
+    const labels = {
+        'categoria-despesa': 'Nova Categoria (Despesa)',
+        'categoria-receita': 'Nova Categoria (Receita)',
+        'fornecedor': 'Novo Fornecedor',
+    };
+    const nome = prompt(labels[tipo] || 'Nome:');
+    if (!nome || !nome.trim()) return;
+
+    let url, body;
+    if (tipo === 'fornecedor') {
+        url = '/fornecedores/rapido';
+        body = JSON.stringify({ nome: nome.trim() });
+    } else {
+        const tipoCategoria = tipo === 'categoria-receita' ? 'RECEITA' : 'DESPESA';
+        url = '/categorias/rapido';
+        body = JSON.stringify({ nome: nome.trim(), tipo: tipoCategoria });
+    }
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+        body: body,
+    })
+    .then(r => { if (!r.ok) throw r; return r.json(); })
+    .then(data => {
+        // Adiciona a nova opção em TODOS os selects do mesmo tipo na página
+        const seletores = tipo === 'fornecedor'
+            ? document.querySelectorAll('select[name="onde_comprou"]')
+            : document.querySelectorAll('select[name="categoria_id"]');
+
+        seletores.forEach(sel => {
+            const opt = new Option(data.nome, data.id);
+            sel.appendChild(opt);
+        });
+
+        // Seleciona no select que originou a ação
+        const selectOrigem = document.getElementById(selectId);
+        if (selectOrigem) selectOrigem.value = data.id;
+    })
+    .catch(() => alert('Erro ao cadastrar. Verifique se você tem permissão.'));
 }
 </script>
 @endpush

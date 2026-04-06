@@ -289,6 +289,7 @@ class DashboardController extends Controller
         $primeiroDiaProximoMes = now()->addMonth()->startOfMonth()->format('Y-m-d');
         $ultimoDiaProximoMes   = now()->addMonth()->endOfMonth()->format('Y-m-d');
 
+        // Pago no último mês (data_pagamento dentro do mês)
         $pagamentoUltimoMes = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
@@ -299,6 +300,18 @@ class DashboardController extends Controller
             }))
             ->sum('valor');
 
+        // Em aberto do último mês (data_compra no mês, sem data_pagamento)
+        $apagarUltimoMes = DB::table('despesas')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->whereNull('data_pagamento')
+            ->whereBetween('data_compra', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
+            ->sum('valor');
+
+        // Recebido no último mês (data_recebimento dentro do mês)
         $recebidoUltimoMes = DB::table('receitas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
@@ -309,6 +322,18 @@ class DashboardController extends Controller
             }))
             ->sum('valor');
 
+        // Em aberto do último mês (data_prevista no mês, sem data_recebimento)
+        $aReceberUltimoMes = DB::table('receitas')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->whereNull('data_recebimento')
+            ->whereBetween('data_prevista_recebimento', [$primeiroDiaUltimoMes, $ultimoDiaUltimoMes])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
+            ->sum('valor');
+
+        // Previsão total do próximo mês (despesas)
         $previsaoDespesasProxMes = DB::table('despesas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
@@ -318,10 +343,33 @@ class DashboardController extends Controller
             }))
             ->sum('valor');
 
+        // Já pago do próximo mês (data_pagamento dentro do próximo mês)
+        $pagoProximoMes = DB::table('despesas')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->whereNotNull('data_pagamento')
+            ->whereBetween('data_pagamento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
+            ->sum('valor');
+
+        // Previsão total do próximo mês (receitas)
         $previsaoReceitasProxMes = DB::table('receitas')
             ->where('tenant_id', $tenantId)
             ->whereNull('deleted_at')
             ->whereBetween('data_prevista_recebimento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
+            ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
+            }))
+            ->sum('valor');
+
+        // Já recebido do próximo mês (data_recebimento dentro do próximo mês)
+        $recebidoProximoMes = DB::table('receitas')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('deleted_at')
+            ->whereNotNull('data_recebimento')
+            ->whereBetween('data_recebimento', [$primeiroDiaProximoMes, $ultimoDiaProximoMes])
             ->when($familiarId, fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
             }))
@@ -340,8 +388,10 @@ class DashboardController extends Controller
             'bancos',
             'cartoes', 'totalGastosCartoes', 'totalLimiteCartoes', 'totalFaturaCartoes',
             'totalInvestido', 'patrimonioAcumulado',
-            'pagamentoUltimoMes', 'recebidoUltimoMes',
-            'previsaoDespesasProxMes', 'previsaoReceitasProxMes',
+            'pagamentoUltimoMes', 'apagarUltimoMes',
+            'recebidoUltimoMes', 'aReceberUltimoMes',
+            'previsaoDespesasProxMes', 'pagoProximoMes',
+            'previsaoReceitasProxMes', 'recebidoProximoMes',
             'familiares', 'familiarId', 'familiarSelecionado'
         ));
     }
