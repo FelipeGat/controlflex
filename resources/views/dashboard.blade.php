@@ -86,7 +86,9 @@
 
 {{-- ─── Posição Atual (Saldos) ──────────────────────────────────────────── --}}
 @php
-    $saldoTotalContas  = $bancos->sum('saldo');
+    // Saldo em Contas: apenas contas correntes (exclui cartão de crédito, poupança exclusiva, dinheiro)
+    $contasCorrentes   = $bancos->where('tem_conta_corrente', true);
+    $saldoTotalContas  = $contasCorrentes->sum('saldo');
     $creditoDisponivel = max(0, $totalLimiteCartoes - $totalFaturaCartoes);
 @endphp
 
@@ -127,7 +129,7 @@
                 </div>
             </div>
             <div style="border-top:1px solid #f1f5f9;padding-top:8px;">
-                @forelse($bancos->take(4) as $banco)
+                @forelse($contasCorrentes->take(4) as $banco)
                 <div class="db-banco-item">
                     <div style="min-width:0;">
                         <div class="db-banco-nome">{{ $banco->nome }}</div>
@@ -138,10 +140,10 @@
                     </div>
                 </div>
                 @empty
-                <div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Nenhuma conta cadastrada</div>
+                <div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Nenhuma conta corrente cadastrada</div>
                 @endforelse
-                @if($bancos->count() > 4)
-                <div style="font-size:11px;color:#94a3b8;text-align:center;padding-top:4px;">+{{ $bancos->count() - 4 }} conta(s)</div>
+                @if($contasCorrentes->count() > 4)
+                <div style="font-size:11px;color:#94a3b8;text-align:center;padding-top:4px;">+{{ $contasCorrentes->count() - 4 }} conta(s)</div>
                 @endif
             </div>
         </div>

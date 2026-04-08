@@ -220,14 +220,18 @@ class DespesaController extends Controller
             return null;
         }
 
-        // Soma de todas as despesas em aberto (não pagas) vinculadas a este banco
-        $comprometido = (float) Despesa::where('forma_pagamento', $bancoId)
-            ->whereNull('data_pagamento')
-            ->when($excluirId, fn ($q) => $q->where('id', '!=', $excluirId))
-            ->sum('valor');
-
         // ── Cartão de Crédito ─────────────────────────────────────────────────
+        // Comprometido do cartão: apenas despesas com tipo_pagamento = 'credito' ou NULL (legado)
+        // Exclui explicitamente pix/débito/dinheiro que também usam o mesmo banco
         if ($tipoPagamento === 'credito') {
+            $comprometido = (float) Despesa::where('forma_pagamento', $bancoId)
+                ->whereNull('data_pagamento')
+                ->where(function ($q) {
+                    $q->where('tipo_pagamento', 'credito')
+                      ->orWhereNull('tipo_pagamento');
+                })
+                ->when($excluirId, fn ($q) => $q->where('id', '!=', $excluirId))
+                ->sum('valor');
             $limite     = (float) $banco->limite_cartao;
 
             if ($limite <= 0) {
@@ -249,10 +253,21 @@ class DespesaController extends Controller
             return null;
         }
 
+        // Para dinheiro, pix, débito e transferência: comprometido são apenas despesas
+        // não-crédito em aberto (exclui cartão de crédito que não afeta conta corrente)
+        $comprometidoConta = (float) Despesa::where('forma_pagamento', $bancoId)
+            ->whereNull('data_pagamento')
+            ->where(function ($q) {
+                $q->whereIn('tipo_pagamento', ['dinheiro', 'pix', 'debito', 'transferencia', 'boleto'])
+                  ->orWhereNull('tipo_pagamento');
+            })
+            ->when($excluirId, fn ($q) => $q->where('id', '!=', $excluirId))
+            ->sum('valor');
+
         // ── Dinheiro (carteira física) ────────────────────────────────────────
         if ($tipoPagamento === 'dinheiro') {
             $saldo      = (float) $banco->saldo;
-            $disponivel = $saldo - $comprometido;
+            $disponivel = $saldo - $comprometidoConta;
 
             if ($novoValor > $disponivel) {
                 return sprintf(
@@ -270,7 +285,7 @@ class DespesaController extends Controller
         // (pix, debito, transferencia) — usa saldo + cheque especial disponível
         $saldo            = (float) $banco->saldo;
         $chequeDisponivel = max(0, (float) $banco->cheque_especial - (float) $banco->saldo_cheque);
-        $disponivel       = $saldo - $comprometido + $chequeDisponivel;
+        $disponivel       = $saldo - $comprometidoConta + $chequeDisponivel;
 
         if ($novoValor > $disponivel) {
             $msg = sprintf(
