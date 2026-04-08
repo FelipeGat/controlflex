@@ -693,6 +693,17 @@ function despesaAtualizarInfoCartao() {
 }
 
 function despesaOnBancoChange(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const ehCartao = opt && opt.dataset.credito === '1';
+    const tipoPag  = document.getElementById('novo-tipo_pagamento');
+
+    // Auto-seleciona "crédito" quando o banco selecionado é cartão de crédito
+    // e o campo ainda não foi preenchido manualmente
+    if (ehCartao && tipoPag && !tipoPag.value) {
+        tipoPag.value = 'credito';
+        despesaOnTipoPagChange(tipoPag);
+    }
+
     despesaAtualizarInfoCartao();
 }
 

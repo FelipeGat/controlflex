@@ -7,15 +7,35 @@ use App\Models\Familiar;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class BancoController extends Controller
 {
     public function index()
     {
+        $tenantId = Auth::user()->tenant_id;
+
         $bancos = Banco::with('titular')
             ->orderBy('nome')
-            ->get();
+            ->get()
+            ->each(function ($banco) use ($tenantId) {
+                if ($banco->tem_cartao_credito) {
+                    // Calcula dinamicamente o saldo em uso do cartão (despesas não pagas)
+                    // Inclui tipo_pagamento = 'credito' OU NULL (registros sem tipo definido)
+                    // Exclui explicitamente pix/débito/dinheiro/transferencia/boleto
+                    $banco->saldo_cartao = (float) DB::table('despesas')
+                        ->where('tenant_id', $tenantId)
+                        ->whereNull('deleted_at')
+                        ->where('forma_pagamento', $banco->id)
+                        ->where(function ($q) {
+                            $q->where('tipo_pagamento', 'credito')
+                              ->orWhereNull('tipo_pagamento');
+                        })
+                        ->whereNull('data_pagamento')
+                        ->sum('valor');
+                }
+            });
 
         $familiares = Familiar::orderBy('nome')->get();
 

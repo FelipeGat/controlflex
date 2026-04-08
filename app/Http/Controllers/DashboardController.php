@@ -235,18 +235,36 @@ class DashboardController extends Controller
             ->orderBy('nome')
             ->get()
             ->map(function ($cartao) use ($tenantId, $inicio, $fim) {
-                // Conta apenas despesas pagas com cartão de crédito (tipo_pagamento = 'credito')
-                // Evita somar pix/boleto/débito que também usam o mesmo banco como conta corrente
+                // Gastos no período selecionado (para exibição do contexto mensal)
+                // Inclui tipo_pagamento = 'credito' OU NULL (registros legados sem tipo definido)
+                // Exclui explicitamente pix/débito/dinheiro/transferencia/boleto
                 $cartao->gastos_periodo = (float) DB::table('despesas')
                     ->where('tenant_id', $tenantId)
                     ->whereNull('deleted_at')
                     ->where('forma_pagamento', $cartao->id)
-                    ->where('tipo_pagamento', 'credito')
+                    ->where(function ($q) {
+                        $q->where('tipo_pagamento', 'credito')
+                          ->orWhereNull('tipo_pagamento');
+                    })
                     ->whereBetween('data_compra', [$inicio, $fim])
                     ->sum('valor');
-                $cartao->limite_disponivel = (float) $cartao->limite_cartao - $cartao->gastos_periodo;
+
+                // Saldo total em fatura = despesas não pagas do cartão (sem filtro de período)
+                // Usado para calcular percentual de uso real do limite
+                $cartao->saldo_fatura = (float) DB::table('despesas')
+                    ->where('tenant_id', $tenantId)
+                    ->whereNull('deleted_at')
+                    ->where('forma_pagamento', $cartao->id)
+                    ->where(function ($q) {
+                        $q->where('tipo_pagamento', 'credito')
+                          ->orWhereNull('tipo_pagamento');
+                    })
+                    ->whereNull('data_pagamento')
+                    ->sum('valor');
+
+                $cartao->limite_disponivel = (float) $cartao->limite_cartao - $cartao->saldo_fatura;
                 $cartao->percentual_uso = $cartao->limite_cartao > 0
-                    ? round(($cartao->gastos_periodo / (float) $cartao->limite_cartao) * 100, 1)
+                    ? round(($cartao->saldo_fatura / (float) $cartao->limite_cartao) * 100, 1)
                     : 0;
                 return $cartao;
             });

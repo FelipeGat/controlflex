@@ -425,7 +425,7 @@
                         </div>
                     </div>
                     <div style="text-align:right;">
-                        <div class="fw-600 text-red" style="font-size:13px;">R$ {{ number_format($cartao->gastos_periodo, 2, ',', '.') }}</div>
+                        <div class="fw-600 text-red" style="font-size:13px;">R$ {{ number_format($cartao->saldo_fatura, 2, ',', '.') }}</div>
                     </div>
                 </div>
                 {{-- Barra de uso do limite --}}
