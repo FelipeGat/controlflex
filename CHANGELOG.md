@@ -1,5 +1,14 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Sistema de manutenção programada
+
+### Novidades
+- Novo sistema de manutenção programada: o administrador pode colocar o sistema em manutenção a qualquer momento, com título e mensagem personalizados
+- Suporte a agendamento: é possível definir data e hora de início e fim da manutenção — o sistema ativa e desativa automaticamente na janela configurada
+- Contador regressivo: usuários veem o tempo restante até o fim da manutenção em tempo real
+- Durante a manutenção, o sistema desconecta automaticamente todos os usuários e exibe uma tela informativa
+- Administrador (super_admin) continua acessando o sistema normalmente e vê um aviso em destaque enquanto a manutenção está ativa
+
 ## AlfaHome — 09/04/2026 — Melhorias de segurança
 
 ### Segurança
