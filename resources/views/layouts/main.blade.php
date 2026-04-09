@@ -109,10 +109,11 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; color: #94a3b8; font-size: 11px;
             z-index: 210;
-            transition: background .15s, color .15s, border-color .15s, left .25s ease;
+            transition: background .15s, color .15s, border-color .15s;
             box-shadow: 0 1px 4px rgba(0,0,0,.12);
         }
         .sidebar-collapse-btn:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+        .sidebar-collapse-btn i { pointer-events: none; }
         .sidebar-collapse-btn.collapsed { left: calc(var(--sidebar-w-collapsed) - 12px); }
 
         .sidebar-section-label {
@@ -1031,7 +1032,7 @@
             background:#1e2535;color:#e5e7eb;border:1px solid #2d3e56;border-radius:14px;
             padding:14px 16px;display:flex;align-items:center;gap:12px;
             box-shadow:0 8px 24px rgba(0,0,0,.45);font-size:14px;">
-  <img src="/icons/icon-192.png" style="width:38px;height:38px;border-radius:10px;flex-shrink:0;" alt="">
+  <img src="/favicon.png" style="width:38px;height:38px;border-radius:10px;flex-shrink:0;" alt="">
   <div style="flex:1;min-width:0;">
     <div style="font-weight:700;font-size:13px;color:#f1f5f9;">Instalar AlfaHome</div>
     <div style="font-size:12px;color:#6b7280;margin-top:2px;">Acesso rápido na tela inicial</div>
@@ -1359,10 +1360,15 @@
         applyCollapse(localStorage.getItem(STORAGE_KEY) === 'true');
     }
 
-    collapseBtn.addEventListener('click', () => {
+    let collapseAnimating = false;
+    collapseBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (collapseAnimating) return;
+        collapseAnimating = true;
         const collapsed = !sidebar.classList.contains('collapsed');
         applyCollapse(collapsed);
         localStorage.setItem(STORAGE_KEY, collapsed);
+        setTimeout(() => { collapseAnimating = false; }, 350);
     });
 
     // ── Mobile open/close ─────────────────────────────────────────
