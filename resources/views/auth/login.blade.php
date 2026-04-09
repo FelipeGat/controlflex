@@ -1,8 +1,19 @@
 <x-guest-layout>
     <!-- Session Status -->
     @if(session('status') && str_starts_with(session('status'), '🔧'))
-    <div class="mb-4 p-4 rounded-lg text-sm font-medium" style="background:#451a03;border:1px solid #92400e;color:#fcd34d;">
-        {{ session('status') }}
+    @php
+        $parts = explode('. ', session('status'), 2);
+        $mntTitulo = ltrim($parts[0], '🔧 ');
+        $mntMsg = $parts[1] ?? '';
+    @endphp
+    <div class="mb-6 rounded-xl overflow-hidden" style="border: 1px solid rgba(251,146,60,.35); background: rgba(120,53,15,.25);">
+        <div style="background: rgba(234,88,12,.85); padding: 10px 16px; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🔧</span>
+            <span style="font-weight: 700; font-size: 13px; color: #fff; letter-spacing: .3px;">{{ $mntTitulo }}</span>
+        </div>
+        @if($mntMsg)
+        <p style="padding: 10px 16px; font-size: 13px; color: #fdba74; margin: 0; line-height: 1.5;">{{ $mntMsg }}</p>
+        @endif
     </div>
     @else
     <x-auth-session-status class="mb-4" :status="session('status')" />
