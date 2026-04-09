@@ -1,5 +1,10 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Correção no aviso de manutenção agendada
+
+### Correções
+- O aviso de manutenção programada (banner laranja no topo) agora é exibido para **todos os usuários** quando há uma manutenção agendada, e não apenas para o administrador
+
 ## AlfaHome — 09/04/2026 — Melhorias no modo manutenção
 
 ### Melhorias
