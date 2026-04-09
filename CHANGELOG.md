@@ -1,5 +1,11 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Melhorias no modo manutenção
+
+### Melhorias
+- Quando o sistema entra em manutenção, os usuários são redirecionados diretamente para a tela de login com um aviso em destaque, em vez de uma tela separada de manutenção
+- O aviso na tela de login informa o título e a mensagem configurados pelo administrador
+
 ## AlfaHome — 09/04/2026 — Correções no sistema de manutenção e fuso horário
 
 ### Correções
