@@ -31,10 +31,15 @@ class ManutencaoProgramada extends Model
     /** Retorna (e cria se necessário) a instância singleton. */
     public static function getInstance(): self
     {
-        return static::firstOrCreate(
-            ['id' => 1],
-            ['ativo' => false, 'titulo' => 'Manutenção Programada']
-        );
+        $m = static::find(1);
+        if ($m === null) {
+            $m = new static;
+            $m->id = 1;
+            $m->ativo = false;
+            $m->titulo = 'Manutenção Programada';
+            $m->save();
+        }
+        return $m;
     }
 
     /**
