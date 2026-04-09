@@ -20,8 +20,13 @@ class CheckManutencao
                 return $next($request);
             }
 
-            // Demais usuários: redirecionar para a página de manutenção
-            return redirect()->route('manutencao');
+            // Demais usuários: fazer logout e redirecionar para o login com aviso
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->with('status', '🔧 ' . ($manutencao->titulo ?? 'Sistema em manutenção') . '. ' . ($manutencao->mensagem ?? 'Voltaremos em breve!'));
         }
 
         // Agendada (ainda não iniciou): super admin vê o banner de aviso
