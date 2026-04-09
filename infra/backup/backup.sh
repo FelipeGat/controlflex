@@ -1,8 +1,18 @@
 #!/bin/bash
 # =============================================================================
 # AlfaHome — Backup Script
-# Cria backup completo (MySQL + storage + configs) e envia ao Google Drive.
+# Cria backup global + por tenant e envia ao Google Drive via rclone.
 # Executado pelo cron diariamente às 03h (horário de Brasília / 06:00 UTC).
+#
+# Estrutura no Google Drive:
+#   AlfaHome Backups/<date>/
+#     global/
+#       alfahome_full_<date>.sql.gz       ← dump completo do banco
+#       alfahome_storage_<date>.tar.gz    ← storage/ do Laravel
+#       configs/                          ← .env + certs + crontab
+#     clientes/
+#       <TENANT_NOME>/
+#         tenant_<id>_<NOME>_<date>.sql.gz
 # =============================================================================
 set -euo pipefail
 
@@ -14,17 +24,14 @@ RUN_DIR="/opt/alfahome/backup/run"
 GDRIVE_REMOTE="gdrive:AlfaHome Backups"
 DB_CONTAINER="alfa-home-db"
 DB_NAME="alfahome"
-# Diretório do projeto no servidor (ajuste se necessário)
 PROJECT_DIR="/var/www/alfahome"
 
-mkdir -p "$LOG_DIR" "$TMP_DIR" "$RUN_DIR"
+mkdir -p "$LOG_DIR" "$TMP_DIR/global" "$TMP_DIR/clientes" "$RUN_DIR"
 
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-# Carrega configurações opcionais (alertas Telegram etc.)
 [ -f /opt/alfahome/backup/backup.env ] && source /opt/alfahome/backup/backup.env
 
-# Credenciais lidas do próprio container (não hardcoded)
 DB_USER=$(docker exec "$DB_CONTAINER" printenv MYSQL_USER 2>/dev/null || echo "alfahome")
 DB_PASS=$(docker exec "$DB_CONTAINER" printenv MYSQL_PASSWORD 2>/dev/null)
 
@@ -34,7 +41,8 @@ _status() {
 _log() { echo "[$(date +%H:%M:%S)] $*"; }
 
 INICIO=$(date +%s)
-SQL_SIZE=""
+SQL_GLOBAL_SIZE=""
+TENANTS_COUNT=0
 
 _notify() {
   local MSG="$1"
@@ -43,7 +51,7 @@ _notify() {
     --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
     --data-urlencode "text=${MSG}" > /dev/null 2>&1 || true
 }
-trap '_notify "❌ Backup AlfaHome falhou — $(date +%H:%M:%S)"' ERR
+trap '_notify "❌ Backup AlfaHome GLOBAL falhou — $(date +%H:%M:%S)"' ERR
 
 # Política GFS: diário 7d / semanal 4 semanas / mensal 3 meses
 _gfs_cleanup() {
@@ -93,29 +101,28 @@ _gfs_cleanup() {
 _log "=== AlfaHome Backup iniciado ==="
 _status "running" "Backup em andamento..."
 
-# ─── 1. DUMP MYSQL ────────────────────────────────────────────────────────────
-_log "[1/4] Dump MySQL..."
+# ─── 1. DUMP MYSQL GLOBAL ────────────────────────────────────────────────────
+_log "[1/5] Dump MySQL completo..."
 docker exec "$DB_CONTAINER" mysqldump \
   -u "$DB_USER" -p"$DB_PASS" \
   --single-transaction --routines --triggers --add-drop-table \
   "$DB_NAME" 2>/dev/null \
-  | gzip > "${TMP_DIR}/alfahome_${DATE}.sql.gz"
+  | gzip > "${TMP_DIR}/global/alfahome_full_${DATE}.sql.gz"
 
-if ! gzip -t "${TMP_DIR}/alfahome_${DATE}.sql.gz" 2>/dev/null; then
-  _notify "❌ Backup AlfaHome: dump SQL corrompido — $(date +%H:%M:%S)"
-  _status "error" "Dump SQL corrompido"
+if ! gzip -t "${TMP_DIR}/global/alfahome_full_${DATE}.sql.gz" 2>/dev/null; then
+  _notify "❌ Backup AlfaHome: dump SQL global corrompido — $(date +%H:%M:%S)"
+  _status "error" "Dump SQL global corrompido"
   rm -rf "$TMP_DIR"; exit 1
 fi
 
-SQL_SIZE=$(du -sh "${TMP_DIR}/alfahome_${DATE}.sql.gz" | cut -f1)
-_log "  ✓ SQL: ${SQL_SIZE}"
+SQL_GLOBAL_SIZE=$(du -sh "${TMP_DIR}/global/alfahome_full_${DATE}.sql.gz" | cut -f1)
+_log "  ✓ ${SQL_GLOBAL_SIZE}"
 
 # ─── 2. BACKUP STORAGE/ LARAVEL ──────────────────────────────────────────────
-_log "[2/4] Backup do storage/ Laravel..."
-STORAGE_TAR="${TMP_DIR}/alfahome_storage_${DATE}.tar.gz"
+_log "[2/5] Backup do storage/ Laravel..."
+STORAGE_TAR="${TMP_DIR}/global/alfahome_storage_${DATE}.tar.gz"
 
-# Tenta localizar o storage: volume Docker ou diretório do projeto
-if docker volume ls --format '{{.Name}}' | grep -q "alfahome_app-storage\|alfahome_app_storage\|app-storage\|app_storage"; then
+if docker volume ls --format '{{.Name}}' | grep -qE "alfahome.*(app.storage|storage)"; then
   VOLUME_NAME=$(docker volume ls --format '{{.Name}}' | grep -E "alfahome.*(app.storage|storage)" | head -1)
   STORAGE_PATH="/var/lib/docker/volumes/${VOLUME_NAME}/_data"
   if [ -d "$STORAGE_PATH" ]; then
@@ -129,12 +136,70 @@ else
   _log "  ⚠ Storage não localizado — pulando"
 fi
 
-# ─── 3. BACKUP CONFIGS DO SERVIDOR ───────────────────────────────────────────
-_log "[3/4] Backup de configurações do servidor..."
-CONFIG_DIR="${TMP_DIR}/configs"
+# ─── 3. BACKUP POR TENANT ────────────────────────────────────────────────────
+_log "[3/5] Backup por tenant..."
+
+# Tabelas com tenant_id (exceto tenants, tratada separadamente)
+TABLES=$(docker exec "$DB_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" 2>/dev/null \
+  -N -e "SELECT TABLE_NAME FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA='${DB_NAME}' AND COLUMN_NAME='tenant_id'
+         AND TABLE_NAME != 'tenants'
+         ORDER BY TABLE_NAME;")
+
+# Lista de tenants
+TENANTS=$(docker exec "$DB_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" 2>/dev/null \
+  -N -e "SELECT id, REGEXP_REPLACE(UPPER(nome), '[^A-Z0-9]', '_') FROM tenants ORDER BY id;")
+
+while IFS=$'\t' read -r TID TNOME; do
+  [ -z "$TID" ] && continue
+  TENANTS_COUNT=$((TENANTS_COUNT + 1))
+  _log "  → tenant_id=${TID} (${TNOME})"
+
+  CLIENT_DIR="${TMP_DIR}/clientes/${TNOME}"
+  mkdir -p "$CLIENT_DIR"
+  CLIENT_SQL="${CLIENT_DIR}/tenant_${TID}_${TNOME}_${DATE}.sql"
+
+  {
+    echo "-- AlfaHome backup tenant_id=${TID} nome=${TNOME} date=${DATE}"
+    echo "SET FOREIGN_KEY_CHECKS=0;"
+    echo ""
+
+    # Dump do tenant (linha da tabela tenants)
+    docker exec "$DB_CONTAINER" mysqldump \
+      -u "$DB_USER" -p"$DB_PASS" \
+      --no-create-info --compact --skip-triggers \
+      --where="id=${TID}" \
+      "$DB_NAME" tenants 2>/dev/null
+
+    # Dump de cada tabela com tenant_id
+    while IFS= read -r TABLE; do
+      [ -z "$TABLE" ] && continue
+      docker exec "$DB_CONTAINER" mysqldump \
+        -u "$DB_USER" -p"$DB_PASS" \
+        --no-create-info --compact --skip-triggers \
+        --where="tenant_id=${TID}" \
+        "$DB_NAME" "$TABLE" 2>/dev/null
+    done <<< "$TABLES"
+
+    echo "SET FOREIGN_KEY_CHECKS=1;"
+  } > "$CLIENT_SQL"
+
+  gzip -f "$CLIENT_SQL"
+
+  if ! gzip -t "${CLIENT_SQL}.gz" 2>/dev/null; then
+    _notify "❌ Backup AlfaHome corrompido (tenant ${TID}) — dump SQL inválido"
+    _status "error" "Dump SQL corrompido: ${CLIENT_SQL}.gz"
+    rm -rf "$TMP_DIR"; exit 1
+  fi
+  _log "    SQL: $(du -sh "${CLIENT_SQL}.gz" | cut -f1)"
+
+done <<< "$TENANTS"
+
+# ─── 4. BACKUP CONFIGS DO SERVIDOR ───────────────────────────────────────────
+_log "[4/5] Backup de configurações do servidor..."
+CONFIG_DIR="${TMP_DIR}/global/configs"
 mkdir -p "$CONFIG_DIR"
 
-# Arquivo .env (contém segredos — mantido apenas no GDrive)
 for ENV_FILE in "${PROJECT_DIR}/.env.production" "${PROJECT_DIR}/.env"; do
   if [ -f "$ENV_FILE" ]; then
     cp "$ENV_FILE" "${CONFIG_DIR}/$(basename "$ENV_FILE")"
@@ -142,37 +207,33 @@ for ENV_FILE in "${PROJECT_DIR}/.env.production" "${PROJECT_DIR}/.env"; do
   fi
 done
 
-# Certificados Let's Encrypt
 if [ -d /etc/letsencrypt ]; then
   tar -czf "${CONFIG_DIR}/letsencrypt_${DATE}.tar.gz" \
     -C /etc letsencrypt/ 2>/dev/null
   _log "  ✓ Let's Encrypt: $(du -sh "${CONFIG_DIR}/letsencrypt_${DATE}.tar.gz" | cut -f1)"
 fi
 
-# Crontab
 crontab -l > "${CONFIG_DIR}/crontab_root.txt" 2>/dev/null && _log "  ✓ crontab" || true
 
-# ─── 4. UPLOAD GOOGLE DRIVE ──────────────────────────────────────────────────
-_log "[4/4] Enviando ao Google Drive..."
+# ─── 5. UPLOAD GOOGLE DRIVE ──────────────────────────────────────────────────
+_log "[5/5] Enviando ao Google Drive..."
 rclone copy "${TMP_DIR}" "${GDRIVE_REMOTE}/${DATE}/" 2>&1 | tail -3
 _log "  ✓ Upload concluído"
 
-# Atualiza cache de backups disponíveis
 /opt/alfahome/backup/list_backups.sh 2>/dev/null || true
 
-# Cleanup local
 rm -rf "$TMP_DIR"
 
-# Retenção GFS
 _log "Aplicando política de retenção GFS..."
 _gfs_cleanup
 
 DURACAO=$(( $(date +%s) - INICIO ))
 [ "$DURACAO" -ge 60 ] && DUR_FMT="$((DURACAO/60))m $((DURACAO%60))s" || DUR_FMT="${DURACAO}s"
 
-_notify "✅ Backup AlfaHome concluído
-📦 SQL: ${SQL_SIZE}
+_notify "✅ Backup Global AlfaHome concluído
+🏠 ${TENANTS_COUNT} tenant(s) processado(s)
+📦 SQL global: ${SQL_GLOBAL_SIZE}
 📅 ${DATE} | ⏱ ${DUR_FMT}"
 
 _log "=== Backup concluído com sucesso ==="
-_status "success" "Backup concluído com sucesso."
+_status "success" "Backup global concluído com sucesso."

@@ -23,18 +23,29 @@ ENTRIES="["
 FIRST=true
 
 for D in $DATES; do
-  # Lista arquivos da data
-  FILES=$(rclone ls "${GDRIVE_REMOTE}/${D}/" 2>/dev/null)
-
-  SQL_FILE=$(echo "$FILES" | grep "alfahome_${D}\.sql\.gz" | awk '{print $NF}' | head -1)
-  SQL_SIZE=$(echo "$FILES" | grep "alfahome_${D}\.sql\.gz" | awk '{print $1}' | head -1)
-  HAS_STORAGE=$(echo "$FILES" | grep -q "alfahome_storage_${D}\.tar\.gz" && echo "true" || echo "false")
-
+  # Backup global
+  GLOBAL_FILES=$(rclone ls "${GDRIVE_REMOTE}/${D}/global/" 2>/dev/null)
+  SQL_SIZE=$(echo "$GLOBAL_FILES" | grep "alfahome_full_${D}\.sql\.gz" | awk '{print $1}' | head -1)
+  HAS_STORAGE=$(echo "$GLOBAL_FILES" | grep -q "alfahome_storage_${D}\.tar\.gz" && echo "true" || echo "false")
   [ -z "$SQL_SIZE" ] && SQL_SIZE=0
 
   $FIRST || ENTRIES+=","
   FIRST=false
-  ENTRIES+="{\"date\":\"${D}\",\"sqlSizeBytes\":${SQL_SIZE},\"hasStorage\":${HAS_STORAGE}}"
+  ENTRIES+="{\"date\":\"${D}\",\"type\":\"global\",\"sqlSizeBytes\":${SQL_SIZE},\"hasStorage\":${HAS_STORAGE}}"
+
+  # Backups por tenant
+  TENANT_FOLDERS=$(rclone lsd "${GDRIVE_REMOTE}/${D}/clientes/" 2>/dev/null | awk '{print $NF}')
+  while IFS= read -r FOLDER; do
+    [ -z "$FOLDER" ] && continue
+    TENANT_FILES=$(rclone ls "${GDRIVE_REMOTE}/${D}/clientes/${FOLDER}/" 2>/dev/null)
+    T_SQL_FILE=$(echo "$TENANT_FILES" | awk '{print $NF}' | grep "\.sql\.gz$" | head -1)
+    T_SQL_SIZE=$(echo "$TENANT_FILES" | grep "\.sql\.gz$" | awk '{print $1}' | head -1)
+    [ -z "$T_SQL_SIZE" ] && T_SQL_SIZE=0
+    # Extrai tenant_id do nome do arquivo: tenant_N_...
+    TID=$(echo "$T_SQL_FILE" | sed 's/^tenant_\([0-9]*\)_.*/\1/')
+    [[ "$TID" =~ ^[0-9]+$ ]] || TID="null"
+    ENTRIES+=",{\"date\":\"${D}\",\"type\":\"tenant\",\"tenantId\":${TID},\"nome\":\"${FOLDER}\",\"sqlSizeBytes\":${T_SQL_SIZE}}"
+  done <<< "$TENANT_FOLDERS"
 done
 
 ENTRIES+="]"
