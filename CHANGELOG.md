@@ -1,5 +1,17 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Sistema de backup automático
+
+### Novidades
+- Backup diário automático dos dados do sistema, realizado às 03h (horário de Brasília). Os dados são armazenados com segurança no Google Drive.
+- Possibilidade de restaurar o sistema a qualquer momento a partir de um backup anterior, por data.
+
+### Melhorias
+- Retenção inteligente de backups: diária por 7 dias, semanal por 4 semanas e mensal por 3 meses — sem acúmulo desnecessário de espaço.
+- Notificação via Telegram ao concluir ou falhar o backup.
+
+---
+
 ## AlfaHome — 09/04/2026 — Desempenho e estabilidade
 
 ### Melhorias
