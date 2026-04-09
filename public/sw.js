@@ -1,9 +1,9 @@
 // ============================================================
-//  AlfaHome Service Worker v3
+//  AlfaHome Service Worker v4
 //  Features: offline cache · push notifications · background sync
 // ============================================================
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 
 const STATIC_CACHE = "alfahome-static-" + CACHE_VERSION;
 const PAGE_CACHE = "alfahome-pages-" + CACHE_VERSION;
