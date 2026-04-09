@@ -1068,6 +1068,9 @@
         <a href="{{ route('admin.planos.index') }}" class="sidebar-link {{ request()->routeIs('admin.planos.*') ? 'active' : '' }}" data-label="Planos">
             <i class="fa-solid fa-credit-card"></i> <span>Planos</span>
         </a>
+        <a href="{{ route('admin.manutencao.index') }}" class="sidebar-link {{ request()->routeIs('admin.manutencao.*') ? 'active' : '' }}" data-label="Manutenção">
+            <i class="fa-solid fa-wrench"></i> <span>Manutenção</span>
+        </a>
 
         @elseif(Auth::user()->isAdminRevenda())
         {{-- ─── Sidebar Admin Revenda ────────────────────────────────────── --}}
