@@ -24,7 +24,7 @@ class ManutencaoController extends Controller
             'titulo'            => 'required|string|max:200',
             'mensagem'          => 'nullable|string|max:1000',
             'inicio_programado' => 'nullable|date',
-            'fim_programado'    => 'nullable|date|after_or_equal:inicio_programado',
+            'fim_programado'    => 'nullable|date|after:now|after_or_equal:inicio_programado',
         ]);
 
         $manutencao = ManutencaoProgramada::getInstance();

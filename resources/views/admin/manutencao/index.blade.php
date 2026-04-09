@@ -41,6 +41,13 @@
     <div class="alert alert-success mb-3">{{ session('success') }}</div>
 @endif
 
+@if($manutencao->ativo && !$isAtiva && !$isAgendada)
+<div class="alert mb-3" style="background:#fef3c7;border:1px solid #d97706;color:#92400e;border-radius:8px;padding:12px 16px;font-size:13px;">
+    ⚠️ <strong>Atenção:</strong> O modo manutenção está <strong>ativado</strong>, mas a janela de tempo definida já expirou.
+    Limpe os campos de data/hora abaixo e salve novamente para ativar imediatamente — ou defina uma nova janela futura.
+</div>
+@endif
+
 {{-- Formulário --}}
 <div class="card">
     <div style="padding: 24px;">
