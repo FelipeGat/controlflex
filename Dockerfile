@@ -1,5 +1,9 @@
 FROM php:8.2-fpm
 
+# Força IPv4 no apt (o bridge do Docker na VPS não tem IPv6,
+# e deb.debian.org retorna só AAAA no resolver padrão)
+RUN echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
+
 # Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
     build-essential \
