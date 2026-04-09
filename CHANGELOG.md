@@ -1,5 +1,11 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Correção de compatibilidade do CSP
+
+### Correções
+- Resolvido problema que impedia o carregamento correto de gráficos e do sistema de instalação como app (PWA) após a ativação das regras de segurança CSP
+- Corrigidos erros no console do browser relacionados ao Chart.js, Alpine.js e beacon do Cloudflare
+
 ## AlfaHome — 09/04/2026 — Sistema de manutenção programada
 
 ### Novidades
