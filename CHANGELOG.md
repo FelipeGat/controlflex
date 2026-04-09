@@ -1,5 +1,13 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Correções no sistema de manutenção e fuso horário
+
+### Correções
+- Corrigido problema em que o modo manutenção não ativava corretamente: o sistema usava horário UTC internamente, mas os horários digitados pelo usuário são no fuso de Brasília (BRT). Agora o sistema usa o fuso horário correto (America/Sao_Paulo)
+- Adicionado alerta visual no painel de manutenção quando o modo está ativado mas a janela de tempo já expirou, orientando o administrador a redefinir as datas
+- Melhorada a validação do formulário: o campo "Fim" agora rejeita datas já passadas, evitando configurações que nunca seriam ativadas
+- Corrigidos erros de carregamento de gráficos (Chart.js) e do sistema de instalação como app (PWA) causados pelas novas regras de segurança CSP
+
 ## AlfaHome — 09/04/2026 — Correção de compatibilidade do CSP
 
 ### Correções
