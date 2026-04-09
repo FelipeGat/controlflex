@@ -1728,7 +1728,7 @@
     var checked = false;
 
     function checkManutencao() {
-        fetch('/api/manutencao-status')
+        fetch('/status-manutencao')
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.ativa && !checked) {

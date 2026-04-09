@@ -38,7 +38,7 @@ Route::get('/manutencao', function () {
 })->name('manutencao');
 
 // ─── Status de manutenção (polling público) ──────────────────────────────────
-Route::get('/api/manutencao-status', function () {
+Route::get('/status-manutencao', function () {
     $m = \App\Models\ManutencaoProgramada::getInstance();
     return response()->json([
         'ativa'   => $m->isAtiva(),
