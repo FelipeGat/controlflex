@@ -9,6 +9,10 @@ class ManutencaoProgramada extends Model
 {
     protected $table = 'manutencao_programada';
 
+    public $incrementing = false;
+
+    protected $keyType = 'integer';
+
     protected $fillable = [
         'ativo',
         'titulo',
