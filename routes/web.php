@@ -33,11 +33,8 @@ Route::get('/', function () {
 // ─── Página de manutenção (pública) ─────────────────────────────────────────
 Route::get('/manutencao', function () {
     $m = \App\Models\ManutencaoProgramada::getInstance();
-    return view('manutencao.index', [
-        'titulo'        => $m->titulo,
-        'mensagem'      => $m->mensagem,
-        'fimProgramado' => $m->fim_programado?->toIso8601String(),
-    ]);
+    return redirect()->route('login')
+        ->with('status', '🔧 ' . ($m->titulo ?? 'Sistema em manutenção') . '. ' . ($m->mensagem ?? 'Voltaremos em breve!'));
 })->name('manutencao');
 
 // ─── Super Admin ────────────────────────────────────────────────────────────
