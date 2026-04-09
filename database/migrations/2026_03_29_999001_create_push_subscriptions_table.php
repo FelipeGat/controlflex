@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('tenant_id')->index();
-            $table->text('endpoint');
+            $table->string('endpoint', 500);
             $table->text('p256dh');
             $table->string('auth');
             $table->timestamps();
