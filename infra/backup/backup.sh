@@ -12,7 +12,7 @@ LOG_DIR="/opt/alfahome/backup/logs"
 LOG_FILE="${LOG_DIR}/backup_${DATE}.log"
 RUN_DIR="/opt/alfahome/backup/run"
 GDRIVE_REMOTE="gdrive:AlfaHome Backups"
-DB_CONTAINER="alfa-db"
+DB_CONTAINER="alfa-home-db"
 DB_NAME="alfahome"
 # Diretório do projeto no servidor (ajuste se necessário)
 PROJECT_DIR="/var/www/alfahome"

@@ -21,7 +21,7 @@ LOG_FILE="${LOG_DIR}/restore_${DATE}.log"
 RUN_DIR="/opt/alfahome/backup/run"
 TMP_DIR="/tmp/alfahome_restore_${DATE}_$$"
 GDRIVE_REMOTE="gdrive:AlfaHome Backups"
-DB_CONTAINER="alfa-db"
+DB_CONTAINER="alfa-home-db"
 DB_NAME="alfahome"
 PROJECT_DIR="/var/www/alfahome"
 
