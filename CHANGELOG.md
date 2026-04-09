@@ -1,5 +1,10 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Correção no endpoint de polling de manutenção
+
+### Correções
+- Corrigido endpoint de verificação de manutenção em tempo real (`/status-manutencao`) que não estava sendo acessível por usuários logados devido a cache interno do servidor
+
 ## AlfaHome — 09/04/2026 — Correção no aviso de manutenção agendada
 
 ### Correções
