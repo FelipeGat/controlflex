@@ -1279,6 +1279,11 @@
                     <i class="fa-solid fa-tags"></i> Planos
                 </a>
             </li>
+            <li>
+                <a href="{{ route('admin.manutencao.index') }}" class="{{ request()->routeIs('admin.manutencao.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-wrench"></i> Manutenção
+                </a>
+            </li>
         @elseif(Auth::user()->isAdminRevenda())
             <li>
                 <a href="{{ route('revenda.dashboard') }}" class="{{ request()->routeIs('revenda.dashboard') ? 'active' : '' }}">
