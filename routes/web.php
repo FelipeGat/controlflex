@@ -37,6 +37,16 @@ Route::get('/manutencao', function () {
         ->with('status', '🔧 ' . ($m->titulo ?? 'Sistema em manutenção') . '. ' . ($m->mensagem ?? 'Voltaremos em breve!'));
 })->name('manutencao');
 
+// ─── Status de manutenção (polling público) ──────────────────────────────────
+Route::get('/api/manutencao-status', function () {
+    $m = \App\Models\ManutencaoProgramada::getInstance();
+    return response()->json([
+        'ativa'   => $m->isAtiva(),
+        'titulo'  => $m->titulo,
+        'mensagem'=> $m->mensagem,
+    ]);
+});
+
 // ─── Super Admin ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [SaasDashboardController::class, 'index'])->name('admin.dashboard');
