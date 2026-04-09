@@ -2,10 +2,13 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'nome', 'ativo', 'revenda_id', 'plano_id', 'status',
         'tipo_cobranca', 'data_inicio_plano', 'data_fim_plano',

@@ -83,7 +83,7 @@ Toda mudança de código (feature, fix, refactor) **deve ser validada com testes
 
 1. Antes de `git commit`, rodar a suíte de testes:
    ```bash
-   docker exec alfa-app php artisan test
+   docker exec alfa-home-app php artisan test
    # ou, fora do docker:
    php artisan test
    ```
@@ -91,6 +91,43 @@ Toda mudança de código (feature, fix, refactor) **deve ser validada com testes
 3. Mudanças puramente visuais (CSS, blade sem lógica) ainda exigem rodar a suíte para confirmar que nada quebrou — não precisam necessariamente de novo teste.
 4. Commit só pode ser criado se **todos os testes passarem**. Se algum quebrar, corrigir antes — nunca commitar com teste vermelho.
 5. Nunca usar `--no-verify` para pular hooks, nem `--force` para burlar testes.
+
+### Fluxo de deploy em produção
+
+A VPS de produção roda em `home.alfasolucoes.cloud` (SSH `root@187.127.14.128`), projeto em `/var/www/alfahome`, stack via `docker compose` (`alfa-home-app`, `alfa-home-nginx`, `alfa-home-db`).
+
+Passos obrigatórios após `git push origin main`:
+
+```bash
+cd /var/www/alfahome
+git pull origin main
+
+# Rebuild caches do Laravel (config, routes, views, events)
+docker exec alfa-home-app php artisan config:cache
+docker exec alfa-home-app php artisan route:cache
+docker exec alfa-home-app php artisan view:cache
+docker exec alfa-home-app php artisan event:cache
+
+# ⚠️ OBRIGATÓRIO: resetar OPcache
+# Em produção o OPcache roda com opcache.validate_timestamps=0 (ganho de performance).
+# Sem reset, o PHP continua servindo o código antigo mesmo após o git pull.
+docker compose restart app
+# (alternativa sem restart: docker exec alfa-home-app php -r 'opcache_reset();')
+```
+
+Validação pós-deploy:
+```bash
+curl -sSI https://home.alfasolucoes.cloud/login   # esperado: HTTP/2 200
+```
+
+Observações:
+- **Nunca** pular o reset de OPcache. O sintoma de esquecer é: o deploy "funcionou", o `git pull` trouxe o código novo, mas o comportamento antigo persiste até o próximo restart.
+- `docker-compose.yml` na VPS tem `skip-worktree` — não é alterado por `git pull`. Para mudar o compose em prod, editar direto no servidor (e depois `docker compose up -d`).
+- Se mudou dependências (`composer.json` ou `package.json`), rebuild da imagem é necessário antes do restart:
+  ```bash
+  docker compose build app
+  docker compose up -d app
+  ```
 
 ### Identificação do sistema
 
