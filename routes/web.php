@@ -17,6 +17,7 @@ use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
 use App\Http\Controllers\Admin\RevendaAdminController;
+use App\Http\Controllers\Admin\ManutencaoController;
 use App\Http\Controllers\Revenda\ClienteController;
 use App\Http\Controllers\Revenda\RevendaDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,16 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 });
+
+// ─── Página de manutenção (pública) ─────────────────────────────────────────
+Route::get('/manutencao', function () {
+    $m = \App\Models\ManutencaoProgramada::getInstance();
+    return view('manutencao.index', [
+        'titulo'        => $m->titulo,
+        'mensagem'      => $m->mensagem,
+        'fimProgramado' => $m->fim_programado?->toIso8601String(),
+    ]);
+})->name('manutencao');
 
 // ─── Super Admin ────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function () {
@@ -46,10 +57,14 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->group(function
     Route::delete('/revendas/{revenda}', [RevendaAdminController::class, 'destroy'])->name('admin.revendas.destroy');
     Route::post('/revendas/provisionar', [RevendaAdminController::class, 'provisionar'])->name('admin.revendas.provisionar');
     Route::post('/revendas/{revenda}/reset-senha', [RevendaAdminController::class, 'resetSenha'])->name('admin.revendas.resetSenha');
+
+    // Manutenção do sistema
+    Route::get('/manutencao', [ManutencaoController::class, 'index'])->name('admin.manutencao.index');
+    Route::put('/manutencao', [ManutencaoController::class, 'update'])->name('admin.manutencao.update');
 });
 
 // ─── Admin Revenda ──────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(function () {
+Route::middleware(['auth', 'role:admin_revenda', 'manutencao'])->prefix('revenda')->group(function () {
     Route::get('/dashboard', [RevendaDashboardController::class, 'index'])->name('revenda.dashboard');
     Route::get('/clientes', [ClienteController::class, 'index'])->name('revenda.clientes.index');
     Route::post('/clientes', [ClienteController::class, 'store'])->name('revenda.clientes.store');
@@ -60,7 +75,7 @@ Route::middleware(['auth', 'role:admin_revenda'])->prefix('revenda')->group(func
 });
 
 // ─── Tenant (Master / Membro) ───────────────────────────────────────────────
-Route::middleware(['auth', 'tenant.ativo'])->group(function () {
+Route::middleware(['auth', 'tenant.ativo', 'manutencao'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Alertas financeiros

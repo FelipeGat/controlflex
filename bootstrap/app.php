@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permissao'    => \App\Http\Middleware\CheckPermission::class,
             'tenant.ativo' => \App\Http\Middleware\EnsureTenantActive::class,
             'role'         => \App\Http\Middleware\CheckRole::class,
+            'manutencao'   => \App\Http\Middleware\CheckManutencao::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

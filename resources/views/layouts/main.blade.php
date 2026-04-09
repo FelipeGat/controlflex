@@ -1177,6 +1177,7 @@
 
 {{-- ─── Main content ──────────────────────────────────────────────────── --}}
 <div class="main-content" id="main-content">
+    @include('components.manutencao-banner')
     <header class="topbar">
         <button class="topbar-hamburger" id="hamburger" aria-label="Menu">
             <i class="fa-solid fa-bars"></i>
