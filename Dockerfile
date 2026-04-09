@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
 
+# Instala extensão Redis (phpredis nativa)
+RUN pecl install redis && docker-php-ext-enable redis
+
 # Instala Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
