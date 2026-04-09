@@ -29,8 +29,8 @@ class CheckManutencao
                 ->with('status', '🔧 ' . ($manutencao->titulo ?? 'Sistema em manutenção') . '. ' . ($manutencao->mensagem ?? 'Voltaremos em breve!'));
         }
 
-        // Agendada (ainda não iniciou): super admin vê o banner de aviso
-        if ($manutencao->isAgendada() && $request->user()?->role === 'super_admin') {
+        // Agendada (ainda não iniciou): todos os usuários veem o banner de aviso
+        if ($manutencao->isAgendada()) {
             view()->share('manutencao', $manutencao);
         }
 
