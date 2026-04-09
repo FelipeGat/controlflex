@@ -1720,7 +1720,7 @@
     <span style="font-size:48px;margin-bottom:20px;">🔧</span>
     <h2 id="mnt-overlay-titulo" style="font-size:22px;font-weight:700;margin-bottom:12px;color:#f1f5f9;">Sistema em Manutenção</h2>
     <p id="mnt-overlay-msg" style="font-size:15px;color:#94a3b8;max-width:400px;line-height:1.6;margin-bottom:24px;">Estamos realizando melhorias. Voltaremos em breve!</p>
-    <p style="font-size:13px;color:#64748b;">Você será redirecionado automaticamente em <span id="mnt-overlay-count" style="color:#f97316;font-weight:700;">5</span>s</p>
+    <p style="font-size:13px;color:#64748b;">Você será redirecionado para o login automaticamente.</p>
 </div>
 <script>
 (function() {
@@ -1737,16 +1737,9 @@
                     document.getElementById('mnt-overlay-msg').textContent = data.mensagem || 'Estamos realizando melhorias. Voltaremos em breve!';
                     overlay.style.display = 'flex';
 
-                    var count = 5;
-                    var el = document.getElementById('mnt-overlay-count');
-                    var interval = setInterval(function() {
-                        count--;
-                        if (el) el.textContent = count;
-                        if (count <= 0) {
-                            clearInterval(interval);
-                            window.location.href = '/login';
-                        }
-                    }, 1000);
+                    setTimeout(function() {
+                        window.location.href = '/login';
+                    }, 3000);
                 }
             })
             .catch(function() {});
