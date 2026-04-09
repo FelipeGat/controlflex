@@ -25,6 +25,14 @@ class ManutencaoController extends Controller
             'mensagem'          => 'nullable|string|max:1000',
             'inicio_programado' => 'nullable|date',
             'fim_programado'    => 'nullable|date|after:now|after_or_equal:inicio_programado',
+        ], [
+            'titulo.required'              => 'O título é obrigatório.',
+            'titulo.max'                   => 'O título não pode ter mais de 200 caracteres.',
+            'mensagem.max'                 => 'A mensagem não pode ter mais de 1000 caracteres.',
+            'inicio_programado.date'       => 'A data de início é inválida.',
+            'fim_programado.date'          => 'A data de fim é inválida.',
+            'fim_programado.after'         => 'A data de fim deve ser no futuro.',
+            'fim_programado.after_or_equal'=> 'A data de fim deve ser igual ou posterior à data de início.',
         ]);
 
         $manutencao = ManutencaoProgramada::getInstance();
