@@ -1,5 +1,14 @@
 # Changelog
 
+## AlfaHome — 09/04/2026 — Melhorias de segurança
+
+### Segurança
+- Proteção contra ataques de falsificação de origem de rede (IP spoofing): o sistema agora valida corretamente a origem das requisições, impedindo que atacantes simulem endereços confiáveis
+- Ativação do HSTS (HTTP Strict Transport Security): browsers são instruídos a usar sempre HTTPS, bloqueando ataques de interceptação SSL
+- Adição de Content-Security-Policy (CSP): o browser agora bloqueia automaticamente scripts e recursos de origens não autorizadas, reduzindo a superfície de ataques XSS
+- Remoção de permissão CORS excessiva em arquivos de usuário: arquivos financeiros (extratos, comprovantes) não são mais acessíveis por domínios externos
+- Correção no arquivo de configuração de exemplo: debug desativado por padrão para evitar exposição acidental de informações sensíveis em novos deploys
+
 ## AlfaHome — 09/04/2026 — Sistema de backup automático
 
 ### Novidades
