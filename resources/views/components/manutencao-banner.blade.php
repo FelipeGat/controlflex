@@ -34,13 +34,7 @@
                 até {{ $mnt->fim_programado->format('d/m/Y H:i') }}
             @endif
         </span>
-        @php $seg = $mnt->segundosRestantes(); @endphp
-        @if($seg !== null)
-        <span style="white-space:nowrap;font-variant-numeric:tabular-nums;" id="mnt-timer">
-            &bull;
-            <span id="mnt-countdown">{{ gmdate('H:i:s', $seg) }}</span>
-        </span>
-        @endif
+
     </span>
 
     <button
@@ -51,31 +45,4 @@
     >✕</button>
 </div>
 
-<script>
-(function() {
-    // Esconder se já foi dispensado nesta sessão
-    if (sessionStorage.getItem('mnt_banner_dismissed') === '1') {
-        document.getElementById('manutencao-banner').style.display = 'none';
-        return;
-    }
-
-    @if($seg !== null)
-    var target = Date.now() + {{ $seg }} * 1000;
-    var el = document.getElementById('mnt-countdown');
-
-    function pad(n) { return String(n).padStart(2, '0'); }
-
-    function tick() {
-        var diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
-        var h = Math.floor(diff / 3600);
-        var m = Math.floor((diff % 3600) / 60);
-        var s = diff % 60;
-        if (el) el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-    }
-
-    tick();
-    setInterval(tick, 1000);
-    @endif
-})();
-</script>
 @endif
