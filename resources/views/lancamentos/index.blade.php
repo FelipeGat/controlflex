@@ -102,7 +102,7 @@
                                     box-shadow:{{ $bSel ? '0 0 0 2px '.$bCor.'44' : 'none' }};
                                     background:{{ $bSel ? $bCor : '#f1f5f9' }};">
                             @if($b->logo)
-                                <img src="{{ Storage::url($b->logo) }}" alt="{{ $b->nome }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                <img src="{{ asset('img/bancos/' . $b->logo) }}" alt="{{ $b->nome }}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;padding:4px;">
                             @else
                                 <i class="fa-solid {{ $bIcone }}" style="font-size:13px;color:{{ $bSel ? '#fff' : $bCor }};"></i>
                             @endif
