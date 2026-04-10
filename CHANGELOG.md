@@ -16,9 +16,9 @@
 - FAQ interativa com 5 perguntas frequentes
 - Integração direta com WhatsApp para suporte e vendas
 - Formulário de contato que envia mensagens via WhatsApp
-- Cookie banner de consentimento com política de privacidade
-
-## AlfaHome — 09/04/2026 — Correção no endpoint de polling de manutenção
+### Correções
+- Adicionada rota pública `/landing` no Laravel para servir a landing page
+- Assets (favicon, logo) agora acessíveis em `/public`
 
 ### Correções
 - Corrigido endpoint de verificação de manutenção em tempo real (`/status-manutencao`) que não estava sendo acessível por usuários logados devido a cache interno do servidor
