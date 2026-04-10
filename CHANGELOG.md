@@ -1,5 +1,23 @@
 # Changelog
 
+## AlfaHome — 10/04/2026 — Landing page de apresentação
+
+### Novidades
+- Nova landing page completa em `public/landing/index.html` com design moderno e responsivo
+- Apresentação visual dos planos (Individual, Casal, Família) com preços e benefícios
+- Mockups CSS interativos mostrando funcionalidades de controle de despesas e investimentos
+- Demonstração dos KPIs principais: Saldo Total, Despesas, Receitas e Investimentos
+- Seção de funcionalidades com 8 cards destacando principais recursos do sistema
+
+### Melhorias
+- Interface com tema claro e escuro (toggle disponível na navbar)
+- Animações suaves ao descer a página (scroll reveal)
+- Design responsivo para desktop, tablet e mobile
+- FAQ interativa com 5 perguntas frequentes
+- Integração direta com WhatsApp para suporte e vendas
+- Formulário de contato que envia mensagens via WhatsApp
+- Cookie banner de consentimento com política de privacidade
+
 ## AlfaHome — 09/04/2026 — Correção no endpoint de polling de manutenção
 
 ### Correções

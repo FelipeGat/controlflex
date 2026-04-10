@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlfaHome — Gestão financeira familiar inteligente</title>
+  <meta name="description" content="Sistema completo para gestão financeira da família. Despesas, receitas, investimentos e relatórios — simples e poderoso." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('lp-theme');
+      var theme = saved || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-alt: #1a243e;
+      --bg-lighter: #2d3e52;
+      --white: #f0f2f5;
+      --text-primary: #f0f2f5;
+      --text-secondary: #a0aac0;
+      --border: #2d3e52;
+      --teal: #1696a3;
+      --teal-dark: #117a85;
+      --teal-light: #1fb3c5;
+      --orange: #ff7a0d;
+      --orange-dark: #e06800;
+      --orange-light: #ffa836;
+      --navy: #0f172a;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-alt: #f9fafb;
+      --bg-lighter: #f3f4f6;
+      --white: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --teal: #1696a3;
+      --teal-dark: #0d5a62;
+      --teal-light: #1fb3c5;
+      --orange: #ff7a0d;
+      --orange-dark: #d65a05;
+      --orange-light: #ffa836;
+      --navy: #0f172a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 16px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    a {
+      color: var(--teal);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--teal-light);
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-family: "Inter", sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      padding: 1rem 0;
+      transition: background-color 0.3s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .logo img {
+      height: 32px;
+      width: 32px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-btn {
+      background-color: var(--orange);
+      color: white;
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--orange-dark);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background-color: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      padding: 1rem 0;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mobile-menu a {
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Hero */
+    .hero {
+      margin-top: 80px;
+      padding: 4rem 0;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background-color: var(--orange);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--orange-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-primary);
+      padding: 1rem 2rem;
+      border: 2px solid var(--teal);
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--teal);
+      transform: translateY(-2px);
+    }
+
+    .hero-visual {
+      margin-top: 3rem;
+    }
+
+    /* Mockup Container */
+    .mockup-window {
+      background-color: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .mockup-header {
+      background-color: var(--bg-lighter);
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: var(--border);
+    }
+
+    .dot:nth-child(1) {
+      background-color: var(--error);
+    }
+
+    .dot:nth-child(2) {
+      background-color: var(--orange);
+    }
+
+    .dot:nth-child(3) {
+      background-color: var(--success);
+    }
+
+    .mockup-body {
+      padding: 1.5rem;
+    }
+
+    .mockup-kpis {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .kpi-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .kpi-value.teal {
+      color: var(--teal);
+    }
+
+    .kpi-value.orange {
+      color: var(--orange);
+    }
+
+    .kpi-value.success {
+      color: var(--success);
+    }
+
+    /* Numbers Section */
+    .numeros {
+      padding: 4rem 0;
+      background-color: var(--bg-alt);
+    }
+
+    .numeros h2 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .numeros-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .numero-card h3 {
+      font-size: 2.5rem;
+      color: var(--orange);
+      margin-bottom: 0.5rem;
+    }
+
+    .numero-card p {
+      color: var(--text-secondary);
+    }
+
+    /* Features Grid */
+    .funcionalidades {
+      padding: 4rem 0;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+      font-size: 1.1rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background-color: var(--bg-alt);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .feature-card.reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-8px);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* Spotlights */
+    .spotlight {
+      padding: 4rem 0;
+      background-color: var(--bg-alt);
+    }
+
+    .spotlight-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .spotlight-container.reverse {
+      direction: rtl;
+    }
+
+    .spotlight-container.reverse > * {
+      direction: ltr;
+    }
+
+    .spotlight-text h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .spotlight-text p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      line-height: 1.8;
+    }
+
+    .spotlight-visual {
+      background-color: var(--bg);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .spot-card {
+      background-color: var(--bg-alt);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .spot-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .spot-card-left h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .spot-card-left p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .spot-card-right {
+      font-weight: 600;
+      color: var(--orange);
+    }
+
+    /* Plans Section */
+    .planos {
+      padding: 4rem 0;
+      text-align: center;
+    }
+
+    .planos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .plan-card {
+      background-color: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .plan-card.featured {
+      background-color: var(--orange);
+      color: white;
+      border-color: var(--orange);
+      transform: scale(1.02);
+    }
+
+    .plan-card.featured .plan-price,
+    .plan-card.featured .plan-period,
+    .plan-card.featured .plan-description,
+    .plan-card.featured .plan-features li {
+      color: white;
+    }
+
+    .plan-card.featured .plan-features li::before {
+      color: white;
+    }
+
+    .plan-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--orange);
+      margin-bottom: 0.25rem;
+    }
+
+    .plan-card.featured .plan-price {
+      color: white;
+    }
+
+    .plan-period {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .plan-description {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    .plan-features li {
+      padding: 0.5rem 0;
+      color: var(--text-secondary);
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .plan-features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--teal);
+      font-weight: bold;
+    }
+
+    .plan-btn {
+      background-color: var(--orange);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    .plan-card.featured .plan-btn {
+      background-color: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .plan-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Testimonials */
+    .depoimentos {
+      padding: 4rem 0;
+      background-color: var(--bg-alt);
+    }
+
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .testimonial-card {
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      border-radius: 0.75rem;
+    }
+
+    .testimonial-text {
+      margin-bottom: 1.5rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .testimonial-role {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* FAQ Section */
+    .faq {
+      padding: 4rem 0;
+    }
+
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      background-color: var(--bg-alt);
+      padding: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .faq-question:hover {
+      background-color: var(--bg-lighter);
+    }
+
+    .faq-toggle {
+      font-size: 1.25rem;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-toggle.open {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      padding: 0 1.5rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      color: var(--text-secondary);
+    }
+
+    .faq-answer.open {
+      padding: 1.5rem;
+      max-height: 500px;
+    }
+
+    /* Revenda */
+    .revenda {
+      padding: 4rem 0;
+      background-color: var(--bg-alt);
+      text-align: center;
+    }
+
+    .revenda h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .revenda p {
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      font-size: 1.1rem;
+    }
+
+    .revenda-btn {
+      background-color: var(--teal);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .revenda-btn:hover {
+      background-color: var(--teal-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Contact Section */
+    .contato {
+      padding: 4rem 0;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      background-color: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.8rem;
+      border-radius: 0.5rem;
+      font-family: "Inter", sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .contact-item h3 {
+      margin-bottom: 0.5rem;
+      color: var(--teal);
+    }
+
+    .contact-item p {
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 1rem;
+      margin-top: 2rem;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h4 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section a {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .footer-section a:hover {
+      color: var(--teal);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* WhatsApp Button */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      background-color: #25d366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 99;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Cookie Banner */
+    .cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      z-index: 98;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .cookie-banner.show {
+      display: flex;
+    }
+
+    .cookie-text {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .cookie-text a {
+      color: var(--teal);
+    }
+
+    .cookie-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .cookie-btn {
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cookie-accept {
+      background-color: var(--orange);
+      color: white;
+    }
+
+    .cookie-accept:hover {
+      background-color: var(--orange-dark);
+    }
+
+    .cookie-decline {
+      background-color: var(--bg-lighter);
+      color: var(--text-primary);
+    }
+
+    .cookie-decline:hover {
+      background-color: var(--border);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      background-color: var(--bg-lighter);
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--border);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .nav-links {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .numeros-grid {
+        grid-template-columns: repeat(1, 1fr);
+      }
+
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .planos-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .plan-card.featured {
+        transform: scale(1);
+      }
+
+      .testimonial-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .faq-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .spotlight-container {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        margin-top: 60px;
+        padding: 2rem 0;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+
+      .numeros-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .planos-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .testimonial-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 1.75rem;
+      }
+
+      .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+      }
+
+      .cookie-banner {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .cookie-buttons {
+        width: 100%;
+      }
+
+      .cookie-btn {
+        flex: 1;
+      }
+
+      .spotlights-container.reverse {
+        direction: ltr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#home" class="logo">
+        <img src="/alfa-home-logo.png" alt="AlfaHome" />
+        AlfaHome
+      </a>
+      <ul class="nav-links">
+        <li><a href="#funcionalidades">Funcionalidades</a></li>
+        <li><a href="#planos">Planos</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contato">Contato</a></li>
+        <li>
+          <button class="theme-toggle" id="themeToggle">🌙</button>
+        </li>
+      </ul>
+      <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#funcionalidades">Funcionalidades</a>
+      <a href="#planos">Planos</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contato">Contato</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container">
+      <h1>Gestão Financeira Familiar Inteligente</h1>
+      <p>Controle total das finanças da sua família. Despesas, receitas, investimentos e relatórios em um só lugar.</p>
+      <div class="hero-buttons">
+        <a href="https://home.alfasolucoes.cloud/login" class="btn-primary">Começar Agora</a>
+        <a href="#planos" class="btn-secondary">Ver Planos</a>
+      </div>
+      <div class="hero-visual reveal">
+        <div class="mockup-window">
+          <div class="mockup-header">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-kpis">
+              <div class="kpi-card">
+                <div class="kpi-label">Saldo Total</div>
+                <div class="kpi-value teal">R$ 14.200</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Despesas</div>
+                <div class="kpi-value orange">R$ 3.450</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Receitas</div>
+                <div class="kpi-value success">R$ 9.000</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Investimentos</div>
+                <div class="kpi-value teal">R$ 12.800</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Números Section -->
+  <section class="numeros">
+    <div class="container">
+      <h2>Por que escolher AlfaHome?</h2>
+      <div class="numeros-grid">
+        <div class="numero-card reveal">
+          <h3>100%</h3>
+          <p>Segurança dos dados</p>
+        </div>
+        <div class="numero-card reveal">
+          <h3>+50K</h3>
+          <p>Famílias confiando em nós</p>
+        </div>
+        <div class="numero-card reveal">
+          <h3>24/7</h3>
+          <p>Suporte disponível</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="funcionalidades" id="funcionalidades">
+    <div class="container">
+      <h2 class="section-title">Funcionalidades Poderosas</h2>
+      <p class="section-subtitle">Tudo que você precisa para gerenciar as finanças familiares</p>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">💰</div>
+          <h3>Controle de Despesas</h3>
+          <p>Registre e categorize todas as despesas da família com facilidade.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.1s;">
+          <div class="feature-icon">📊</div>
+          <h3>Relatórios Detalhados</h3>
+          <p>Gráficos e análises para entender melhor seus gastos.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.2s;">
+          <div class="feature-icon">🎯</div>
+          <h3>Metas Financeiras</h3>
+          <p>Estabeleça e acompanhe objetivos financeiros familiares.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.3s;">
+          <div class="feature-icon">💳</div>
+          <h3>Gestão de Cartões</h3>
+          <p>Controle cartões de crédito e débito de toda a família.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.4s;">
+          <div class="feature-icon">🏦</div>
+          <h3>Investimentos</h3>
+          <p>Acompanhe seus investimentos e rentabilidade em tempo real.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.5s;">
+          <div class="feature-icon">👥</div>
+          <h3>Múltiplos Usuários</h3>
+          <p>Cada membro da família com acesso controlado.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.6s;">
+          <div class="feature-icon">📱</div>
+          <h3>App Mobile</h3>
+          <p>Acesse de qualquer lugar, a qualquer momento.</p>
+        </div>
+        <div class="feature-card reveal" style="animation-delay: 0.7s;">
+          <div class="feature-icon">🔒</div>
+          <h3>Segurança Total</h3>
+          <p>Criptografia de ponta a ponta para seus dados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spotlight 1: Despesas -->
+  <section class="spotlight">
+    <div class="container">
+      <div class="spotlight-container">
+        <div class="spotlight-text reveal">
+          <h2>Controle Completo de Despesas</h2>
+          <p>Visualize todas as despesas da família em um único lugar. Categorize automaticamente, defina limites e receba alertas quando necessário.</p>
+          <p>Com AlfaHome, ninguém gasta mais do que o previsto.</p>
+        </div>
+        <div class="spotlight-visual reveal">
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Supermercado</h4>
+              <p>hoje</p>
+            </div>
+            <div class="spot-card-right">-R$ 180,50</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Netflix</h4>
+              <p>10 dias atrás</p>
+            </div>
+            <div class="spot-card-right">-R$ 39,90</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Energia</h4>
+              <p>22 dias atrás</p>
+            </div>
+            <div class="spot-card-right">-R$ 320,00</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Combustível</h4>
+              <p>3 dias atrás</p>
+            </div>
+            <div class="spot-card-right">-R$ 250,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spotlight 2: Investimentos -->
+  <section class="spotlight" style="background-color: var(--white);">
+    <div class="container">
+      <div class="spotlight-container reverse">
+        <div class="spotlight-text reveal">
+          <h2>Acompanhe Investimentos</h2>
+          <p>Monitore todos os seus investimentos e rentabilidade em tempo real. Receba insights automáticos sobre seu portfólio.</p>
+          <p>Faça sua família crescer financeiramente com inteligência.</p>
+        </div>
+        <div class="spotlight-visual reveal" style="background-color: var(--bg-alt);">
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Ações</h4>
+              <p>PETR4, VALE3</p>
+            </div>
+            <div class="spot-card-right" style="color: var(--success);">+12,5%</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Fundos</h4>
+              <p>Multimercado</p>
+            </div>
+            <div class="spot-card-right" style="color: var(--success);">+8,3%</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Criptomoedas</h4>
+              <p>BTC, ETH</p>
+            </div>
+            <div class="spot-card-right" style="color: var(--success);">+25,8%</div>
+          </div>
+          <div class="spot-card">
+            <div class="spot-card-left">
+              <h4>Renda Fixa</h4>
+              <p>Tesouro SELIC</p>
+            </div>
+            <div class="spot-card-right" style="color: var(--success);">+5,2%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plans Section -->
+  <section class="planos" id="planos">
+    <div class="container">
+      <h2 class="section-title">Planos para Todos</h2>
+      <p class="section-subtitle">Escolha o melhor plano para sua família</p>
+      <div class="planos-grid">
+        <div class="plan-card reveal">
+          <h3 class="plan-name">Individual</h3>
+          <div class="plan-price">R$ 19,90</div>
+          <p class="plan-period">/mês ou R$ 199/ano</p>
+          <p class="plan-description">Perfeito para você gerenciar suas finanças pessoais.</p>
+          <ul class="plan-features">
+            <li>Até 1 usuário</li>
+            <li>Contas ilimitadas</li>
+            <li>Relatórios básicos</li>
+            <li>Suporte por email</li>
+          </ul>
+          <a href="https://wa.me/5527992250122" class="plan-btn">Escolher Plano</a>
+        </div>
+        <div class="plan-card reveal" style="animation-delay: 0.2s;">
+          <h3 class="plan-name">Casal</h3>
+          <div class="plan-price">R$ 29,90</div>
+          <p class="plan-period">/mês ou R$ 299/ano</p>
+          <p class="plan-description">Ideal para casais que querem gerenciar juntos.</p>
+          <ul class="plan-features">
+            <li>Até 2 usuários</li>
+            <li>Contas ilimitadas</li>
+            <li>Relatórios avançados</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="https://wa.me/5527992250122" class="plan-btn">Escolher Plano</a>
+        </div>
+        <div class="plan-card featured reveal" style="animation-delay: 0.4s;">
+          <h3 class="plan-name">Família</h3>
+          <div class="plan-price">R$ 49,90</div>
+          <p class="plan-period">/mês ou R$ 499/ano</p>
+          <p class="plan-description">O mais completo para toda a família.</p>
+          <ul class="plan-features">
+            <li>Até 5 usuários</li>
+            <li>Contas ilimitadas</li>
+            <li>Relatórios premium</li>
+            <li>Suporte 24/7</li>
+            <li>Análises de IA</li>
+          </ul>
+          <a href="https://wa.me/5527992250122" class="plan-btn">Escolher Plano</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="depoimentos">
+    <div class="container">
+      <h2 class="section-title">O que Nossos Clientes Dizem</h2>
+      <div class="testimonial-grid">
+        <div class="testimonial-card reveal">
+          <p class="testimonial-text">"AlfaHome mudou a forma como gerenciamos as finanças da nossa família. Recomendo!"</p>
+          <p class="testimonial-author">Maria Silva</p>
+          <p class="testimonial-role">Gerente de Projetos</p>
+        </div>
+        <div class="testimonial-card reveal" style="animation-delay: 0.2s;">
+          <p class="testimonial-text">"Simples, intuitivo e muito seguro. Exatamente o que a gente procurava."</p>
+          <p class="testimonial-author">João Santos</p>
+          <p class="testimonial-role">Empreendedor</p>
+        </div>
+        <div class="testimonial-card reveal" style="animation-delay: 0.4s;">
+          <p class="testimonial-text">"Com AlfaHome conseguimos estabelecer metas e atingir nossos objetivos financeiros."</p>
+          <p class="testimonial-author">Ana Costa</p>
+          <p class="testimonial-role">Consultora</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="section-title">Perguntas Frequentes</h2>
+      <div class="faq-grid">
+        <div class="faq-item reveal">
+          <div class="faq-question">
+            <span>Como faço para começar?</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>É simples! Clique em "Começar Agora", crie sua conta e defina seu primeiro orçamento familiar. Leva menos de 5 minutos.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal" style="animation-delay: 0.2s;">
+          <div class="faq-question">
+            <span>Meus dados são seguros?</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Sim! Utilizamos criptografia de ponta a ponta e conformidade com LGPD. Seus dados estão protegidos 24/7.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal" style="animation-delay: 0.4s;">
+          <div class="faq-question">
+            <span>Posso cancelar minha assinatura?</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Claro! Você pode cancelar sua assinatura a qualquer momento, sem penalidades ou taxas extras.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal" style="animation-delay: 0.6s;">
+          <div class="faq-question">
+            <span>Qual o melhor plano para começar?</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Recomendamos começar com o plano Casal se for com outra pessoa, ou Família se gerenciar com múltiplos membros. Individual é ótimo para começar sozinho.</p>
+          </div>
+        </div>
+        <div class="faq-item reveal" style="animation-delay: 0.8s;">
+          <div class="faq-question">
+            <span>Existe período de teste grátis?</span>
+            <span class="faq-toggle">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Oferecemos 14 dias de teste grátis para o plano Família. Aproveite para conhecer todas as funcionalidades sem compromisso!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Revenda Section -->
+  <section class="revenda">
+    <div class="container">
+      <h2>Seja um Revendedor</h2>
+      <p>Ganhe comissões recorrentes vendendo AlfaHome. Suporte completo e materiais de marketing inclusos.</p>
+      <a href="https://wa.me/5527992250122" class="revenda-btn">Saiba Mais Sobre Revenda</a>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contato" id="contato">
+    <div class="container">
+      <h2 class="section-title">Entre em Contato</h2>
+      <div class="contact-grid">
+        <form class="contact-form" id="contactForm">
+          <div class="form-group">
+            <label for="name">Nome</label>
+            <input type="text" id="name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">Telefone</label>
+            <input type="text" id="phone" name="phone" placeholder="(27) 9 9999-9999" />
+          </div>
+          <div class="form-group">
+            <label for="message">Mensagem</label>
+            <textarea id="message" name="message" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Enviar Mensagem</button>
+        </form>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h3>Email</h3>
+            <p><a href="mailto:contato@alfasolucoes.com.br">contato@alfasolucoes.com.br</a></p>
+          </div>
+          <div class="contact-item">
+            <h3>WhatsApp</h3>
+            <p><a href="https://wa.me/5527992250122">(27) 9 9250-2122</a></p>
+          </div>
+          <div class="contact-item">
+            <h3>Horário de Atendimento</h3>
+            <p>Segunda a Sexta: 9h às 18h<br />Sábado: 9h às 13h</p>
+          </div>
+          <div class="contact-item">
+            <h3>Acesso ao Sistema</h3>
+            <p><a href="https://home.alfasolucoes.cloud/login">Faça login</a> para acessar sua conta</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Sobre</h4>
+          <ul>
+            <li><a href="#home">Início</a></li>
+            <li><a href="#funcionalidades">Funcionalidades</a></li>
+            <li><a href="#planos">Planos</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Empresa</h4>
+          <ul>
+            <li><a href="https://wa.me/5527992250122">Suporte</a></li>
+            <li><a href="https://wa.me/5527992250122">Revenda</a></li>
+            <li><a href="https://home.alfasolucoes.cloud/admin">Admin</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="https://home.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a></li>
+            <li><a href="https://home.alfasolucoes.cloud/termos-de-uso">Termos de Uso</a></li>
+            <li><a href="https://home.alfasolucoes.cloud/contato">Contato</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Redes Sociais</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">Facebook</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 AlfaHome. Todos os direitos reservados. | Desenvolvido por Alfa Soluções Tecnológicas</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Float Button -->
+  <a href="https://wa.me/5527992250122" class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="Fale conosco no WhatsApp">
+    💬
+  </a>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-text">
+      Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nossa <a href="https://home.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a>.
+    </div>
+    <div class="cookie-buttons">
+      <button class="cookie-btn cookie-accept" id="cookieAccept">Aceitar</button>
+      <button class="cookie-btn cookie-decline" id="cookieDecline">Recusar</button>
+    </div>
+  </div>
+
+  <script>
+    // Theme Toggle
+    function updateTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('lp-theme', theme);
+      updateThemeToggle();
+    }
+
+    function updateThemeToggle() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', function() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      updateTheme(newTheme);
+    });
+
+    updateThemeToggle();
+
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuBtn.addEventListener('click', function() {
+      mobileMenu.style.display = mobileMenu.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // Close mobile menu when a link is clicked
+    document.querySelectorAll('.mobile-menu a').forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.style.display = 'none';
+      });
+    });
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', function() {
+        const answer = this.nextElementSibling;
+        const toggle = this.querySelector('.faq-toggle');
+
+        document.querySelectorAll('.faq-answer').forEach(a => {
+          if (a !== answer) {
+            a.classList.remove('open');
+            a.previousElementSibling.querySelector('.faq-toggle').classList.remove('open');
+          }
+        });
+
+        answer.classList.toggle('open');
+        toggle.classList.toggle('open');
+      });
+    });
+
+    // Phone Mask
+    function maskPhone(value) {
+      if (!value) return value;
+      value = value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length <= 2) return value;
+      if (value.length <= 7) return `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+    }
+
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function() {
+        this.value = maskPhone(this.value);
+      });
+    }
+
+    // Contact Form
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const message = document.getElementById('message').value;
+      const whatsappUrl = `https://wa.me/5527992250122?text=${encodeURIComponent(`*Novo contato da Landing Page*\n\nNome: ${name}\nEmail: ${email}\nTelefone: ${phone}\nMensagem: ${message}`)}`;
+      window.open(whatsappUrl, '_blank');
+    });
+
+    // Cookie Banner
+    const cookieBanner = document.getElementById('cookieBanner');
+    const cookieAccept = document.getElementById('cookieAccept');
+    const cookieDecline = document.getElementById('cookieDecline');
+    const cookieKey = 'alfahome_cookies_accepted';
+
+    function checkCookies() {
+      if (!localStorage.getItem(cookieKey)) {
+        cookieBanner.classList.add('show');
+      }
+    }
+
+    cookieAccept.addEventListener('click', function() {
+      localStorage.setItem(cookieKey, 'true');
+      cookieBanner.classList.remove('show');
+    });
+
+    cookieDecline.addEventListener('click', function() {
+      localStorage.setItem(cookieKey, 'false');
+      cookieBanner.classList.remove('show');
+    });
+
+    checkCookies();
+
+    // Scroll Reveal Animation
+    const revealElements = document.querySelectorAll('.reveal');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal');
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    });
+
+    revealElements.forEach(el => observer.observe(el));
+
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', function() {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.style.borderBottomColor = 'var(--border)';
+      } else {
+        navbar.style.borderBottomColor = 'var(--border)';
+      }
+    });
+  </script>
+</body>
+</html>
