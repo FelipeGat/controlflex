@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Despesa;
+use App\Models\Receita;
+use App\Observers\DespesaObserver;
+use App\Observers\ReceitaObserver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -15,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Despesa::observe(DespesaObserver::class);
+        Receita::observe(ReceitaObserver::class);
+
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }

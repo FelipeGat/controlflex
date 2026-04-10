@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Banco;
 use App\Models\Despesa;
 use App\Models\Receita;
 use Carbon\Carbon;
@@ -64,10 +63,8 @@ class FluxoCaixaController extends Controller
 
         $request->validate(['data_pagamento' => 'required|date']);
 
+        // O DespesaObserver atualiza o saldo do banco automaticamente
         $despesa->update(['data_pagamento' => $request->data_pagamento]);
-
-        // Debita o saldo do banco (exceto cartão de crédito, que usa limite)
-        $this->atualizarSaldoBanco($despesa, 'debito');
 
         return back()->with('success', 'Despesa baixada com sucesso!');
     }
@@ -77,9 +74,7 @@ class FluxoCaixaController extends Controller
     {
         $this->authorize('update', $despesa);
 
-        // Estorna o saldo do banco antes de limpar a data
-        $this->atualizarSaldoBanco($despesa, 'credito');
-
+        // O DespesaObserver estorna o saldo do banco automaticamente
         $despesa->update(['data_pagamento' => null]);
 
         return back()->with('success', 'Baixa da despesa estornada.');
@@ -92,10 +87,8 @@ class FluxoCaixaController extends Controller
 
         $request->validate(['data_recebimento' => 'required|date']);
 
+        // O ReceitaObserver atualiza o saldo do banco automaticamente
         $receita->update(['data_recebimento' => $request->data_recebimento]);
-
-        // Credita o saldo do banco
-        $this->atualizarSaldoBancoReceita($receita, 'credito');
 
         return back()->with('success', 'Receita baixada com sucesso!');
     }
@@ -105,46 +98,9 @@ class FluxoCaixaController extends Controller
     {
         $this->authorize('update', $receita);
 
-        // Debita o saldo do banco antes de limpar a data
-        $this->atualizarSaldoBancoReceita($receita, 'debito');
-
+        // O ReceitaObserver estorna o saldo do banco automaticamente
         $receita->update(['data_recebimento' => null]);
 
         return back()->with('success', 'Baixa da receita estornada.');
-    }
-
-    // ── Atualizar saldo do banco (despesa) ────────────────────────────────────
-    private function atualizarSaldoBanco(Despesa $despesa, string $operacao): void
-    {
-        $banco = Banco::find($despesa->forma_pagamento);
-        if (! $banco) return;
-
-        $valor = (float) $despesa->valor;
-
-        // Cartão de crédito não afeta saldo da conta corrente
-        if ($despesa->tipo_pagamento === 'credito') {
-            return;
-        }
-
-        if ($operacao === 'debito') {
-            $banco->decrement('saldo', $valor);
-        } else {
-            $banco->increment('saldo', $valor);
-        }
-    }
-
-    // ── Atualizar saldo do banco (receita) ────────────────────────────────────
-    private function atualizarSaldoBancoReceita(Receita $receita, string $operacao): void
-    {
-        $banco = Banco::find($receita->forma_recebimento);
-        if (! $banco) return;
-
-        $valor = (float) $receita->valor;
-
-        if ($operacao === 'credito') {
-            $banco->increment('saldo', $valor);
-        } else {
-            $banco->decrement('saldo', $valor);
-        }
     }
 }
