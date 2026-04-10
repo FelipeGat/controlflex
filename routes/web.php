@@ -33,7 +33,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route(auth()->user()->homeRoute());
     }
-    return redirect()->route('login');
+    return response(file_get_contents(public_path('landing/index.html')));
 });
 
 // ─── Página de manutenção (pública) ─────────────────────────────────────────
