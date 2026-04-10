@@ -1,25 +1,18 @@
 # Changelog
 
-## AlfaHome — 10/04/2026 — Landing page de apresentação
+## AlfaHome — 10/04/2026 — Nova página de apresentação do sistema
 
 ### Novidades
-- Nova landing page completa em `public/landing/index.html` com design moderno e responsivo
-- Apresentação visual dos planos (Individual, Casal, Família) com preços e benefícios
-- Mockups CSS interativos mostrando funcionalidades de controle de despesas e investimentos
-- Demonstração dos KPIs principais: Saldo Total, Despesas, Receitas e Investimentos
-- Seção de funcionalidades com 8 cards destacando principais recursos do sistema
+- Nova página de apresentação do AlfaHome com visual moderno e profissional
+- Demonstração visual dos planos disponíveis (Individual, Casal e Família) com todos os preços e benefícios
+- Prévia das principais funcionalidades do sistema: controle de despesas, receitas, investimentos e relatórios
+- Seção de perguntas frequentes para tirar dúvidas antes de assinar
 
 ### Melhorias
-- Interface com tema claro e escuro (toggle disponível na navbar)
-- Animações suaves ao descer a página (scroll reveal)
-- Design responsivo para desktop, tablet e mobile
-- FAQ interativa com 5 perguntas frequentes
-- Integração direta com WhatsApp para suporte e vendas
-- Formulário de contato que envia mensagens via WhatsApp
-
-### Correções
-- Adicionada rota pública `/landing` no Laravel para servir a landing page
-- Assets (favicon, logo) agora acessíveis em `/public`
+- Página funciona perfeitamente em celular, tablet e computador
+- Opção de tema claro e escuro disponível
+- Botão de WhatsApp para falar diretamente com o suporte
+- Formulário de contato integrado ao WhatsApp
 
 ## AlfaHome — 10/04/2026 — Saldo corrigido, ícones e programa de indicação
 
