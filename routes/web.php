@@ -13,6 +13,7 @@ use App\Http\Controllers\FluxoCaixaController;
 use App\Http\Controllers\LancamentoDiarioController;
 use App\Http\Controllers\LancamentoController;
 use App\Http\Controllers\AlertaController;
+use App\Http\Controllers\CupomIndicacaoController;
 use App\Http\Controllers\MembroController;
 use App\Http\Controllers\Admin\SaasDashboardController;
 use App\Http\Controllers\Admin\PlanoController;
@@ -132,6 +133,9 @@ Route::middleware(['auth', 'tenant.ativo'])->group(function () {
     Route::delete('/investimentos/{investimento}', [InvestimentoController::class, 'destroy'])->name('investimentos.destroy')->middleware('permissao:investimentos,excluir');
     Route::post('/investimentos/{investimento}/rendimentos', [InvestimentoController::class, 'storeRendimento'])->name('investimentos.rendimentos.store')->middleware('permissao:investimentos,editar');
     Route::delete('/investimentos/{investimento}/rendimentos/{rendimento}', [InvestimentoController::class, 'destroyRendimento'])->name('investimentos.rendimentos.destroy')->middleware('permissao:investimentos,excluir');
+
+    // Cupom de Indicação
+    Route::get('/indicacao', [CupomIndicacaoController::class, 'index'])->name('cupons.index');
 
     // Membros → redirecionado para familiares (tela unificada)
     Route::get('/membros', fn() => redirect()->route('familiares.index'))->name('membros.index');

@@ -1136,6 +1136,11 @@
             <i class="fa-solid fa-tags"></i> <span>Categorias</span>
         </a>
         @endif
+
+        <div class="sidebar-section-label">Indicação</div>
+        <a href="{{ route('cupons.index') }}" class="sidebar-link {{ request()->routeIs('cupons.*') ? 'active' : '' }}" data-label="Indicar Amigos">
+            <i class="fa-solid fa-gift"></i> <span>Indicar Amigos</span>
+        </a>
         @endif
     </nav>
 
