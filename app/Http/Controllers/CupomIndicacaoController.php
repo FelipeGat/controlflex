@@ -17,10 +17,14 @@ class CupomIndicacaoController extends Controller
         // Gera o cupom automaticamente se ainda não existe
         if (! $cupom) {
             $cupom = CupomIndicacao::create([
-                'tenant_id' => $tenantId,
-                'codigo'    => CupomIndicacao::gerarCodigo(Auth::user()->name),
+                'tenant_id'            => $tenantId,
+                'codigo'               => CupomIndicacao::gerarCodigo(Auth::user()->name),
+                'desconto_percentual'  => 20,
             ]);
         }
+
+        // Garante que os atributos com default do DB estejam carregados
+        $cupom->refresh();
 
         $indicacoes = $cupom->indicacoes()
             ->with('tenantIndicado')
