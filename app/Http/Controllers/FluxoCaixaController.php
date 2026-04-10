@@ -63,6 +63,7 @@ class FluxoCaixaController extends Controller
 
         $request->validate(['data_pagamento' => 'required|date']);
 
+        // O DespesaObserver atualiza o saldo do banco automaticamente
         $despesa->update(['data_pagamento' => $request->data_pagamento]);
 
         return back()->with('success', 'Despesa baixada com sucesso!');
@@ -73,6 +74,7 @@ class FluxoCaixaController extends Controller
     {
         $this->authorize('update', $despesa);
 
+        // O DespesaObserver estorna o saldo do banco automaticamente
         $despesa->update(['data_pagamento' => null]);
 
         return back()->with('success', 'Baixa da despesa estornada.');
@@ -85,6 +87,7 @@ class FluxoCaixaController extends Controller
 
         $request->validate(['data_recebimento' => 'required|date']);
 
+        // O ReceitaObserver atualiza o saldo do banco automaticamente
         $receita->update(['data_recebimento' => $request->data_recebimento]);
 
         return back()->with('success', 'Receita baixada com sucesso!');
@@ -95,6 +98,7 @@ class FluxoCaixaController extends Controller
     {
         $this->authorize('update', $receita);
 
+        // O ReceitaObserver estorna o saldo do banco automaticamente
         $receita->update(['data_recebimento' => null]);
 
         return back()->with('success', 'Baixa da receita estornada.');

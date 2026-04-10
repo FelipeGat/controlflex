@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CupomIndicacao;
 use App\Models\Familiar;
+use App\Models\Indicacao;
 use App\Models\Plano;
 use App\Models\Tenant;
 use App\Models\User;
@@ -40,6 +42,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'cupom' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = DB::transaction(function () use ($request) {
@@ -74,6 +77,22 @@ class RegisteredUserController extends Controller
 
             CategoriasDefaultSeeder::seedParaTenant($tenant->id, $user->id);
             FornecedoresDefaultSeeder::seedParaTenant($tenant->id, $user->id);
+
+            // Processa cupom de indicação
+            if ($request->filled('cupom')) {
+                $cupom = CupomIndicacao::where('codigo', mb_strtoupper(trim($request->cupom)))
+                    ->where('ativo', true)
+                    ->first();
+
+                if ($cupom && $cupom->tenant_id !== $tenant->id) {
+                    Indicacao::create([
+                        'cupom_id'           => $cupom->id,
+                        'tenant_indicado_id' => $tenant->id,
+                    ]);
+
+                    $cupom->increment('creditos_disponiveis');
+                }
+            }
 
             return $user;
         });

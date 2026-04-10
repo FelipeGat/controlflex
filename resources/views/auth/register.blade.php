@@ -34,6 +34,15 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <!-- Cupom de Indicação -->
+        <div class="mt-4">
+            <label for="cupom" class="block text-sm font-medium text-gray-300">Cupom de Indicação <span style="font-weight:400;color:#94a3b8;">(opcional)</span></label>
+            <input id="cupom" type="text" name="cupom" value="{{ old('cupom', request('cupom')) }}" autocomplete="off" placeholder="Ex: ALEFE"
+                style="text-transform:uppercase;"
+                class="mt-1 block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+            <x-input-error :messages="$errors->get('cupom')" class="mt-2" />
+        </div>
+
         <div class="mt-6">
             <button type="submit"
                 class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-slate-800 transition-colors">
