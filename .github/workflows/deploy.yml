@@ -1,0 +1,26 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/alfahome
+            git pull origin main
+            docker exec alfa-home-app php artisan config:cache
+            docker exec alfa-home-app php artisan route:cache
+            docker exec alfa-home-app php artisan view:cache
+            docker exec alfa-home-app php artisan event:cache
+            docker compose restart app
+            echo "Deploy completed at $(date)"
