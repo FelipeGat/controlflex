@@ -183,10 +183,13 @@ class DespesaController extends Controller
         $escopo   = $request->get('escopo', 'apenas_esta');
 
         if ($escopo === 'esta_e_futuras' && $despesa->grupo_recorrencia_id) {
-            $count = Despesa::where('tenant_id', $tenantId)
+            $despesas = Despesa::where('tenant_id', $tenantId)
                 ->where('grupo_recorrencia_id', $despesa->grupo_recorrencia_id)
                 ->where('data_compra', '>=', $despesa->data_compra)
-                ->delete();
+                ->get();
+
+            $count = $despesas->count();
+            $despesas->each->delete(); // dispara observer para cada registro
 
             return back()->with('success', "{$count} despesa(s) excluída(s)!");
         }

@@ -1,5 +1,15 @@
 # Changelog
 
+## AlfaHome — 10/04/2026 — Saldo corrigido, ícones e programa de indicação
+
+### Novidades
+- Novo programa de indicação: compartilhe seu cupom com amigos e ganhe 20% de desconto na próxima mensalidade quando alguém se cadastrar usando seu código.
+- Tela "Indicar Amigos" disponível no menu lateral com seu cupom pessoal, link de convite e histórico de indicações.
+
+### Correções
+- O saldo das contas bancárias no dashboard agora é atualizado automaticamente ao marcar lançamentos como pagos ou recebidos.
+- Ícones dos bancos na tela de lançamentos agora exibem corretamente os logos (Itaú, Nubank, etc.) em vez de ícones genéricos.
+
 ## AlfaHome — 09/04/2026 — Correção no endpoint de polling de manutenção
 
 ### Correções
