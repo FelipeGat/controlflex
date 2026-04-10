@@ -22,6 +22,11 @@ use App\Http\Controllers\Revenda\ClienteController;
 use App\Http\Controllers\Revenda\RevendaDashboardController;
 use Illuminate\Support\Facades\Route;
 
+// Landing page pública
+Route::get('/landing', function () {
+    return file_get_contents(public_path('landing/index.html'));
+})->name('landing');
+
 // Redirect dinâmico baseado em role
 Route::get('/', function () {
     if (auth()->check()) {
