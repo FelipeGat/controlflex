@@ -1261,6 +1261,26 @@
             </div>
         @endif
 
+        @if(session('show_indicacao'))
+        <div id="toast-indicacao" style="position:fixed;top:20px;right:20px;z-index:9999;background:#fff;border:1px solid #e2e8f0;border-left:4px solid var(--color-primary);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:14px 16px;display:flex;align-items:center;gap:12px;max-width:380px;animation:slideInRight .3s ease-out;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-gift" style="font-size:16px;color:#16a34a;"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;color:#1e293b;">Indique e ganhe 20% de desconto!</div>
+                <div style="font-size:12px;color:#64748b;margin-top:2px;">Compartilhe seu cupom com amigos e ganhe desconto na mensalidade.</div>
+                <a href="{{ route('cupons.index') }}" style="font-size:12px;font-weight:600;color:var(--color-primary);text-decoration:none;margin-top:4px;display:inline-block;">Ver meu cupom &rarr;</a>
+            </div>
+            <button onclick="document.getElementById('toast-indicacao').remove()" style="background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;color:#94a3b8;font-size:16px;line-height:1;" title="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <style>
+        @keyframes slideInRight { from { transform:translateX(120%);opacity:0; } to { transform:translateX(0);opacity:1; } }
+        </style>
+        <script>setTimeout(function(){ var t=document.getElementById('toast-indicacao'); if(t) t.style.transition='opacity .3s',t.style.opacity='0',setTimeout(function(){t.remove()},300); }, 5000);</script>
+        @endif
+
         @yield('content')
     </main>
 </div>
