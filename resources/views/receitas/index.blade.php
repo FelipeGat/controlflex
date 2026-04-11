@@ -98,10 +98,20 @@
 {{-- ─── Filtros avançados: Banco / Categoria / Tipo ──────────────────────── --}}
 <form method="GET" action="{{ route('receitas.index') }}" id="form-filtros-rec"
       style="margin-bottom:12px;">
-    <input type="hidden" name="inicio"      value="{{ $inicio }}">
-    <input type="hidden" name="fim"         value="{{ $fim }}">
     <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        {{-- Intervalo de datas --}}
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;background:#fff;">
+            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:#94a3b8;"></i>
+            <input type="date" name="inicio" value="{{ $inicio }}"
+                   onchange="document.getElementById('form-filtros-rec').submit()"
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+            <span style="font-size:11px;color:#94a3b8;">até</span>
+            <input type="date" name="fim" value="{{ $fim }}"
+                   onchange="document.getElementById('form-filtros-rec').submit()"
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+        </div>
 
         {{-- Banco / Conta de recebimento --}}
         <select name="banco_id" onchange="document.getElementById('form-filtros-rec').submit()"

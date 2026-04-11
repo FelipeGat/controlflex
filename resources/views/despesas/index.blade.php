@@ -22,7 +22,7 @@
     $urlDMesAtu  = route('despesas.index', array_filter($filtrosAtivos));
     $urlDTodas   = route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio' => $inicio, 'fim' => $fim])));
 
-    $temFiltroAtivo = $fornecedorId || $bancoId || $categoriaId || $tipoPag;
+    $temFiltroAtivo = $fornecedorId || $bancoId || $categoriaId || $tipoPag || $statusFiltro;
 @endphp
 
 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
@@ -100,10 +100,29 @@
 {{-- ─── Filtros avançados: Fornecedor / Banco / Categoria / Tipo ─────────── --}}
 <form method="GET" action="{{ route('despesas.index') }}" id="form-filtros-desp"
       style="margin-bottom:12px;">
-    <input type="hidden" name="inicio"      value="{{ $inicio }}">
-    <input type="hidden" name="fim"         value="{{ $fim }}">
     <input type="hidden" name="familiar_id" value="{{ $familiarId }}">
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+
+        {{-- Intervalo de datas --}}
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;background:#fff;">
+            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:#94a3b8;"></i>
+            <input type="date" name="inicio" value="{{ $inicio }}"
+                   onchange="document.getElementById('form-filtros-desp').submit()"
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+            <span style="font-size:11px;color:#94a3b8;">até</span>
+            <input type="date" name="fim" value="{{ $fim }}"
+                   onchange="document.getElementById('form-filtros-desp').submit()"
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+        </div>
+
+        {{-- Status: Pago / A Pagar --}}
+        <select name="status" onchange="document.getElementById('form-filtros-desp').submit()"
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $statusFiltro ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $statusFiltro ? '#eff6ff' : '#fff' }};color:{{ $statusFiltro ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:130px;">
+            <option value="">Todos os status</option>
+            <option value="pago"    {{ $statusFiltro === 'pago'    ? 'selected' : '' }}>✅ Pago</option>
+            <option value="a_pagar" {{ $statusFiltro === 'a_pagar' ? 'selected' : '' }}>🕐 A Pagar</option>
+            <option value="vencido" {{ $statusFiltro === 'vencido' ? 'selected' : '' }}>⚠️ Vencido</option>
+        </select>
 
         {{-- Fornecedor --}}
         <select name="fornecedor_id" onchange="document.getElementById('form-filtros-desp').submit()"
@@ -376,8 +395,8 @@
                         </div>
                         <div style="display:flex;gap:12px;align-items:flex-end;">
                             <div style="flex:1;">
-                                <label class="form-label">Nº de Parcelas</label>
-                                <input type="number" name="parcelas" id="novo-parcelas" value="1" min="1" max="48" class="form-control"
+                                <label class="form-label">Nº de Parcelas <span style="font-size:11px;color:#94a3b8;">(0 = recorrente mensal)</span></label>
+                                <input type="number" name="parcelas" id="novo-parcelas" value="1" min="0" max="48" class="form-control"
                                        oninput="despesaOnParcelasChange(this)">
                             </div>
                             <div style="flex:1;">
@@ -449,7 +468,7 @@
                     <div class="form-group">
                         <label class="form-label">Quem</label>
                         <select name="quem_comprou" id="edit-quem_comprou" class="form-control">
-                            <option value="">— Selecione —</option>
+                            <option value="">🏠 Todos da Casa</option>
                             @foreach($familiares as $f)
                                 <option value="{{ $f->id }}">{{ $f->nome }}</option>
                             @endforeach
@@ -650,7 +669,9 @@ function despesaAtualizarInfoCartao() {
     const fechamento  = opt ? parseInt(opt.dataset.fechamento) : 0;
     const vencimento  = opt ? parseInt(opt.dataset.vencimento) : 0;
     const limite      = opt ? parseFloat(opt.dataset.limite) || 0 : 0;
-    const n           = parseInt(parcelasInp?.value) || 1;
+    const nRaw        = parcelasInp ? parseInt(parcelasInp.value) : 1;
+    const n           = isNaN(nRaw) ? 1 : nRaw; // pode ser 0 (recorrente mensal)
+    const isRecMensal = n === 0;
     const valor       = parseFloat(valorInp?.value) || 0;
     const dataCompra  = document.querySelector('#modal-nova-despesa input[name="data_compra"]')?.value
                         || new Date().toISOString().substring(0,10);
@@ -664,9 +685,11 @@ function despesaAtualizarInfoCartao() {
                 ? `⚠️ Compra após o fechamento (dia ${fechamento}) — entra na <strong>próxima fatura</strong>.`
                 : `✅ Compra dentro do ciclo atual (fechamento dia ${fechamento}).`;
             const primVenc = despesaCalcVencimento(dataCompra, fechamento, vencimento);
-            const parInfo  = n > 1
-                ? `<br>📅 <strong>${n}x</strong> — 1ª parcela vence em <strong>${primVenc}</strong>`
-                : `<br>📅 Vencimento da fatura: <strong>${primVenc}</strong>`;
+            const parInfo  = isRecMensal
+                ? `<br>🔁 <strong>Recorrente mensal</strong> — 1ª cobrança em <strong>${primVenc}</strong>`
+                : n > 1
+                    ? `<br>📅 <strong>${n}x</strong> — 1ª parcela vence em <strong>${primVenc}</strong>`
+                    : `<br>📅 Vencimento da fatura: <strong>${primVenc}</strong>`;
             const limInfo  = limite > 0
                 ? `<br>💳 Limite: <strong>R$ ${limite.toFixed(2).replace('.',',')}</strong>` : '';
             textoSpan.innerHTML = aviso + parInfo + limInfo;
@@ -674,15 +697,19 @@ function despesaAtualizarInfoCartao() {
     }
 
     if (divVP && valor > 0) {
-        const vp = (valor / n).toFixed(2).replace('.',',');
-        divVP.textContent = n > 1 ? `R$ ${vp} × ${n}` : `R$ ${valor.toFixed(2).replace('.',',')} (à vista)`;
+        if (isRecMensal) {
+            divVP.textContent = `R$ ${valor.toFixed(2).replace('.',',')} / mês (recorrente)`;
+        } else {
+            const vp = (valor / (n || 1)).toFixed(2).replace('.',',');
+            divVP.textContent = n > 1 ? `R$ ${vp} × ${n}` : `R$ ${valor.toFixed(2).replace('.',',')} (à vista)`;
+        }
     } else if (divVP) {
         divVP.textContent = '—';
     }
 
-    // Cartão de crédito: força recorrente + mensal, oculta bloco recorrência manual
+    // Cartão de crédito: força recorrente quando parcelas > 1 ou = 0 (recorrente mensal)
     const recInput = document.getElementById('novo-recorrente');
-    if (recInput) recInput.value = n > 1 ? '1' : '';
+    if (recInput) recInput.value = (n > 1 || isRecMensal) ? '1' : '';
     const recRow = document.getElementById('novo-parcelas-recorrente-row');
     const freqRow = document.getElementById('novo-frequencia-row');
     if (recRow) recRow.style.display = 'none';

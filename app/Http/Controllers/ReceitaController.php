@@ -25,7 +25,8 @@ class ReceitaController extends Controller
         $categoriaId = $request->get('categoria_id') ? (int) $request->get('categoria_id') : null;
         $tipoPag     = $request->get('tipo_pagamento') ?: null;
 
-        $baseQuery = Receita::whereBetween('data_prevista_recebimento', [$inicio, $fim])
+        $baseQuery = Receita::where('tenant_id', $tenantId)
+            ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->when($familiarId,  fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');
             }))
@@ -36,6 +37,7 @@ class ReceitaController extends Controller
         $totalValor = (clone $baseQuery)->sum('valor');
 
         $receitas = Receita::with(['familiar', 'categoria', 'banco'])
+            ->where('tenant_id', $tenantId)
             ->whereBetween('data_prevista_recebimento', [$inicio, $fim])
             ->when($familiarId,  fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_recebeu', $familiarId)->orWhereNull('quem_recebeu');

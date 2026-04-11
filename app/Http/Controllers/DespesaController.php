@@ -26,19 +26,19 @@ class DespesaController extends Controller
         $bancoId      = $request->get('banco_id')      ? (int) $request->get('banco_id')      : null;
         $categoriaId  = $request->get('categoria_id')  ? (int) $request->get('categoria_id')  : null;
         $tipoPag      = $request->get('tipo_pagamento') ?: null;
+        $statusFiltro = $request->get('status') ?: null; // pago | a_pagar | vencido
 
-        $baseQuery = Despesa::whereBetween('data_compra', [$inicio, $fim])
-            ->when($familiarId,   fn($q) => $q->where(function ($sub) use ($familiarId) {
-                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
-            }))
-            ->when($fornecedorId, fn($q) => $q->where('onde_comprou', $fornecedorId))
-            ->when($bancoId,      fn($q) => $q->where('forma_pagamento', $bancoId))
-            ->when($categoriaId,  fn($q) => $q->where('categoria_id', $categoriaId))
-            ->when($tipoPag,      fn($q) => $q->where('tipo_pagamento', $tipoPag));
+        $applyStatus = function ($q) use ($statusFiltro) {
+            if ($statusFiltro === 'pago') {
+                $q->whereNotNull('data_pagamento');
+            } elseif ($statusFiltro === 'a_pagar') {
+                $q->whereNull('data_pagamento');
+            } elseif ($statusFiltro === 'vencido') {
+                $q->whereNull('data_pagamento')->where('data_compra', '<', now()->toDateString());
+            }
+        };
 
-        $totalValor = (clone $baseQuery)->sum('valor');
-
-        $despesas = Despesa::with(['familiar', 'fornecedor', 'categoria', 'banco'])
+        $baseQuery = Despesa::where('tenant_id', $tenantId)
             ->whereBetween('data_compra', [$inicio, $fim])
             ->when($familiarId,   fn($q) => $q->where(function ($sub) use ($familiarId) {
                 $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
@@ -47,6 +47,21 @@ class DespesaController extends Controller
             ->when($bancoId,      fn($q) => $q->where('forma_pagamento', $bancoId))
             ->when($categoriaId,  fn($q) => $q->where('categoria_id', $categoriaId))
             ->when($tipoPag,      fn($q) => $q->where('tipo_pagamento', $tipoPag))
+            ->tap($applyStatus);
+
+        $totalValor = (clone $baseQuery)->sum('valor');
+
+        $despesas = Despesa::with(['familiar', 'fornecedor', 'categoria', 'banco'])
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('data_compra', [$inicio, $fim])
+            ->when($familiarId,   fn($q) => $q->where(function ($sub) use ($familiarId) {
+                $sub->where('quem_comprou', $familiarId)->orWhereNull('quem_comprou');
+            }))
+            ->when($fornecedorId, fn($q) => $q->where('onde_comprou', $fornecedorId))
+            ->when($bancoId,      fn($q) => $q->where('forma_pagamento', $bancoId))
+            ->when($categoriaId,  fn($q) => $q->where('categoria_id', $categoriaId))
+            ->when($tipoPag,      fn($q) => $q->where('tipo_pagamento', $tipoPag))
+            ->tap($applyStatus)
             ->orderByDesc('data_compra')
             ->orderByDesc('id')
             ->paginate(20)
@@ -60,7 +75,7 @@ class DespesaController extends Controller
         return view('despesas.index', compact(
             'despesas', 'totalValor', 'categorias', 'familiares',
             'fornecedores', 'bancos', 'inicio', 'fim',
-            'familiarId', 'fornecedorId', 'bancoId', 'categoriaId', 'tipoPag'
+            'familiarId', 'fornecedorId', 'bancoId', 'categoriaId', 'tipoPag', 'statusFiltro'
         ));
     }
 
@@ -131,14 +146,21 @@ class DespesaController extends Controller
         // Validar disponibilidade apenas quando a despesa está sendo marcada como paga
         if ($request->data_pagamento && $request->forma_pagamento && $request->tipo_pagamento) {
             $mesmoCartao = ((int) $request->forma_pagamento === (int) $despesa->forma_pagamento);
-            $erro = $this->validarDisponibilidade(
-                (int) $request->forma_pagamento,
-                (float) $request->valor,
-                $request->tipo_pagamento,
-                $mesmoCartao ? $despesa->id : null
-            );
-            if ($erro) {
-                return back()->withErrors(['valor' => $erro])->withInput();
+            $eraAberta   = $despesa->data_pagamento === null;
+
+            // Quando a despesa já estava aberta na mesma conta, o valor já está
+            // comprometido nessa conta — pagar não cria nova saída, apenas registra
+            // o pagamento. Não bloquear neste caso.
+            if (! ($eraAberta && $mesmoCartao)) {
+                $erro = $this->validarDisponibilidade(
+                    (int) $request->forma_pagamento,
+                    (float) $request->valor,
+                    $request->tipo_pagamento,
+                    $mesmoCartao ? $despesa->id : null
+                );
+                if ($erro) {
+                    return back()->withErrors(['valor' => $erro])->withInput();
+                }
             }
         }
 

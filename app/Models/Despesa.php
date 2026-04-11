@@ -114,9 +114,11 @@ class Despesa extends Model
         }
 
         // ── Valor por parcela ─────────────────────────────────────────────────
-        // Cartão de crédito divide o valor total entre as parcelas
+        // Cartão de crédito divide o valor total entre as parcelas APENAS quando
+        // parcelas > 1 (parcelamento explícito). Quando parcelas = 0 (recorrente
+        // mensal sem fim, ex: anuidade cobrada todo mês), o valor cheio repete.
         $valorTotal   = (float) $data['valor'];
-        $valorParcela = ($tipoPagamento === 'credito' && $total > 1)
+        $valorParcela = ($tipoPagamento === 'credito' && $parcelas > 1)
             ? round($valorTotal / $total, 2)
             : $valorTotal;
 
@@ -156,9 +158,10 @@ class Despesa extends Model
             for ($i = 0; $i < $total; $i++) {
                 $dataAtual = self::calcularData($dataInicial, $frequencia, $i);
 
-                // Observações: numera as parcelas do cartão automaticamente
+                // Observações: numera parcelas do cartão (apenas parcelamento explícito,
+                // não recorrência infinita onde parcelas = 0)
                 $obs = $obsBase;
-                if ($tipoPagamento === 'credito' && $total > 1) {
+                if ($tipoPagamento === 'credito' && $parcelas > 1) {
                     $prefixo = 'Parcela ' . ($i + 1) . '/' . $total;
                     $obs     = $obsBase ? "{$prefixo} — {$obsBase}" : $prefixo;
                 }
