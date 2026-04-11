@@ -231,6 +231,9 @@
         <div class="ext-info">
             <div class="ext-desc" title="{{ $dDesc }}">{{ $dDesc }}</div>
             <div class="ext-meta">
+                <span style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:5px;white-space:nowrap;">
+                    <i class="fa-regular fa-calendar" style="font-size:10px;"></i> {{ $despesa->data_compra->format('d/m') }}
+                </span>
                 <span class="ext-conta-pill">
                     <span class="ext-dot" style="background:{{ $dCor }};"></span>
                     {{ $dConta }}
