@@ -150,7 +150,7 @@ class Despesa extends Model
         $obsBase = $data['observacoes'] ?? null;
 
         DB::transaction(function () use (
-            $data, $userId, $total, $grupoId,
+            $data, $userId, $total, $parcelas, $grupoId,
             $dataInicial, $dataCompra, $frequencia,
             $isRecorrente, $valorParcela, $tipoPagamento,
             $obsBase, $isCartaoComFatura

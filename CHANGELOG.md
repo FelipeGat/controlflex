@@ -1,18 +1,25 @@
 # Changelog
 
-## AlfaHome — 10/04/2026 — Nova página de apresentação do sistema
+## AlfaHome — 13/04/2026 — Correção no lançamento de despesas no cartão de crédito
+
+### Correções
+- Corrigido erro ao lançar despesas parceladas no cartão de crédito, que estavam falhando com erro 500.
+
+## AlfaHome — 10/04/2026 — Landing page totalmente redesenhada
 
 ### Novidades
-- Nova página de apresentação do AlfaHome com visual moderno e profissional
-- Demonstração visual dos planos disponíveis (Individual, Casal e Família) com todos os preços e benefícios
-- Prévia das principais funcionalidades do sistema: controle de despesas, receitas, investimentos e relatórios
-- Seção de perguntas frequentes para tirar dúvidas antes de assinar
+- Página de apresentação do AlfaHome completamente refeita com design premium e profissional
+- Nova seção com demonstração visual do sistema (dashboard, contratos, financeiro)
+- Planos atualizados: Starter, Professional e Enterprise para imobiliárias de todos os tamanhos
+- Programa de revenda para parceiros que atendem múltiplas imobiliárias
+- Chat integrado para falar com nossa equipe direto pela página
 
 ### Melhorias
-- Página funciona perfeitamente em celular, tablet e computador
-- Opção de tema claro e escuro disponível
-- Botão de WhatsApp para falar diretamente com o suporte
-- Formulário de contato integrado ao WhatsApp
+- Visual idêntico ao padrão dos produtos Alfa Soluções (mesma qualidade do AlfaGym)
+- Tema claro e escuro com transição suave
+- Página 100% responsiva (celular, tablet e computador)
+- Animações de entrada ao rolar a página
+- Ao acessar o site, visitantes agora veem a landing page diretamente (sem precisar ir em /landing)
 
 ## AlfaHome — 10/04/2026 — Saldo corrigido, ícones e programa de indicação
 
