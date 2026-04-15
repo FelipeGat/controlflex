@@ -1,5 +1,20 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — CTA final, SEO e correção de links quebrados
+
+### Novidades
+- Novo bloco de **chamada final** no rodapé da landing ("Pronto para organizar as finanças da sua família?"), em faixa verde, com botão direto para a seção de planos.
+- Os planos **Individual**, **Casal** e **Família** agora levam direto para o WhatsApp comercial, com a mensagem de "Quero assinar o plano X" já preenchida. O cliente conversa, confirma e assina sem formulário.
+- Landing page passa a incluir metadados completos de **SEO e redes sociais** (Open Graph e Twitter Card): ao compartilhar o link no WhatsApp, Instagram ou Facebook, o preview mostra título, descrição e imagem do dashboard.
+- Novos arquivos `robots.txt` e `sitemap.xml` publicados para melhorar a indexação no Google.
+
+### Melhorias
+- Tema escuro da landing page agora mantém a alternância de cores de fundo nas seções corretamente — não há mais "faixas" de cor inconsistentes no meio da página.
+- Navbar da landing agora inclui o link **Como funciona**, facilitando o acesso direto à seção de passos.
+
+### Correções
+- Corrigidos todos os links internos da landing que ainda apontavam para uma antiga seção "Contato", que foi removida. Todos os botões agora têm um destino válido (planos, WhatsApp ou lista de planos).
+
 ## AlfaHome — 15/04/2026 — Landing com "Como funciona" e bloco de segurança
 
 ### Novidades

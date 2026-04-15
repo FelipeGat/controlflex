@@ -3,9 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AlfaHome — Gestão inteligente para imobiliárias</title>
-  <meta name="description" content="Sistema completo para gestão de imóveis. Contratos, inquilinos, financeiro, cobranças e muito mais. Experimente grátis." />
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>AlfaHome — Gestão financeira para a família toda</title>
+  <meta name="description" content="Organize receitas, despesas, cartões, contas e investimentos da sua família em um só lugar. Sem conectar banco, com backup diário e em conformidade com a LGPD." />
+  <meta name="keywords" content="gestão financeira, controle de gastos, orçamento familiar, finanças pessoais, despesas, cartão de crédito, investimentos, AlfaHome" />
+  <meta name="author" content="Alfa Soluções Tecnológicas" />
+  <meta name="theme-color" content="#56b988" />
+  <link rel="canonical" href="https://home.alfasolucoes.cloud/" />
+  <link rel="icon" type="image/png" href="/alfa-home-logo.png" />
+  <link rel="apple-touch-icon" href="/alfa-home-logo.png" />
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="AlfaHome" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:url" content="https://home.alfasolucoes.cloud/" />
+  <meta property="og:title" content="AlfaHome — Gestão financeira para a família toda" />
+  <meta property="og:description" content="Organize receitas, despesas, cartões, contas e investimentos da sua família em um só lugar. Sem conectar banco e em conformidade com a LGPD." />
+  <meta property="og:image" content="https://home.alfasolucoes.cloud/landing/screenshots/dashboard-light.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Dashboard do AlfaHome mostrando saldo, receitas e despesas" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AlfaHome — Gestão financeira para a família toda" />
+  <meta name="twitter:description" content="Organize receitas, despesas, cartões e investimentos da sua família em um só lugar. Sem conectar banco e em conformidade com a LGPD." />
+  <meta name="twitter:image" content="https://home.alfasolucoes.cloud/landing/screenshots/dashboard-light.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -891,6 +914,7 @@
     /* ─── Spotlight ─────────────────────────────────────────────────────────── */
     .spotlight {
       padding: 80px 0;
+      background: var(--bg-section);
     }
 
     .spotlight.spotlight-alt { background: var(--bg-alt); }
@@ -1419,6 +1443,72 @@
     }
     @media (max-width: 560px) {
       .seguranca-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── CTA final ─────────────────────────────────────────────────────────── */
+    #cta-final {
+      padding: 88px 0;
+      background: linear-gradient(135deg, #3fa06f 0%, #56b988 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta-final::before {
+      content: '';
+      position: absolute;
+      top: -180px; right: -180px;
+      width: 440px; height: 440px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    #cta-final::after {
+      content: '';
+      position: absolute;
+      bottom: -200px; left: -200px;
+      width: 440px; height: 440px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-final-inner { position: relative; z-index: 1; max-width: 680px; margin-inline: auto; }
+    .cta-final-title {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .cta-final-sub {
+      font-size: 1.0625rem;
+      color: rgba(255,255,255,.9);
+      margin-bottom: 32px;
+    }
+    .cta-final-buttons {
+      display: inline-flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .cta-final-buttons .btn-primary {
+      background: #fff;
+      color: #0f172a;
+      border-color: #fff;
+    }
+    .cta-final-buttons .btn-primary:hover {
+      background: #f8fafc;
+      color: #0f172a;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(0,0,0,.18);
+    }
+    .cta-final-buttons .btn-ghost {
+      color: #fff;
+      border-color: rgba(255,255,255,.5);
+    }
+    .cta-final-buttons .btn-ghost:hover {
+      background: rgba(255,255,255,.12);
+      border-color: #fff;
+      color: #fff;
     }
 
     /* ─── FAQ ───────────────────────────────────────────────────────────────── */
@@ -2385,9 +2475,9 @@
 
       <div class="nav-links">
         <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#como-funciona">Como funciona</a>
         <a href="#planos">Planos</a>
         <a href="#faq">FAQ</a>
-        <a href="#contato">Contato</a>
       </div>
 
       <div class="nav-actions">
@@ -2415,12 +2505,12 @@
 <div class="mobile-menu" id="mobileMenu">
   <button class="mobile-menu-close" id="mobileMenuClose">×</button>
   <a href="#funcionalidades" class="mobile-link">Funcionalidades</a>
+  <a href="#como-funciona" class="mobile-link">Como funciona</a>
   <a href="#planos" class="mobile-link">Planos</a>
   <a href="#faq" class="mobile-link">FAQ</a>
-  <a href="#contato" class="mobile-link">Contato</a>
   <div class="mobile-menu-actions">
     <a href="https://home.alfasolucoes.cloud/login" class="btn btn-ghost" style="text-align:center;">Entrar</a>
-    <a href="#contato" class="btn btn-primary" style="text-align:center;">Fale conosco</a>
+    <a href="#planos" class="btn btn-primary" style="text-align:center;">Ver planos</a>
   </div>
 </div>
 
@@ -2596,7 +2686,7 @@
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
-          <a href="#contato" class="btn btn-primary">Conhecer o sistema</a>
+          <a href="#planos" class="btn btn-primary">Conhecer o sistema</a>
         </div>
       </div>
 
@@ -2652,7 +2742,7 @@
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
-          <a href="#contato" class="btn btn-primary">Ver demonstração</a>
+          <a href="#planos" class="btn btn-primary">Ver demonstração</a>
         </div>
       </div>
 
@@ -2694,7 +2784,7 @@
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
-          <a href="#contato" class="btn btn-primary">Começar agora</a>
+          <a href="#planos" class="btn btn-primary">Começar agora</a>
         </div>
       </div>
 
@@ -2790,7 +2880,7 @@
             Dashboard e relatórios
           </div>
         </div>
-        <a href="#contato" class="plano-cta plano-cta-ghost">Começar agora</a>
+        <a href="https://wa.me/5527992250122?text=Ol%C3%A1!%20Quero%20assinar%20o%20plano%20Individual%20do%20AlfaHome." target="_blank" rel="noopener" class="plano-cta plano-cta-ghost">Assinar agora</a>
       </div>
 
       <!-- CASAL (destaque) -->
@@ -2826,7 +2916,7 @@
             Investimentos e patrimônio
           </div>
         </div>
-        <a href="#contato" class="plano-cta plano-cta-solid">Assinar agora</a>
+        <a href="https://wa.me/5527992250122?text=Ol%C3%A1!%20Quero%20assinar%20o%20plano%20Casal%20do%20AlfaHome." target="_blank" rel="noopener" class="plano-cta plano-cta-solid">Assinar agora</a>
       </div>
 
       <!-- FAMÍLIA -->
@@ -2853,7 +2943,7 @@
             Tudo do Casal
           </div>
         </div>
-        <a href="#contato" class="plano-cta plano-cta-ghost">Assinar agora</a>
+        <a href="https://wa.me/5527992250122?text=Ol%C3%A1!%20Quero%20assinar%20o%20plano%20Fam%C3%ADlia%20do%20AlfaHome." target="_blank" rel="noopener" class="plano-cta plano-cta-ghost">Assinar agora</a>
       </div>
     </div>
   </div>
@@ -2917,6 +3007,20 @@
         <div class="faq-answer">
           Sim. Você pode cadastrar aportes em Tesouro Direto, CDB, Renda Fixa, Fundos Imobiliários, Ações, Cripto e Poupança. O AlfaHome acompanha o valor aportado em cada ativo, o rendimento registrado e mostra a posição consolidada da carteira para você ver o patrimônio crescendo mês a mês.
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ CTA FINAL -->
+<section id="cta-final">
+  <div class="container">
+    <div class="cta-final-inner">
+      <h2 class="cta-final-title reveal">Pronto para organizar<br>as finanças da sua família?</h2>
+      <p class="cta-final-sub reveal reveal-delay-1">Comece hoje, cadastre suas contas e cartões em minutos e tenha o controle total já no próximo lançamento.</p>
+      <div class="cta-final-buttons reveal reveal-delay-2">
+        <a href="#planos" class="btn btn-primary">Ver planos</a>
       </div>
     </div>
   </div>
