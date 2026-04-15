@@ -1,5 +1,13 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — Ajustes visuais na landing e CNPJ nas páginas legais
+
+### Melhorias
+- Seções da landing page agora intercalam corretamente as cores de fundo, deixando a leitura mais fluida e com separação visual clara entre blocos.
+
+### Correções
+- CNPJ oficial da Alfa Soluções Tecnológicas incluído nas páginas de Política de Privacidade e Termos de Uso, em conformidade com a LGPD e o Código de Defesa do Consumidor.
+
 ## AlfaHome — 15/04/2026 — Landing page finalizada, páginas legais e chat via WhatsApp
 
 ### Novidades
