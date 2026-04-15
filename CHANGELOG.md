@@ -1,5 +1,13 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — Landing page mais leve e rápida
+
+### Melhorias
+- Imagens da landing page convertidas para o formato moderno **WebP**, reduzindo o peso das capturas de tela em cerca de 62% (de ~3 MB para ~1,15 MB no total).
+- Carregamento inteligente das imagens: só o dashboard do topo é baixado imediatamente; as capturas de tela das próximas seções são carregadas conforme o visitante rola a página.
+- Fonte Inter carregada com menos variações (400, 600, 700, 800), cortando ~33% do peso de fontes.
+- Preloading prioritário da imagem principal do hero, acelerando a renderização do conteúdo maior da primeira dobra (LCP).
+
 ## AlfaHome — 15/04/2026 — Favicon corrigido
 
 ### Correções
