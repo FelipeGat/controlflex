@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>@yield('title') — AlfaHome</title>
-<link rel="icon" type="image/png" href="/alfa-home-logo.png" />
+<link rel="icon" type="image/png" href="/favicon.png" />
 <script>
   (function() {
     var saved = localStorage.getItem('lp-theme');

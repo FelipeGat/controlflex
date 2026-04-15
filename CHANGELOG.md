@@ -1,5 +1,10 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — Favicon corrigido
+
+### Correções
+- Favicon da landing page e das páginas de Política de Privacidade e Termos de Uso voltou a exibir o ícone quadrado do AlfaHome, em vez de uma versão esticada do logotipo horizontal.
+
 ## AlfaHome — 15/04/2026 — CTA final, SEO e correção de links quebrados
 
 ### Novidades
