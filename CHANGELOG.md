@@ -2,6 +2,9 @@
 
 ## AlfaHome — 15/04/2026 — Sair da conta agora funciona mesmo em abas antigas
 
+### Melhorias
+- Ao clicar em **Sair**, o usuário agora é levado diretamente para a tela de login (antes ia para a página inicial pública).
+
 ### Correções
 - Corrigido o erro "Página expirada" (419) que aparecia ao clicar em **Sair** depois de restaurar uma aba antiga do navegador. Agora o sistema encerra a sessão normalmente e leva o usuário de volta para a tela de login, mesmo quando a aba já estava aberta há muito tempo.
 - Quando qualquer formulário expira por inatividade, em vez de mostrar uma página de erro genérica, o AlfaHome agora redireciona o usuário de volta com a mensagem "Sua sessão expirou. Recarregue a página e tente novamente.", preservando o que já tinha sido digitado (exceto senhas).
