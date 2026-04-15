@@ -16,7 +16,7 @@
     O AlfaHome é uma plataforma web de <strong>gestão financeira pessoal e familiar</strong>
     que permite registrar despesas, receitas, contas bancárias, cartões de crédito
     e investimentos, bem como acompanhar o orçamento mensal da família. O serviço
-    é oferecido pela <strong>Alfa Soluções Tecnológicas</strong> (CNPJ [A DEFINIR]).
+    é oferecido pela <strong>Alfa Soluções Tecnológicas</strong> (CNPJ 52.638.029/0001-05).
   </p>
   <p>
     Todos os lançamentos são feitos <strong>manualmente</strong> pelo usuário. O AlfaHome

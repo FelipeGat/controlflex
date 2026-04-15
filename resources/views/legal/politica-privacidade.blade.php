@@ -15,7 +15,7 @@
   <h2>1. Quem somos</h2>
   <p>
     O AlfaHome é um serviço de gestão financeira pessoal e familiar operado pela
-    <strong>Alfa Soluções Tecnológicas</strong> (CNPJ [A DEFINIR]), doravante denominada
+    <strong>Alfa Soluções Tecnológicas</strong> (CNPJ 52.638.029/0001-05), doravante denominada
     simplesmente &ldquo;AlfaHome&rdquo; ou &ldquo;nós&rdquo;. Somos o <strong>controlador</strong> dos dados pessoais
     tratados nesta plataforma, nos termos do art. 5º, VI, da LGPD.
   </p>
