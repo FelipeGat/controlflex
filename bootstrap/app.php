@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 // Trust Docker internal network (nginx container) and loopback only.
 // Cloudflare real IP is resolved by nginx (set_real_ip_from) before reaching Laravel.
@@ -29,5 +31,27 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419) {
+                return null;
+            }
+
+            if ($request->is('logout')) {
+                if (Auth::guard('web')->check()) {
+                    Auth::guard('web')->logout();
+                }
+
+                if ($request->hasSession()) {
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                }
+
+                return redirect('/login')->with('status', 'Sua sessão foi encerrada.');
+            }
+
+            return redirect()->back()->withInput($request->except(['password', 'password_confirmation']))->with(
+                'error',
+                'Sua sessão expirou. Recarregue a página e tente novamente.'
+            );
+        });
     })->create();

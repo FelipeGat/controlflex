@@ -51,4 +51,36 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_token_mismatch_on_logout_still_logs_user_out(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $request = \Illuminate\Http\Request::create('/logout', 'POST');
+        $request->setLaravelSession($this->app['session']->driver());
+
+        $handler = $this->app->make(\Illuminate\Contracts\Debug\ExceptionHandler::class);
+        $response = $handler->render($request, new \Symfony\Component\HttpKernel\Exception\HttpException(419, 'CSRF token mismatch.'));
+
+        $this->assertGuest();
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertStringEndsWith('/login', $response->headers->get('Location'));
+    }
+
+    public function test_token_mismatch_on_other_routes_redirects_back_with_error(): void
+    {
+        $request = \Illuminate\Http\Request::create('/some-form', 'POST');
+        $request->headers->set('referer', 'http://localhost/some-form');
+        $request->setLaravelSession($this->app['session']->driver());
+
+        $handler = $this->app->make(\Illuminate\Contracts\Debug\ExceptionHandler::class);
+        $response = $handler->render($request, new \Symfony\Component\HttpKernel\Exception\HttpException(419, 'CSRF token mismatch.'));
+
+        $this->assertEquals(302, $response->getStatusCode());
+        $this->assertEquals(
+            'Sua sessão expirou. Recarregue a página e tente novamente.',
+            session('error')
+        );
+    }
 }
