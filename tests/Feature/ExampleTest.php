@@ -7,11 +7,12 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * Raiz redireciona para login quando não autenticado
-     * (AlfaHome não tem landing page pública).
+     * Raiz serve a landing page pública quando não autenticado.
      */
-    public function test_root_redirects_to_login_when_guest(): void
+    public function test_root_serves_landing_when_guest(): void
     {
-        $this->get('/')->assertRedirect(route('login'));
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('AlfaHome', false);
     }
 }

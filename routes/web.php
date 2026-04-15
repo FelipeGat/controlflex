@@ -28,6 +28,10 @@ Route::get('/landing', function () {
     return file_get_contents(public_path('landing/index.html'));
 })->name('landing');
 
+// ─── Páginas legais (LGPD) ──────────────────────────────────────────────────
+Route::view('/politica-privacidade', 'legal.politica-privacidade')->name('legal.privacidade');
+Route::view('/termos-de-uso', 'legal.termos-de-uso')->name('legal.termos');
+
 // Redirect dinâmico baseado em role
 Route::get('/', function () {
     if (auth()->check()) {

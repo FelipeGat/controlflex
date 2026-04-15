@@ -14,8 +14,7 @@
     // Aplicar tema antes do render para evitar flash
     (function() {
       var saved = localStorage.getItem('lp-theme');
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var theme = saved || 'dark';
+      var theme = saved || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
@@ -29,8 +28,8 @@
       --navy:        #0f172a;
       --teal:        #1696a3;
       --teal-dark:   #117a85;
-      --orange:      #ff7a0d;
-      --orange-dark: #e06800;
+      --orange:      #56b988;
+      --orange-dark: #3fa06f;
       --text:        #0f172a;
       --text-sm:     #64748b;
       --border:      #e2e8f0;
@@ -70,7 +69,7 @@
     [data-theme="light"] #hero::before {
       background:
         radial-gradient(ellipse 60% 50% at 70% 40%, rgba(22,150,163,.08) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(255,122,13,.05) 0%, transparent 50%);
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(86,185,136,.05) 0%, transparent 50%);
     }
     [data-theme="light"] .hero-title { color: #0f172a; }
     [data-theme="light"] .hero-title span { color: var(--orange); }
@@ -154,13 +153,13 @@
 
     /* Contato light */
     [data-theme="light"] #contato { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); }
-    [data-theme="light"] #contato::before { background: rgba(255,122,13,.04); }
-    [data-theme="light"] #contato::after { background: rgba(255,122,13,.03); }
+    [data-theme="light"] #contato::before { background: rgba(86,185,136,.04); }
+    [data-theme="light"] #contato::after { background: rgba(86,185,136,.03); }
     [data-theme="light"] .contato-text .section-label { color: var(--orange); }
     [data-theme="light"] .contato-text .section-title { color: #0f172a; }
     [data-theme="light"] .contato-text .section-subtitle { color: #64748b; }
     [data-theme="light"] .contato-item { color: #475569; }
-    [data-theme="light"] .contato-item-icon { background: rgba(255,122,13,.1); }
+    [data-theme="light"] .contato-item-icon { background: rgba(86,185,136,.1); }
     [data-theme="light"] .contato-item-icon svg { stroke: var(--orange); }
     [data-theme="light"] .contato-form {
       background: #ffffff;
@@ -187,13 +186,13 @@
     }
     [data-theme="light"] .form-submit:hover {
       background: var(--orange-dark);
-      box-shadow: 0 6px 24px rgba(255,122,13,.25);
+      box-shadow: 0 6px 24px rgba(86,185,136,.25);
     }
 
     /* Revenda light */
     [data-theme="light"] #revenda { background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 50%, #f0f9ff 100%); }
     [data-theme="light"] #revenda::before { background: rgba(22,150,163,.05); }
-    [data-theme="light"] #revenda::after { background: rgba(255,122,13,.03); }
+    [data-theme="light"] #revenda::after { background: rgba(86,185,136,.03); }
     [data-theme="light"] .revenda-text .section-title { color: #0f172a; }
     [data-theme="light"] .revenda-text .section-subtitle { color: #64748b; }
     [data-theme="light"] .revenda-benefit-icon { background: rgba(22,150,163,.1); }
@@ -280,7 +279,7 @@
       background: var(--orange);
       color: #fff;
     }
-    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,122,13,.35); }
+    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(86,185,136,.35); }
 
     .btn-ghost {
       background: transparent;
@@ -355,7 +354,7 @@
       display: flex;
       align-items: center;
       height: 68px;
-      gap: 40px;
+      gap: 28px;
     }
 
     .nav-logo {
@@ -382,15 +381,17 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 32px;
+      gap: 22px;
       flex: 1;
+      white-space: nowrap;
     }
 
     .nav-links a {
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       font-weight: 500;
       color: rgba(255,255,255,.75);
       transition: color .15s;
+      white-space: nowrap;
     }
     .nav-links a:hover { color: #fff; }
 
@@ -441,7 +442,7 @@
       inset: 0;
       background:
         radial-gradient(ellipse 60% 50% at 70% 40%, rgba(22,150,163,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(255,122,13,.1) 0%, transparent 50%);
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(86,185,136,.1) 0%, transparent 50%);
       pointer-events: none;
     }
 
@@ -550,9 +551,16 @@
     .hero-mockup img {
       width: 130%;
       max-width: none;
+      display: block;
       border-radius: 14px;
       box-shadow: 0 32px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
       transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+    }
+    .hero-mockup .hero-mockup-light { display: none; }
+    [data-theme="light"] .hero-mockup .hero-mockup-dark { display: none; }
+    [data-theme="light"] .hero-mockup .hero-mockup-light { display: block; }
+    [data-theme="light"] .hero-mockup img {
+      box-shadow: 0 32px 80px rgba(15,23,42,.18), 0 0 0 1px rgba(15,23,42,.06);
     }
 
     .mockup-window {
@@ -719,7 +727,7 @@
     }
 
     .mockup-table-status.warning {
-      background: rgba(255,122,13,.15);
+      background: rgba(86,185,136,.15);
       color: var(--orange);
     }
 
@@ -768,7 +776,7 @@
       padding: 10px 14px;
       font-size: 0.75rem;
       font-weight: 600;
-      box-shadow: 0 8px 24px rgba(255,122,13,.4);
+      box-shadow: 0 8px 24px rgba(86,185,136,.4);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -861,7 +869,7 @@
     }
 
     .feature-icon.teal { background: rgba(22,150,163,.1); }
-    .feature-icon.orange { background: rgba(255,122,13,.1); }
+    .feature-icon.orange { background: rgba(86,185,136,.1); }
     .feature-icon.green { background: rgba(34,197,94,.1); }
     .feature-icon.purple { background: rgba(139,92,246,.1); }
     .feature-icon.blue { background: rgba(59,130,246,.1); }
@@ -960,6 +968,12 @@
       flex-direction: column;
       gap: 12px;
     }
+    .spotlight-visual:has(.spot-screenshot) {
+      background: transparent;
+      padding: 0;
+      min-height: 0;
+      overflow: visible;
+    }
 
     .spotlight-visual--img {
       background: none;
@@ -1031,7 +1045,7 @@
     }
 
     .spot-status.ok { background: rgba(34,197,94,.12); color: #16a34a; }
-    .spot-status.warn { background: rgba(255,122,13,.12); color: var(--orange); }
+    .spot-status.warn { background: rgba(86,185,136,.12); color: var(--orange); }
     .spot-status.late { background: rgba(244,63,94,.12); color: #e11d48; }
 
     .spot-stat-row {
@@ -1058,6 +1072,20 @@
       font-size: 0.6875rem;
       color: var(--text-sm);
       margin-top: 2px;
+    }
+
+    .spot-screenshot { position: relative; margin-top: 4px; }
+    .spot-screenshot-img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .spot-screenshot .spot-screenshot-light { display: none; }
+    [data-theme="light"] .spot-screenshot .spot-screenshot-dark { display: none; }
+    [data-theme="light"] .spot-screenshot .spot-screenshot-light { display: block; }
+    [data-theme="light"] .spot-screenshot-img {
+      box-shadow: 0 24px 60px rgba(15,23,42,.14), 0 0 0 1px rgba(15,23,42,.06);
     }
 
     /* ─── Planos ────────────────────────────────────────────────────────────── */
@@ -1110,7 +1138,7 @@
       background: var(--orange);
       border-color: var(--orange);
       transform: scale(1.02);
-      box-shadow: 0 20px 60px rgba(255,122,13,.4);
+      box-shadow: 0 20px 60px rgba(86,185,136,.4);
     }
 
     .plano-card.featured:hover {
@@ -1142,6 +1170,26 @@
     }
 
     .plano-card.featured .plano-desc { color: rgba(255,255,255,.8); }
+
+    .plano-price {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 8px 0 4px;
+      color: #fff;
+    }
+    .plano-price .currency { font-size: 1rem; font-weight: 600; opacity: .75; }
+    .plano-price .amount { font-size: 2.75rem; font-weight: 800; line-height: 1; }
+    .plano-price .period { font-size: 0.875rem; opacity: .65; }
+    .plano-price-annual {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 4px;
+    }
+    [data-theme="light"] .plano-price { color: #0f172a; }
+    [data-theme="light"] .plano-card.featured .plano-price { color: #fff; }
+    [data-theme="light"] .plano-price-annual { color: #64748b; }
+    [data-theme="light"] .plano-card.featured .plano-price-annual { color: rgba(255,255,255,.7); }
 
     .plano-items {
       display: flex;
@@ -1318,7 +1366,7 @@
     /* ─── CTA Final / Contato ───────────────────────────────────────────────── */
     #contato {
       padding: 96px 0;
-      background: linear-gradient(135deg, var(--orange) 0%, #e05800 100%);
+      background: linear-gradient(135deg, var(--orange) 0%, #3fa06f 100%);
       position: relative;
       overflow: hidden;
     }
@@ -1481,7 +1529,7 @@
       bottom: -80px; left: -80px;
       width: 300px; height: 300px;
       border-radius: 50%;
-      background: rgba(255,122,13,.08);
+      background: rgba(86,185,136,.08);
     }
 
     .revenda-inner {
@@ -1596,6 +1644,17 @@
       max-width: 280px;
     }
 
+    .footer-address {
+      display: block;
+      margin-top: 16px;
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,.35);
+      line-height: 1.6;
+      font-style: normal;
+      max-width: 280px;
+    }
+    [data-theme="light"] .footer-address { color: #94a3b8; }
+
     .footer-col-title {
       font-size: 0.75rem;
       font-weight: 700;
@@ -1617,6 +1676,38 @@
       transition: color .15s;
     }
     .footer-links a:hover { color: rgba(255,255,255,.9); }
+
+    .footer-social {
+      display: flex;
+      gap: 10px;
+    }
+    .footer-social a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.55);
+      transition: all .15s ease;
+    }
+    .footer-social a:hover {
+      color: var(--orange);
+      border-color: var(--orange);
+      background: rgba(86,185,136,.08);
+    }
+    [data-theme="light"] .footer-social a {
+      background: rgba(15,23,42,.03);
+      border-color: rgba(15,23,42,.08);
+      color: #64748b;
+    }
+    [data-theme="light"] .footer-social a:hover {
+      color: var(--orange);
+      border-color: var(--orange);
+      background: rgba(86,185,136,.08);
+    }
 
     .footer-bottom {
       display: flex;
@@ -1806,12 +1897,15 @@
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .nav-links,
       .nav-actions { display: none; }
       .nav-mobile-right { display: flex; }
       .theme-toggle-mobile { display: flex; }
       .nav-mobile-right .nav-hamburger { display: flex; }
+    }
+
+    @media (max-width: 768px) {
 
       .numeros-grid {
         grid-template-columns: 1fr;
@@ -2170,15 +2264,13 @@
   <div class="container">
     <div class="nav-inner">
       <a href="#" class="nav-logo">
-        <img src="/alfa-home-logo.png" alt="AlfaHome" style="height: 36px; width: auto;" />
+        <img src="/alfa-home-logo.png" alt="AlfaHome" style="height: 20px; width: auto;" />
       </a>
 
       <div class="nav-links">
         <a href="#funcionalidades">Funcionalidades</a>
         <a href="#planos">Planos</a>
-        <a href="#depoimentos">Depoimentos</a>
         <a href="#faq">FAQ</a>
-        <a href="#revenda">Seja Parceiro</a>
         <a href="#contato">Contato</a>
       </div>
 
@@ -2188,7 +2280,6 @@
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
         <a href="https://home.alfasolucoes.cloud/login" class="btn btn-ghost" style="padding: 10px 20px; font-size: 0.875rem;">Entrar</a>
-        <a href="#contato" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.875rem;">Fale conosco</a>
       </div>
 
       <div class="nav-mobile-right">
@@ -2209,9 +2300,7 @@
   <button class="mobile-menu-close" id="mobileMenuClose">×</button>
   <a href="#funcionalidades" class="mobile-link">Funcionalidades</a>
   <a href="#planos" class="mobile-link">Planos</a>
-  <a href="#depoimentos" class="mobile-link">Depoimentos</a>
   <a href="#faq" class="mobile-link">FAQ</a>
-  <a href="#revenda" class="mobile-link">Seja Parceiro</a>
   <a href="#contato" class="mobile-link">Contato</a>
   <div class="mobile-menu-actions">
     <a href="https://home.alfasolucoes.cloud/login" class="btn btn-ghost" style="text-align:center;">Entrar</a>
@@ -2227,99 +2316,24 @@
       <div class="hero-content">
         <div class="hero-eyebrow reveal">
           <div class="hero-dot"></div>
-          <span class="hero-eyebrow-text">Gestão imobiliária completa</span>
+          <span class="hero-eyebrow-text">Controle financeiro completo</span>
         </div>
 
         <h1 class="hero-title reveal reveal-delay-1">
-          Gerencie seus imóveis<br>
-          com <span>inteligência</span>
+          Organize suas finanças<br>
+          com <span>clareza</span>
         </h1>
 
         <p class="hero-subtitle reveal reveal-delay-2">
-          Tudo que você precisa para administrar sua imobiliária em um só lugar. Contratos, inquilinos, financeiro, cobranças e relatórios — simples e poderoso.
+          Tudo que você precisa para controlar receitas, despesas, cartões e investimentos em um só lugar. Visão clara do seu dinheiro, mês a mês — simples e poderoso.
         </p>
 
-        <div class="hero-actions reveal reveal-delay-3">
-          <a href="#contato" class="btn btn-ghost">Fale com um consultor</a>
-        </div>
-
-        <div class="hero-trust reveal reveal-delay-4">
-          <div class="hero-trust-avatars">
-            <span>AR</span><span>MS</span><span>JC</span><span>PL</span>
-          </div>
-          <span class="hero-trust-text"><strong>+200 imobiliárias</strong> já utilizam o AlfaHome</span>
-        </div>
       </div>
 
       <!-- Dashboard screenshot -->
       <div class="hero-mockup reveal reveal-delay-3">
-        <div class="mockup-window">
-          <div class="mockup-titlebar">
-            <div class="mockup-dot"></div>
-            <div class="mockup-dot"></div>
-            <div class="mockup-dot"></div>
-            <div class="mockup-url">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span class="mockup-url-text">home.alfasolucoes.cloud</span>
-            </div>
-          </div>
-          <div class="mockup-body">
-            <div class="mockup-kpis">
-              <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Imóveis Ativos</div>
-                <div class="mockup-kpi-value orange">347</div>
-              </div>
-              <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Contratos</div>
-                <div class="mockup-kpi-value teal">289</div>
-              </div>
-              <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Receita/Mês</div>
-                <div class="mockup-kpi-value green">R$184k</div>
-              </div>
-              <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Inadimplência</div>
-                <div class="mockup-kpi-value">3,2%</div>
-              </div>
-            </div>
-            <div class="mockup-chart">
-              <div class="mockup-bar" style="height:45%"></div>
-              <div class="mockup-bar" style="height:62%"></div>
-              <div class="mockup-bar" style="height:38%"></div>
-              <div class="mockup-bar" style="height:78%"></div>
-              <div class="mockup-bar highlight" style="height:92%"></div>
-              <div class="mockup-bar" style="height:56%"></div>
-              <div class="mockup-bar" style="height:70%"></div>
-              <div class="mockup-bar" style="height:84%"></div>
-              <div class="mockup-bar" style="height:68%"></div>
-              <div class="mockup-bar highlight" style="height:95%"></div>
-              <div class="mockup-bar" style="height:50%"></div>
-              <div class="mockup-bar" style="height:73%"></div>
-            </div>
-            <div class="mockup-table">
-              <div class="mockup-table-row">
-                <div class="mockup-avatar" style="background:linear-gradient(135deg,#1696a3,#0a4a52)"></div>
-                <span class="mockup-table-name">Apt 302 — Ed. Horizonte</span>
-                <span class="mockup-table-status active">Em dia</span>
-              </div>
-              <div class="mockup-table-row">
-                <div class="mockup-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)"></div>
-                <span class="mockup-table-name">Casa 15 — Cond. Jardins</span>
-                <span class="mockup-table-status active">Em dia</span>
-              </div>
-              <div class="mockup-table-row">
-                <div class="mockup-avatar" style="background:linear-gradient(135deg,#8b5cf6,#4c1d95)"></div>
-                <span class="mockup-table-name">Sala 801 — Centro Emp.</span>
-                <span class="mockup-table-status warning">Vencido</span>
-              </div>
-              <div class="mockup-table-row">
-                <div class="mockup-avatar" style="background:linear-gradient(135deg,#22c55e,#0a5c2a)"></div>
-                <span class="mockup-table-name">Loja 02 — Galeria Norte</span>
-                <span class="mockup-table-status active">Em dia</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <img src="/landing/screenshots/dashboard-dark.png" alt="Dashboard AlfaHome" class="hero-mockup-img hero-mockup-dark" />
+        <img src="/landing/screenshots/dashboard-light.png" alt="Dashboard AlfaHome" class="hero-mockup-img hero-mockup-light" />
       </div>
     </div>
   </div>
@@ -2331,16 +2345,16 @@
   <div class="container">
     <div class="numeros-grid">
       <div class="numeros-item reveal">
-        <div class="numeros-value">200+</div>
-        <div class="numeros-label">Imobiliárias ativas</div>
+        <div class="numeros-value">+80</div>
+        <div class="numeros-label">Categorias prontas para uso</div>
       </div>
       <div class="numeros-item reveal reveal-delay-2">
-        <div class="numeros-value">15.000+</div>
-        <div class="numeros-label">Imóveis gerenciados</div>
+        <div class="numeros-value">100%</div>
+        <div class="numeros-label">Multiusuário para toda a família</div>
       </div>
       <div class="numeros-item reveal reveal-delay-3">
-        <div class="numeros-value">R$8M+</div>
-        <div class="numeros-label">Processados por mês</div>
+        <div class="numeros-value">24/7</div>
+        <div class="numeros-label">Acesso pelo celular ou computador</div>
       </div>
     </div>
   </div>
@@ -2352,57 +2366,57 @@
   <div class="container">
     <div class="section-header">
       <span class="section-label reveal">Funcionalidades</span>
-      <h2 class="section-title reveal reveal-delay-1">Tudo que sua imobiliária precisa</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Do cadastro do imóvel ao repasse do proprietário — uma plataforma completa, simples de usar.</p>
+      <h2 class="section-title reveal reveal-delay-1">Tudo que sua família precisa para organizar o dinheiro</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Receitas, despesas, cartões, contas e investimentos em um só lugar — simples de usar no celular ou no computador.</p>
     </div>
 
     <div class="features-grid">
       <div class="feature-card reveal">
         <div class="feature-icon teal">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M5 9l7-7 7 7"/><path d="M5 15l7 7 7-7"/></svg>
         </div>
-        <div class="feature-title">Gestão de Imóveis</div>
-        <div class="feature-desc">Cadastro completo de imóveis com fotos, documentos, características, localização e histórico de locações.</div>
+        <div class="feature-title">Receitas & Despesas</div>
+        <div class="feature-desc">Lance entradas e saídas em segundos, com categorias prontas, filtros por período e marcação de pago/recebido.</div>
       </div>
 
       <div class="feature-card reveal reveal-delay-1">
         <div class="feature-icon orange">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff7a0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#56b988" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
         </div>
-        <div class="feature-title">Controle Financeiro</div>
-        <div class="feature-desc">Aluguéis, taxas, cobranças automáticas, repasse de proprietários, fluxo de caixa e conciliação bancária.</div>
+        <div class="feature-title">Cartões de Crédito</div>
+        <div class="feature-desc">Acompanhe faturas, parcelas e limite disponível de cada cartão, com fechamento e vencimento automáticos.</div>
       </div>
 
       <div class="feature-card reveal reveal-delay-2">
         <div class="feature-icon green">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-4 7 4"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v4"/><path d="M12 14v4"/><path d="M16 14v4"/></svg>
         </div>
-        <div class="feature-title">Contratos Digitais</div>
-        <div class="feature-desc">Geração de contratos de locação, vistoria, reajuste automático por índice (IGP-M, IPCA) e renovação programada.</div>
+        <div class="feature-title">Contas & Bancos</div>
+        <div class="feature-desc">Cadastre quantas contas quiser, veja o saldo consolidado e acompanhe o dinheiro em cada banco em tempo real.</div>
       </div>
 
       <div class="feature-card reveal">
         <div class="feature-icon purple">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
         </div>
-        <div class="feature-title">Inquilinos & Proprietários</div>
-        <div class="feature-desc">Cadastro completo de locatários e proprietários, histórico de pagamentos, documentos e comunicação centralizada.</div>
+        <div class="feature-title">Recorrências & Parcelas</div>
+        <div class="feature-desc">Cadastre uma vez aluguel, mensalidades e compras parceladas no cartão — a gente lança todos os meses automaticamente.</div>
       </div>
 
       <div class="feature-card reveal reveal-delay-1">
         <div class="feature-icon blue">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
         </div>
-        <div class="feature-title">Relatórios & Dashboard</div>
-        <div class="feature-desc">Painel com KPIs em tempo real, relatórios de inadimplência, ocupação, rentabilidade e demonstrativos de repasse.</div>
+        <div class="feature-title">Dashboard & Relatórios</div>
+        <div class="feature-desc">Painel com saldo em contas, fatura dos cartões, receitas realizadas, despesas por categoria e comparativo mês a mês.</div>
       </div>
 
       <div class="feature-card reveal reveal-delay-2">
         <div class="feature-icon rose">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
         </div>
-        <div class="feature-title">Cobranças & Boletos</div>
-        <div class="feature-desc">Geração de boletos e cobranças automáticas para inquilinos, com lembretes por WhatsApp e controle de inadimplência.</div>
+        <div class="feature-title">Investimentos</div>
+        <div class="feature-desc">Registre aportes em renda fixa, ações ou fundos e acompanhe a evolução do patrimônio da família ao longo do tempo.</div>
       </div>
     </div>
   </div>
@@ -2414,25 +2428,25 @@
   <div class="container">
     <div class="spotlight-inner">
       <div class="spotlight-text">
-        <span class="section-label reveal">Gestão de Imóveis</span>
-        <h2 class="section-title reveal reveal-delay-1">Sua carteira de imóveis<br>sob controle total</h2>
-        <p class="reveal reveal-delay-2">Tenha visão completa de cada imóvel: status de ocupação, contrato vigente, valor de aluguel, vistoria, documentos e histórico — tudo em uma única tela.</p>
+        <span class="section-label reveal">Dia a dia financeiro</span>
+        <h2 class="section-title reveal reveal-delay-1">Seus gastos do mês<br>sempre sob controle</h2>
+        <p class="reveal reveal-delay-2">Registre cada conta, compra ou recebimento em poucos segundos e saiba exatamente para onde o dinheiro está indo — sem planilha, sem dor de cabeça.</p>
         <div class="spotlight-checks reveal reveal-delay-3">
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Cadastro com fotos e documentos
+            Lançamento rápido de receitas e despesas
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Controle de disponibilidade e ocupação
+            Categorias prontas e personalizáveis
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Histórico completo de locações
+            Filtros por período, status e pessoa
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Laudos de vistoria digitais
+            Marcação de pago e recebido com um toque
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
@@ -2443,41 +2457,21 @@
       <div class="spotlight-visual reveal reveal-delay-1">
         <div class="spot-stat-row">
           <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--teal)">347</div>
-            <div class="spot-stat-label">Imóveis ativos</div>
+            <div class="spot-stat-value" style="color:var(--teal)">+80</div>
+            <div class="spot-stat-label">Categorias prontas</div>
           </div>
           <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--orange)">94,8%</div>
-            <div class="spot-stat-label">Ocupação</div>
+            <div class="spot-stat-value" style="color:var(--orange)">&lt;10s</div>
+            <div class="spot-stat-label">Por lançamento</div>
           </div>
           <div class="spot-stat">
-            <div class="spot-stat-value" style="color:#22c55e">R$184k</div>
-            <div class="spot-stat-label">Receita/mês</div>
+            <div class="spot-stat-value" style="color:#22c55e">Tempo real</div>
+            <div class="spot-stat-label">Saldo atualizado</div>
           </div>
         </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#1696a3,#0a4a52)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Apt 302 — Ed. Horizonte</div>
-            <div class="spot-meta">3 quartos &bull; 85m² &bull; R$2.800/mês</div>
-          </div>
-          <span class="spot-status ok">Locado</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Casa 15 — Cond. Jardins</div>
-            <div class="spot-meta">4 quartos &bull; 200m² &bull; R$4.500/mês</div>
-          </div>
-          <span class="spot-status ok">Locado</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#8b5cf6,#4c1d95)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Sala 801 — Centro Emp.</div>
-            <div class="spot-meta">Comercial &bull; 45m² &bull; R$1.800/mês</div>
-          </div>
-          <span class="spot-status warn">Disponível</span>
+        <div class="spot-screenshot">
+          <img src="/landing/screenshots/despesas-dark.png" alt="Lista de despesas AlfaHome" class="spot-screenshot-img spot-screenshot-dark" />
+          <img src="/landing/screenshots/despesas-light.png" alt="Lista de despesas AlfaHome" class="spot-screenshot-img spot-screenshot-light" />
         </div>
       </div>
     </div>
@@ -2490,25 +2484,25 @@
   <div class="container">
     <div class="spotlight-inner reverse">
       <div class="spotlight-text">
-        <span class="section-label reveal">Financeiro</span>
-        <h2 class="section-title reveal reveal-delay-1">Financeiro e repasses<br>sob total controle</h2>
-        <p class="reveal reveal-delay-2">Acompanhe aluguéis, taxas e inadimplência em tempo real. Gere cobranças automáticas e faça o repasse aos proprietários com transparência total.</p>
+        <span class="section-label reveal">Contas & Cartões</span>
+        <h2 class="section-title reveal reveal-delay-1">Todas as suas contas<br>e cartões num só lugar</h2>
+        <p class="reveal reveal-delay-2">Cadastre cada banco, poupança, carteira e cartão de crédito da família. O saldo consolidado, a fatura e o limite disponível ficam sempre atualizados.</p>
         <div class="spotlight-checks reveal reveal-delay-3">
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Contas a pagar e receber
+            Saldo consolidado de todas as contas
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Repasse automático de proprietários
+            Fatura e limite de cada cartão de crédito
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Demonstrativo de repasse por e-mail
+            Fechamento e vencimento automáticos
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Fluxo de caixa diário/mensal
+            Um titular por conta ou cartão
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
@@ -2517,43 +2511,9 @@
       </div>
 
       <div class="spotlight-visual reveal reveal-delay-1">
-        <div class="spot-stat-row">
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:#22c55e">R$184k</div>
-            <div class="spot-stat-label">Recebido</div>
-          </div>
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--orange)">R$156k</div>
-            <div class="spot-stat-label">Repassado</div>
-          </div>
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--teal)">R$28k</div>
-            <div class="spot-stat-label">Comissão</div>
-          </div>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#22c55e,#0a5c2a)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Aluguel — Apt 302</div>
-            <div class="spot-meta">Vencimento: 10/04 &bull; R$2.800</div>
-          </div>
-          <span class="spot-status ok">Pago</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Repasse — Maria Silva</div>
-            <div class="spot-meta">Ref. Março/2026 &bull; R$3.780</div>
-          </div>
-          <span class="spot-status ok">Feito</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#f43f5e,#7f1d1d)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Aluguel — Sala 801</div>
-            <div class="spot-meta">Vencimento: 05/04 &bull; R$1.800</div>
-          </div>
-          <span class="spot-status late">Atrasado</span>
+        <div class="spot-screenshot">
+          <img src="/landing/screenshots/bancos-dark.png" alt="Contas bancárias AlfaHome" class="spot-screenshot-img spot-screenshot-dark" />
+          <img src="/landing/screenshots/bancos-light.png" alt="Contas bancárias AlfaHome" class="spot-screenshot-img spot-screenshot-light" />
         </div>
       </div>
     </div>
@@ -2566,25 +2526,25 @@
   <div class="container">
     <div class="spotlight-inner">
       <div class="spotlight-text">
-        <span class="section-label reveal">Contratos</span>
-        <h2 class="section-title reveal reveal-delay-1">Contratos inteligentes<br>e reajuste automático</h2>
-        <p class="reveal reveal-delay-2">Crie contratos de locação digitais com reajuste automático por IGP-M ou IPCA. Gerencie vigência, renovação e documentos de vistoria em um só lugar.</p>
+        <span class="section-label reveal">Investimentos</span>
+        <h2 class="section-title reveal reveal-delay-1">O patrimônio da família<br>crescendo à vista</h2>
+        <p class="reveal reveal-delay-2">Registre aportes em renda fixa, ações, fundos e tesouro direto. Acompanhe a rentabilidade de cada ativo e veja a evolução do patrimônio mês a mês.</p>
         <div class="spotlight-checks reveal reveal-delay-3">
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Contratos digitais com templates
+            Aportes em renda fixa, ações e fundos
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Reajuste automático por índice
+            Rentabilidade de cada ativo
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Alerta de contratos a vencer
+            Posição consolidada da carteira
           </div>
           <div class="spotlight-check">
             <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            Vistoria de entrada e saída
+            Evolução do patrimônio ao longo do tempo
           </div>
         </div>
         <div class="spotlight-cta reveal reveal-delay-4">
@@ -2593,43 +2553,9 @@
       </div>
 
       <div class="spotlight-visual reveal reveal-delay-1">
-        <div class="spot-stat-row">
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--teal)">289</div>
-            <div class="spot-stat-label">Contratos ativos</div>
-          </div>
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:var(--orange)">12</div>
-            <div class="spot-stat-label">A vencer (30d)</div>
-          </div>
-          <div class="spot-stat">
-            <div class="spot-stat-value" style="color:#22c55e">98%</div>
-            <div class="spot-stat-label">Renovação</div>
-          </div>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#1696a3,#0a4a52)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Contrato #1847</div>
-            <div class="spot-meta">Apt 302 &bull; 12 meses &bull; IGP-M</div>
-          </div>
-          <span class="spot-status ok">Ativo</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Contrato #1823</div>
-            <div class="spot-meta">Casa 15 &bull; Vence em 15 dias &bull; IPCA</div>
-          </div>
-          <span class="spot-status warn">A vencer</span>
-        </div>
-        <div class="spot-card">
-          <div class="spot-avatar" style="background:linear-gradient(135deg,#8b5cf6,#4c1d95)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-          <div class="spot-info">
-            <div class="spot-name">Contrato #1790</div>
-            <div class="spot-meta">Sala 801 &bull; Renovado &bull; IGP-M +5,2%</div>
-          </div>
-          <span class="spot-status ok">Ativo</span>
+        <div class="spot-screenshot">
+          <img src="/landing/screenshots/investimentos-dark.png" alt="Investimentos AlfaHome" class="spot-screenshot-img spot-screenshot-dark" />
+          <img src="/landing/screenshots/investimentos-light.png" alt="Investimentos AlfaHome" class="spot-screenshot-img spot-screenshot-light" />
         </div>
       </div>
     </div>
@@ -2643,148 +2569,102 @@
     <div class="section-header">
       <span class="section-label reveal">Planos</span>
       <h2 class="section-title reveal reveal-delay-1">Escolha o plano ideal</h2>
-      <p class="section-subtitle reveal reveal-delay-2" style="color:rgba(255,255,255,.55);">Planos flexíveis para imobiliárias de todos os tamanhos. Sem taxa de setup, sem fidelidade.</p>
+      <p class="section-subtitle reveal reveal-delay-2" style="color:rgba(255,255,255,.55);">Planos flexíveis para uso individual, casal ou família inteira. Sem taxa de setup, sem fidelidade.</p>
     </div>
 
     <div class="planos-grid">
-      <!-- STARTER -->
+      <!-- INDIVIDUAL -->
       <div class="plano-card reveal">
-        <div class="plano-name">Starter</div>
-        <div class="plano-desc">Para corretores autônomos e carteiras pequenas.</div>
+        <div class="plano-name">Individual</div>
+        <div class="plano-desc">Para quem quer organizar as próprias finanças.</div>
+        <div class="plano-price">
+          <span class="currency">R$</span>
+          <span class="amount">19,90</span>
+          <span class="period">/mês</span>
+        </div>
+        <div class="plano-price-annual">ou R$ 199,00/ano — economize 17%</div>
         <div class="plano-items">
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Até 50 imóveis
+            1 usuário
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Gestão de contratos
+            1 conta bancária
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Controle financeiro básico
+            Receitas, despesas e cartões
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Cobranças por e-mail
+            Dashboard e relatórios
           </div>
         </div>
         <a href="#contato" class="plano-cta plano-cta-ghost">Começar agora</a>
       </div>
 
-      <!-- PROFESSIONAL (destaque) -->
+      <!-- CASAL (destaque) -->
       <div class="plano-card featured reveal reveal-delay-1">
         <div class="plano-badge">Mais popular</div>
-        <div class="plano-name">Professional</div>
-        <div class="plano-desc">Para imobiliárias que precisam de controle total.</div>
+        <div class="plano-name">Casal</div>
+        <div class="plano-desc">Para casais que cuidam do dinheiro juntos.</div>
+        <div class="plano-price">
+          <span class="currency">R$</span>
+          <span class="amount">29,90</span>
+          <span class="period">/mês</span>
+        </div>
+        <div class="plano-price-annual">ou R$ 299,00/ano — economize 17%</div>
         <div class="plano-items">
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Até 300 imóveis
+            Até 2 usuários
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Financeiro completo + repasse
+            Até 4 contas bancárias
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Relatórios avançados
+            Tudo do Individual
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Cobranças automáticas + boleto
+            Quem pagou e quem recebeu
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Reajuste automático (IGP-M/IPCA)
+            Investimentos e patrimônio
           </div>
         </div>
-        <a href="#contato" class="plano-cta plano-cta-solid">Falar com consultor</a>
+        <a href="#contato" class="plano-cta plano-cta-solid">Assinar agora</a>
       </div>
 
-      <!-- ENTERPRISE -->
+      <!-- FAMÍLIA -->
       <div class="plano-card reveal reveal-delay-2">
-        <div class="plano-name">Enterprise</div>
-        <div class="plano-desc">Para administradoras e redes com grande volume.</div>
+        <div class="plano-name">Família</div>
+        <div class="plano-desc">Para famílias — recursos ilimitados.</div>
+        <div class="plano-price">
+          <span class="currency">R$</span>
+          <span class="amount">49,90</span>
+          <span class="period">/mês</span>
+        </div>
+        <div class="plano-price-annual">ou R$ 499,00/ano — economize 17%</div>
         <div class="plano-items">
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Imóveis ilimitados
+            Usuários ilimitados
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Tudo do Professional
+            Bancos e cartões ilimitados
           </div>
           <div class="plano-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Multi-filiais
-          </div>
-          <div class="plano-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            API e integrações
-          </div>
-          <div class="plano-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Gerente de conta dedicado
+            Tudo do Casal
           </div>
         </div>
-        <a href="#contato" class="plano-cta plano-cta-ghost">Falar com consultor</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════ DEPOIMENTOS -->
-<section id="depoimentos">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-label reveal">Depoimentos</span>
-      <h2 class="section-title reveal reveal-delay-1">O que dizem nossos clientes</h2>
-      <p class="section-subtitle reveal reveal-delay-2">Centenas de imobiliárias já transformaram sua gestão com o AlfaHome.</p>
-    </div>
-
-    <div class="depoimentos-grid">
-      <div class="depoimento-card reveal">
-        <div class="depoimento-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-        </div>
-        <p class="depoimento-text">"O AlfaHome transformou a gestão da minha imobiliária. Antes eu perdia horas calculando repasses em planilhas, hoje é tudo automático. A inadimplência caiu 40% com as cobranças por WhatsApp."</p>
-        <div class="depoimento-author">
-          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#1696a3,#0a4a52)">MF</div>
-          <div>
-            <div class="depoimento-name">Roberto Fonseca</div>
-            <div class="depoimento-academia">Diretor de imobiliária</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="depoimento-card reveal reveal-delay-2">
-        <div class="depoimento-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-        </div>
-        <p class="depoimento-text">"Sistema muito intuitivo. Em 3 dias já estava com todos os imóveis cadastrados e contratos digitalizados. O reajuste automático por IGP-M me poupa um trabalho enorme todo ano."</p>
-        <div class="depoimento-author">
-          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)">CR</div>
-          <div>
-            <div class="depoimento-name">Patrícia Lima</div>
-            <div class="depoimento-academia">Corretora autônoma</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="depoimento-card reveal reveal-delay-3">
-        <div class="depoimento-stars">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-        </div>
-        <p class="depoimento-text">"Administro mais de 500 imóveis e o AlfaHome consolidou tudo. Os proprietários recebem o demonstrativo de repasse automaticamente e o suporte é excelente — sempre rápido e atencioso."</p>
-        <div class="depoimento-author">
-          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#8b5cf6,#4c1d95)">RA</div>
-          <div>
-            <div class="depoimento-name">Marcos Silveira</div>
-            <div class="depoimento-academia">Administrador de imóveis</div>
-          </div>
-        </div>
+        <a href="#contato" class="plano-cta plano-cta-ghost">Assinar agora</a>
       </div>
     </div>
   </div>
@@ -2802,194 +2682,52 @@
     <div class="faq-list">
       <div class="faq-item reveal">
         <button class="faq-question" onclick="toggleFaq(this)">
-          Preciso instalar algum software para usar o AlfaHome?
+          Dá para usar no celular como se fosse um aplicativo?
           <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-answer">
-          Não. O AlfaHome é 100% online — basta um navegador moderno (Chrome, Safari, Edge) para acessar pelo computador, tablet ou celular. Todos os dados ficam seguros na nuvem.
+          Sim. O AlfaHome é um PWA (Progressive Web App): no celular ou no computador, o navegador oferece a opção "Instalar AlfaHome" e o sistema passa a abrir em uma janela própria, igual a um aplicativo — sem precisar passar pela App Store ou Play Store.
         </div>
       </div>
 
       <div class="faq-item reveal reveal-delay-1">
         <button class="faq-question" onclick="toggleFaq(this)">
-          Consigo migrar de outro sistema ou planilha?
+          Como funcionam as despesas recorrentes e as compras parceladas no cartão?
           <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-answer">
-          Sim! Nossa equipe auxilia na importação dos seus dados — imóveis, contratos, inquilinos e histórico financeiro. O processo é acompanhado para garantir que nenhuma informação seja perdida e a transição aconteça sem interromper sua operação.
+          Ao cadastrar uma despesa, você pode marcá-la como recorrente (aluguel, mensalidade, streaming — o sistema projeta os lançamentos dos próximos meses) ou informar um número de parcelas. Em compras parceladas no cartão, o AlfaHome divide o valor entre as parcelas e joga cada uma na fatura correta, respeitando o dia de fechamento e vencimento daquele cartão.
         </div>
       </div>
 
       <div class="faq-item reveal reveal-delay-2">
         <button class="faq-question" onclick="toggleFaq(this)">
-          Como funciona o reajuste automático de contratos?
+          Mais de uma pessoa da família pode acessar a mesma conta?
           <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-answer">
-          Ao cadastrar o contrato, você define o índice de reajuste (IGP-M, IPCA ou percentual fixo) e a data de aniversário. O sistema calcula automaticamente o novo valor, notifica inquilino e proprietário, e atualiza as cobranças — sem intervenção manual.
+          Sim. Nos planos Casal e Família, cada pessoa tem seu próprio login e vê os mesmos lançamentos. Em cada receita ou despesa, você escolhe quem comprou ou quem recebeu a partir do cadastro de familiares — assim dá para saber exatamente quanto cada um movimentou no mês.
         </div>
       </div>
 
       <div class="faq-item reveal reveal-delay-3">
         <button class="faq-question" onclick="toggleFaq(this)">
-          O sistema gera boletos e cobranças automáticas?
+          As categorias já vêm prontas ou preciso cadastrar do zero?
           <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-answer">
-          Sim. O AlfaHome gera boletos registrados e envia cobranças automáticas por e-mail e WhatsApp. Você acompanha o status de cada pagamento em tempo real e recebe alertas de inadimplência.
+          Já vêm prontas. Ao criar sua conta, o AlfaHome instala dezenas de categorias típicas — supermercado, farmácia, combustível, aluguel, escola, streaming, salário, freelance, rendimentos etc. — organizadas por receita e despesa. Você pode editar, desativar ou criar novas categorias a qualquer momento.
         </div>
       </div>
 
       <div class="faq-item reveal reveal-delay-4">
         <button class="faq-question" onclick="toggleFaq(this)">
-          Meus dados ficam seguros? O que acontece se eu cancelar?
+          Dá para registrar investimentos além de conta e cartão?
           <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-answer">
-          Seus dados ficam armazenados em servidores seguros com backups diários. Em caso de cancelamento, você tem acesso aos seus dados para exportação por 30 dias. Não há fidelidade — você pode cancelar a qualquer momento sem multa. Operamos em conformidade com a LGPD.
+          Sim. Você pode cadastrar aportes em Tesouro Direto, CDB, Renda Fixa, Fundos Imobiliários, Ações, Cripto e Poupança. O AlfaHome acompanha o valor aportado em cada ativo, o rendimento registrado e mostra a posição consolidada da carteira para você ver o patrimônio crescendo mês a mês.
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════ REVENDA -->
-<section id="revenda">
-  <div class="container">
-    <div class="revenda-inner">
-      <div class="revenda-text">
-        <span class="section-label reveal">Programa de Revenda</span>
-        <h2 class="section-title reveal reveal-delay-1">Gerencie múltiplas imobiliárias<br>em um só lugar</h2>
-        <p class="section-subtitle reveal reveal-delay-2">Faça parte do nosso programa de revenda e leve tecnologia de ponta para as imobiliárias da sua região. Nós cuidamos do sistema, você foca no relacionamento.</p>
-
-        <div class="revenda-benefits reveal reveal-delay-3">
-          <div class="revenda-benefit">
-            <div class="revenda-benefit-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <div class="revenda-benefit-content">
-              <h4>Painel centralizado de gestão</h4>
-              <p>Acompanhe todas as imobiliárias da sua carteira em um painel exclusivo com métricas, relatórios e visão geral de cada unidade.</p>
-            </div>
-          </div>
-          <div class="revenda-benefit">
-            <div class="revenda-benefit-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div class="revenda-benefit-content">
-              <h4>Onboarding simplificado</h4>
-              <p>Cadastre novas imobiliárias de forma rápida e acompanhe a implantação de cada uma direto pelo seu painel.</p>
-            </div>
-          </div>
-          <div class="revenda-benefit">
-            <div class="revenda-benefit-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div class="revenda-benefit-content">
-              <h4>Suporte dedicado ao revendedor</h4>
-              <p>Canal direto com nossa equipe para dúvidas técnicas, suporte às imobiliárias e materiais de apoio.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="revenda-form reveal reveal-delay-2">
-        <h3>Quero ser revendedor</h3>
-        <form id="revendaForm" onsubmit="submitRevendaForm(event)">
-          <div class="form-group-lp">
-            <label for="revNome">Seu nome</label>
-            <input type="text" id="revNome" placeholder="Ex: Maria Silva" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="revWhatsapp">WhatsApp</label>
-            <input type="tel" id="revWhatsapp" placeholder="(11) 99999-9999" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="revCidade">Cidade / Estado</label>
-            <input type="text" id="revCidade" placeholder="Ex: São Paulo - SP" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="revQtd">Quantas imobiliárias você atende?</label>
-            <select id="revQtd">
-              <option value="1-5">1 a 5 imobiliárias</option>
-              <option value="6-15">6 a 15 imobiliárias</option>
-              <option value="16-30">16 a 30 imobiliárias</option>
-              <option value="30+">Mais de 30 imobiliárias</option>
-            </select>
-          </div>
-          <button type="submit" class="form-submit" id="revendaSubmitBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Quero ser revendedor
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════ CTA FINAL / CONTATO -->
-<section id="contato">
-  <div class="container">
-    <div class="contato-inner">
-      <div class="contato-text">
-        <span class="section-label reveal">Vamos conversar</span>
-        <h2 class="section-title reveal reveal-delay-1">Pronto para transformar<br>sua gestão imobiliária?</h2>
-        <p class="section-subtitle reveal reveal-delay-2">Fale com nossa equipe e descubra o plano ideal para o seu negócio. Respondemos em minutos.</p>
-
-        <div class="contato-items reveal reveal-delay-3">
-          <div class="contato-item">
-            <div class="contato-item-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.11 6.11l1.27-.82a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            </div>
-            Fale conosco pelo WhatsApp
-          </div>
-          <div class="contato-item">
-            <div class="contato-item-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            Demonstração em até 24 horas úteis
-          </div>
-          <div class="contato-item">
-            <div class="contato-item-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            Sem compromisso, sem cartão de crédito
-          </div>
-        </div>
-      </div>
-
-      <div class="contato-form reveal reveal-delay-2">
-        <h3>Fale com um consultor</h3>
-        <form id="contactForm" onsubmit="submitForm(event)">
-          <div class="form-group-lp">
-            <label for="nome">Seu nome</label>
-            <input type="text" id="nome" placeholder="Ex: João Silva" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="academia">Imobiliária / Empresa</label>
-            <input type="text" id="academia" placeholder="Ex: Imobiliária Horizonte" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="whatsapp">WhatsApp</label>
-            <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" required />
-          </div>
-          <div class="form-group-lp">
-            <label for="interesse">Principal interesse</label>
-            <select id="interesse">
-              <option value="demo">Quero uma demonstração</option>
-              <option value="preco">Saber sobre preços</option>
-              <option value="contratos">Gestão de contratos</option>
-              <option value="migracao">Migrar de outro sistema</option>
-              <option value="outro">Outro</option>
-            </select>
-          </div>
-          <button type="submit" class="form-submit" id="formSubmitBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Enviar mensagem
-          </button>
-        </form>
       </div>
     </div>
   </div>
@@ -3001,10 +2739,11 @@
   <div class="container">
     <div class="footer-top">
       <div>
-        <div class="nav-logo" style="margin-bottom:0;">
-          <img src="/alfa-home-logo.png" alt="AlfaHome" style="height: 32px; width: auto;" />
-        </div>
-        <p class="footer-brand-text">Gestão inteligente para imobiliárias e administradoras. Simples, completo e acessível para qualquer tamanho de carteira.</p>
+        <p class="footer-brand-text">Organize as finanças da sua família em um só lugar. Receitas, despesas, cartões, contas e investimentos — de forma simples e sem conectar banco.</p>
+        <address class="footer-address">
+          R. Pedro Palácios, 79 — Centro<br>
+          Vila Velha, ES · 29100-190
+        </address>
       </div>
 
       <div>
@@ -3012,32 +2751,38 @@
         <div class="footer-links">
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#planos">Planos</a>
-          <a href="#contato"
-          <a href="https://home.alfasolucoes.cloud/login">Entrar</a>
+          <a href="#faq">FAQ</a>
+          <a href="/login">Entrar</a>
+          <a href="/register">Criar conta</a>
         </div>
       </div>
 
       <div>
-        <div class="footer-col-title">Empresa</div>
-        <div class="footer-links">
-          <a href="#depoimentos">Depoimentos</a>
-          <a href="#faq">FAQ</a>
-          <a href="#revenda">Seja Parceiro</a>
-          <a href="#contato">Contato</a>
+        <div class="footer-col-title">Contato</div>
+        <div class="footer-social">
+          <a href="https://wa.me/5527992250122" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.372-.01-.571-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0 0 20.465 3.488"/></svg>
+          </a>
+          <a href="https://www.instagram.com/alfa.solucoestecnologicas/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="mailto:alfa.comercial.solucoes@gmail.com" aria-label="E-mail" title="E-mail">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
         </div>
       </div>
 
       <div>
         <div class="footer-col-title">Legal</div>
         <div class="footer-links">
-          <a href="https://home.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a>
-          <a href="https://home.alfasolucoes.cloud/termos-de-uso">Termos de Uso</a>
+          <a href="/politica-privacidade">Política de Privacidade</a>
+          <a href="/termos-de-uso">Termos de Uso</a>
         </div>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span>© <script>document.write(new Date().getFullYear())</script> Alfa Soluções. Todos os direitos reservados.</span>
+      <span>© <script>document.write(new Date().getFullYear())</script> <a href="https://alfasolucoes.cloud/" target="_blank" rel="noopener">Alfa Soluções Tecnológicas</a>. Todos os direitos reservados.</span>
     </div>
   </div>
 </footer>
@@ -3404,7 +3149,7 @@
 <div class="cookie-banner hidden" id="cookieBanner">
   <p class="cookie-banner-text">
     Utilizamos cookies essenciais para o funcionamento do site. Nenhum dado é compartilhado com terceiros para fins publicitários.
-    Saiba mais na nossa <a href="https://home.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a>.
+    Saiba mais na nossa <a href="/politica-privacidade">Política de Privacidade</a>.
   </p>
   <div class="cookie-banner-actions">
     <button class="cookie-btn-accept" onclick="acceptCookies()">Aceitar</button>
@@ -3575,33 +3320,21 @@
     inputWrap.style.display = 'flex';
   }
 
+  // WhatsApp comercial AlfaHome
+  const WHATSAPP_NUMERO = '5527992250122';
+
   startBtn.addEventListener('click', function() {
     const nome = document.getElementById('chatNome').value.trim();
     const whatsapp = document.getElementById('chatWhatsapp').value.trim();
     if (!nome || !whatsapp) return;
 
-    startBtn.disabled = true;
-    startBtn.textContent = 'Conectando...';
+    const mensagem =
+      'Olá! Gostaria de saber mais sobre o AlfaHome.\n\n' +
+      'Nome: ' + nome + '\n' +
+      'WhatsApp: ' + whatsapp;
 
-    fetch(`${API}/api/landing/chat/iniciar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, whatsapp })
-    })
-    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-    .then(data => {
-      chatToken = data.token;
-      localStorage.setItem('alfahome_chat_token', chatToken);
-      localStorage.setItem('alfahome_chat_token_ts', Date.now().toString());
-      showChatView();
-      carregarMensagens();
-      iniciarPolling();
-    })
-    .catch(() => {
-      startBtn.disabled = false;
-      startBtn.textContent = 'Iniciar conversa';
-      alert('Erro ao conectar. Tente novamente.');
-    });
+    const url = 'https://wa.me/' + WHATSAPP_NUMERO + '?text=' + encodeURIComponent(mensagem);
+    window.open(url, '_blank', 'noopener');
   });
 
   function carregarMensagens() {

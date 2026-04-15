@@ -1,5 +1,24 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — Landing page finalizada, páginas legais e chat via WhatsApp
+
+### Novidades
+- Páginas de **Política de Privacidade** e **Termos de Uso** publicadas em `/politica-privacidade` e `/termos-de-uso`, com conteúdo em linguagem clara, seguindo a LGPD e o Código de Defesa do Consumidor, com alternância de tema claro/escuro.
+- Chat da landing agora abre direto no **WhatsApp comercial** com nome e contato já preenchidos na mensagem — atendimento imediato no canal que o cliente já usa.
+- Novos links de contato no rodapé: **WhatsApp**, **Instagram** e **e-mail** em botões de ícone, além do endereço da empresa e link para "Criar conta".
+
+### Melhorias
+- Landing page agora abre por padrão no **tema claro**, mais alinhado à identidade visual do AlfaHome (o tema escuro continua disponível e é lembrado por visitante).
+- Toda a landing foi reescrita para refletir o produto real (gestão financeira familiar): textos, destaques, seções de funcionalidades, planos e FAQ agora descrevem receitas, despesas, cartões, bancos e investimentos — não mais conteúdo de imobiliária.
+- Capturas de tela reais do sistema (Dashboard, Despesas, Bancos e Investimentos) substituíram os mockups ilustrativos no hero e nas seções de destaque.
+- Preços e limites dos planos Individual, Casal e Família exibidos na landing agora batem exatamente com os cadastrados no sistema.
+- Cor de destaque da landing passou do laranja para o **verde da identidade AlfaHome**, e a logo da navbar foi calibrada para ficar proporcional ao restante da barra.
+- Rodapé reorganizado: colunas Produto, Contato e Legal, com links funcionais e descrição honesta do serviço.
+
+### Correções
+- Removidas seções obsoletas herdadas do template original (Programa de Revenda, Depoimentos e formulário de contato comercial) que não se aplicavam ao AlfaHome.
+- Links quebrados no rodapé que apontavam para páginas inexistentes foram corrigidos ou removidos.
+
 ## AlfaHome — 13/04/2026 — Correção no lançamento de despesas no cartão de crédito
 
 ### Correções
