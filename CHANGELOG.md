@@ -1,5 +1,16 @@
 # Changelog
 
+## AlfaHome — 15/04/2026 — Landing com "Como funciona" e bloco de segurança
+
+### Novidades
+- Nova seção **Como funciona** na landing page: explica em 3 passos simples como começar a usar o AlfaHome (criar conta, cadastrar contas e cartões, lançar receitas e despesas).
+- Nova seção **Segurança & Privacidade** com destaque para os diferenciais do produto: sem acesso ao banco do cliente, criptografia ponta a ponta, backup diário automático e conformidade com a LGPD. Inclui link direto para a Política de Privacidade.
+
+### Melhorias
+- Seção de **Planos** agora aparece com fundo claro no tema light, mantendo a alternância visual entre as seções.
+- Rodapé no tema light passa a usar fundo branco com borda sutil, separando-o visualmente do FAQ e quebrando o efeito de "mancha única" que havia antes.
+- Fundo do hero ajustado para tons neutros (brancos e cinzas claros), eliminando o azul que destoava da identidade verde do AlfaHome.
+
 ## AlfaHome — 15/04/2026 — Ajustes visuais na landing e CNPJ nas páginas legais
 
 ### Melhorias
