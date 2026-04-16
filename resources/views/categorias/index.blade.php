@@ -35,8 +35,8 @@ $iconesDisponiveis = [
 <div class="grid-2">
     {{-- Despesas --}}
     <div class="card">
-        <div class="card-title" style="color:#dc2626;">
-            <i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> Despesas
+        <div class="card-title" style="color:var(--color-danger);">
+            <i class="fa-solid fa-arrow-trend-down" style="color:var(--color-danger);"></i> Despesas
         </div>
         <div class="table-wrapper">
             <table class="table">
@@ -51,8 +51,8 @@ $iconesDisponiveis = [
                     @foreach($categorias->where('tipo', 'DESPESA') as $cat)
                         <tr>
                             <td>
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#fee2e2;">
-                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#dc2626;font-size:13px;"></i>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:var(--color-danger-soft);">
+                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:var(--color-danger);font-size:13px;"></i>
                                 </span>
                             </td>
                             <td>{{ $cat->nome }}</td>
@@ -78,8 +78,8 @@ $iconesDisponiveis = [
 
     {{-- Receitas --}}
     <div class="card">
-        <div class="card-title" style="color:#16a34a;">
-            <i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> Receitas
+        <div class="card-title" style="color:var(--color-success);">
+            <i class="fa-solid fa-arrow-trend-up" style="color:var(--color-success);"></i> Receitas
         </div>
         <div class="table-wrapper">
             <table class="table">
@@ -94,8 +94,8 @@ $iconesDisponiveis = [
                     @foreach($categorias->where('tipo', 'RECEITA') as $cat)
                         <tr>
                             <td>
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#dcfce7;">
-                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:#16a34a;font-size:13px;"></i>
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:var(--color-success-soft);">
+                                    <i class="fa-solid {{ $cat->icone ?? 'fa-tag' }}" style="color:var(--color-success);font-size:13px;"></i>
                                 </span>
                             </td>
                             <td>{{ $cat->nome }}</td>

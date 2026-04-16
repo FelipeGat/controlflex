@@ -35,16 +35,16 @@ $bancosTemplate = [
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:14px;margin-bottom:24px;">
     @forelse($bancos as $banco)
         @php $cor = $banco->cor ?: 'var(--color-primary)'; @endphp
-        <div class="card" style="border-top: 3px solid {{ $cor }};">
+        <div class="card" style="border-top:3px solid {{ $cor }};box-shadow:0 -1px 0 var(--color-border-strong);">
             {{-- Header: Logo + Nome + Badges --}}
             <div class="d-flex justify-between align-center mb-3">
                 <div class="d-flex align-center gap-2">
                     @if($banco->logo)
-                        <div style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f9fa;flex-shrink:0;">
+                        <div style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--color-bg-container);flex-shrink:0;">
                             <img src="{{ asset('img/bancos/' . $banco->logo) }}" alt="{{ $banco->nome }}" style="width:32px;height:32px;object-fit:contain;">
                         </div>
                     @else
-                        <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ $cor }};flex-shrink:0;">
+                        <div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:{{ $cor }};flex-shrink:0;border:1px solid var(--color-border);">
                             <i class="fa-solid fa-building-columns" style="color:#fff;font-size:16px;"></i>
                         </div>
                     @endif
@@ -52,7 +52,7 @@ $bancosTemplate = [
                         <div class="fw-600" style="font-size:15px;">{{ $banco->nome }}</div>
                         <div class="d-flex flex-wrap gap-1" style="margin-top:3px;">
                             @if($banco->eh_dinheiro)
-                                <span class="badge" style="background:#f1f5f9;color:#64748b;font-size:10px;">Dinheiro</span>
+                                <span class="badge" style="background:var(--color-bg-inset);color:var(--color-text-muted);font-size:10px;">Dinheiro</span>
                             @endif
                             @if($banco->tem_conta_corrente)
                                 <span class="badge badge-blue" style="font-size:10px;">Conta Corrente</span>
@@ -87,7 +87,7 @@ $bancosTemplate = [
             {{-- Saldo Conta Corrente / Dinheiro --}}
             @if($banco->tem_conta_corrente || $banco->eh_dinheiro)
                 <div style="background:var(--color-bg);border-radius:6px;padding:8px 12px;margin-bottom:8px;">
-                    <div style="font-size:11px;color:#64748b;">{{ $banco->eh_dinheiro ? 'Dinheiro' : 'Conta Corrente' }}</div>
+                    <div style="font-size:11px;color:var(--color-text-muted);">{{ $banco->eh_dinheiro ? 'Dinheiro' : 'Conta Corrente' }}</div>
                     <div class="fw-700 {{ $banco->saldo >= 0 ? 'text-green' : 'text-red' }}" style="font-size:1.2rem;">
                         R$ {{ number_format($banco->saldo, 2, ',', '.') }}
                     </div>
@@ -96,8 +96,8 @@ $bancosTemplate = [
 
             {{-- Saldo Poupança --}}
             @if($banco->tem_poupanca)
-                <div style="background:#f0fdf4;border-radius:6px;padding:8px 12px;margin-bottom:8px;">
-                    <div style="font-size:11px;color:#16a34a;">Poupança</div>
+                <div style="background:var(--color-success-soft);border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:var(--color-success);">Poupança</div>
                     <div class="fw-700 text-green" style="font-size:1.2rem;">
                         R$ {{ number_format($banco->saldo_poupanca, 2, ',', '.') }}
                     </div>
@@ -114,17 +114,17 @@ $bancosTemplate = [
             {{-- Cartão de Crédito --}}
             @if($banco->tem_cartao_credito && $banco->limite_cartao > 0)
                 @php $perc = $banco->limite_cartao > 0 ? ($banco->saldo_cartao / $banco->limite_cartao) * 100 : 0; @endphp
-                <div style="background:#fefce8;border-radius:6px;padding:8px 12px;margin-bottom:8px;">
-                    <div style="font-size:11px;color:#d97706;margin-bottom:4px;">Cartão de Crédito</div>
+                <div style="background:var(--color-warning-soft);border-radius:6px;padding:8px 12px;margin-bottom:8px;">
+                    <div style="font-size:11px;color:var(--color-warning);margin-bottom:4px;">Cartão de Crédito</div>
                     <div class="d-flex justify-between" style="font-size:12px;margin-bottom:4px;">
                         <span class="text-muted">Utilizado</span>
                         <span class="fw-600">R$ {{ number_format($banco->saldo_cartao, 2, ',', '.') }} / {{ number_format($banco->limite_cartao, 2, ',', '.') }}</span>
                     </div>
                     <div class="progress-bar">
-                        <div class="progress-bar-fill" style="width:{{ min($perc,100) }}%;background:{{ $perc > 80 ? '#dc2626' : ($perc > 50 ? '#d97706' : '#16a34a') }};"></div>
+                        <div class="progress-bar-fill" style="width:{{ min($perc,100) }}%;background:{{ $perc > 80 ? 'var(--color-danger)' : ($perc > 50 ? 'var(--color-warning)' : 'var(--color-success)') }};"></div>
                     </div>
                     @if($banco->dia_vencimento_cartao || $banco->dia_fechamento_cartao)
-                        <div class="d-flex justify-between" style="font-size:11px;margin-top:6px;color:#64748b;">
+                        <div class="d-flex justify-between" style="font-size:11px;margin-top:6px;color:var(--color-text-muted);">
                             @if($banco->dia_fechamento_cartao)
                                 <span>Fecha dia <strong>{{ $banco->dia_fechamento_cartao }}</strong></span>
                             @endif
@@ -134,7 +134,7 @@ $bancosTemplate = [
                         </div>
                         @if($banco->dia_fechamento_cartao)
                             @php $melhorDia = $banco->dia_fechamento_cartao >= 28 ? 1 : $banco->dia_fechamento_cartao + 1; @endphp
-                            <div style="font-size:11px;margin-top:4px;padding:4px 8px;background:#ede9fe;border-radius:4px;color:#7c3aed;text-align:center;">
+                            <div style="font-size:11px;margin-top:4px;padding:4px 8px;background:var(--color-violet-soft);border-radius:4px;color:var(--color-violet);text-align:center;">
                                 <i class="fa-solid fa-lightbulb"></i> Melhor dia de compra: <strong>{{ $melhorDia }}</strong>
                             </div>
                         @endif
@@ -198,7 +198,7 @@ $bancosTemplate = [
                             data-cor="{{ $bt['cor'] }}"
                             data-codigo="{{ $bt['codigo_banco'] ?? '' }}"
                             onclick="selecionarBanco(this)"
-                            style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:#fff;cursor:pointer;transition:all .15s;">
+                            style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:var(--color-bg-card);cursor:pointer;transition:all .15s;">
                             <img src="{{ asset('img/bancos/' . $bt['logo']) }}" alt="{{ $bt['nome'] }}" style="width:32px;height:32px;object-fit:contain;">
                             <span style="font-size:10px;font-weight:600;color:var(--color-text);text-align:center;line-height:1.2;">{{ $bt['nome'] }}</span>
                         </button>
@@ -311,8 +311,8 @@ $bancosTemplate = [
                 <div style="margin-bottom:16px;">
                     <label class="form-label" style="margin-bottom:8px;">Banco / Logo</label>
                     <div id="edit-banco-atual" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                        <div id="edit-logo-preview" style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f9fa;flex-shrink:0;">
-                            <i class="fa-solid fa-building-columns" style="color:#64748b;font-size:16px;"></i>
+                        <div id="edit-logo-preview" style="width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--color-bg-container);flex-shrink:0;">
+                            <i class="fa-solid fa-building-columns" style="color:var(--color-text-muted);font-size:16px;"></i>
                         </div>
                         <span id="edit-logo-nome" style="font-size:13px;font-weight:600;color:var(--color-text);">—</span>
                         <button type="button" onclick="toggleEditBancoPicker()" class="btn btn-secondary btn-sm" style="margin-left:auto;">
@@ -329,7 +329,7 @@ $bancosTemplate = [
                                 data-cor="{{ $bt['cor'] }}"
                                 data-codigo="{{ $bt['codigo_banco'] ?? '' }}"
                                 onclick="selecionarBancoEditar(this)"
-                                style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:#fff;cursor:pointer;transition:all .15s;">
+                                style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:2px solid var(--color-border);border-radius:8px;background:var(--color-bg-card);cursor:pointer;transition:all .15s;">
                                 <img src="{{ asset('img/bancos/' . $bt['logo']) }}" alt="{{ $bt['nome'] }}" style="width:32px;height:32px;object-fit:contain;">
                                 <span style="font-size:10px;font-weight:600;color:var(--color-text);text-align:center;line-height:1.2;">{{ $bt['nome'] }}</span>
                             </button>
@@ -444,7 +444,7 @@ $bancosTemplate = [
 <div class="modal-backdrop" id="modal-ajustar-poupanca">
     <div class="modal" style="max-width:380px;">
         <div class="modal-header">
-            <i class="fa-solid fa-piggy-bank" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-piggy-bank" style="color:var(--color-success);"></i>
             <h3>Ajustar Saldo Poupança</h3>
             <button class="modal-close" onclick="closeModal('modal-ajustar-poupanca')">&times;</button>
         </div>
@@ -468,7 +468,7 @@ $bancosTemplate = [
 <div class="modal-backdrop" id="modal-ajustar-cartao">
     <div class="modal" style="max-width:380px;">
         <div class="modal-header">
-            <i class="fa-solid fa-credit-card" style="color:#d97706;"></i>
+            <i class="fa-solid fa-credit-card" style="color:var(--color-warning);"></i>
             <h3>Ajustar Saldo do Cartão</h3>
             <button class="modal-close" onclick="closeModal('modal-ajustar-cartao')">&times;</button>
         </div>
@@ -495,10 +495,10 @@ $bancosTemplate = [
 function selecionarBanco(btn) {
     document.querySelectorAll('.banco-picker-btn').forEach(b => {
         b.style.borderColor = 'var(--color-border)';
-        b.style.background = '#fff';
+        b.style.background = 'var(--color-bg-card)';
     });
     btn.style.borderColor = btn.dataset.cor || 'var(--color-primary)';
-    btn.style.background = '#f8f9fa';
+    btn.style.background = 'var(--color-bg-container)';
 
     document.getElementById('novo-nome').value   = btn.dataset.nome;
     document.getElementById('novo-logo').value   = btn.dataset.logo;
@@ -566,7 +566,7 @@ function editarBanco(id, data) {
     // Destaca o banco selecionado no picker
     document.querySelectorAll('.edit-picker-btn').forEach(b => {
         b.style.borderColor = (b.dataset.logo === data.logo) ? (b.dataset.cor || 'var(--color-primary)') : 'var(--color-border)';
-        b.style.background = (b.dataset.logo === data.logo) ? '#f8f9fa' : '#fff';
+        b.style.background = (b.dataset.logo === data.logo) ? 'var(--color-bg-container)' : 'var(--color-bg-card)';
     });
 
     toggleCamposEditar();
@@ -579,7 +579,7 @@ function atualizarEditLogoPreview(logo, nome) {
     if (logo) {
         container.innerHTML = `<img src="/img/bancos/${logo}" alt="${nome}" style="width:32px;height:32px;object-fit:contain;">`;
     } else {
-        container.innerHTML = '<i class="fa-solid fa-building-columns" style="color:#64748b;font-size:16px;"></i>';
+        container.innerHTML = '<i class="fa-solid fa-building-columns" style="color:var(--color-text-muted);font-size:16px;"></i>';
     }
     nomeEl.textContent = nome || '—';
 }
@@ -592,10 +592,10 @@ function toggleEditBancoPicker() {
 function selecionarBancoEditar(btn) {
     document.querySelectorAll('.edit-picker-btn').forEach(b => {
         b.style.borderColor = 'var(--color-border)';
-        b.style.background = '#fff';
+        b.style.background = 'var(--color-bg-card)';
     });
     btn.style.borderColor = btn.dataset.cor || 'var(--color-primary)';
-    btn.style.background = '#f8f9fa';
+    btn.style.background = 'var(--color-bg-container)';
 
     document.getElementById('b-edit-nome').value   = btn.dataset.nome;
     document.getElementById('b-edit-logo').value   = btn.dataset.logo;

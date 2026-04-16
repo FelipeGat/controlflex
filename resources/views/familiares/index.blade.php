@@ -24,7 +24,7 @@
 
         {{-- Badge master --}}
         @if($ehMaster)
-        <span style="position:absolute;top:10px;left:10px;background:#7c3aed;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;">
+        <span style="position:absolute;top:10px;left:10px;background:var(--color-violet);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.03em;">
             <i class="fa-solid fa-crown" style="margin-right:3px;"></i>Master
         </span>
         {{-- Badge acesso ao sistema --}}
@@ -35,11 +35,11 @@
         @endif
 
         {{-- Foto --}}
-        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;overflow:hidden;background:#ede9fe;display:flex;align-items:center;justify-content:center;">
+        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;overflow:hidden;background:var(--color-violet-soft);display:flex;align-items:center;justify-content:center;">
             @if($familiar->foto)
                 <img src="{{ Storage::url($familiar->foto) }}" alt="{{ $familiar->nome }}" style="width:100%;height:100%;object-fit:cover;">
             @else
-                <i class="fa-solid fa-user" style="font-size:24px;color:#7c3aed;"></i>
+                <i class="fa-solid fa-user" style="font-size:24px;color:var(--color-violet);"></i>
             @endif
         </div>
 
@@ -66,7 +66,7 @@
             </div>
             <div style="background:var(--color-bg);border-radius:6px;padding:7px 4px;">
                 <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;" class="text-subtle">Cheque</div>
-                <div class="fw-600" style="font-size:12px;margin-top:2px;color:#2563eb;">R$ {{ number_format($familiar->limite_cheque, 0, ',', '.') }}</div>
+                <div class="fw-600" style="font-size:12px;margin-top:2px;color:var(--color-info);">R$ {{ number_format($familiar->limite_cheque, 0, ',', '.') }}</div>
             </div>
         </div>
 

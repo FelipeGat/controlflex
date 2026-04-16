@@ -73,18 +73,18 @@
                     <a href="{{ $todasContasUrl }}" class="av-item" title="Todas as contas">
                         <div class="av-circulo"
                              style="border:3px solid {{ !$bancoId ? 'var(--color-primary)' : 'transparent' }};
-                                    outline:{{ !$bancoId ? 'none' : '2px solid #e2e8f0' }};
-                                    background:{{ !$bancoId ? 'var(--color-primary)' : '#f1f5f9' }};
+                                    outline:{{ !$bancoId ? 'none' : '2px solid var(--color-border)' }};
+                                    background:{{ !$bancoId ? 'var(--color-primary)' : 'var(--color-bg-inset)' }};
                                     box-shadow:{{ !$bancoId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
-                            <i class="fa-solid fa-wallet" style="font-size:13px;color:{{ !$bancoId ? '#fff' : '#64748b' }};"></i>
+                            <i class="fa-solid fa-wallet" style="font-size:13px;color:{{ !$bancoId ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};"></i>
                         </div>
-                        <span class="av-nome" style="color:{{ !$bancoId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$bancoId ? '700' : '400' }};">Todas</span>
+                        <span class="av-nome" style="color:{{ !$bancoId ? 'var(--color-primary)' : 'var(--color-text-subtle)' }};font-weight:{{ !$bancoId ? '700' : '400' }};">Todas</span>
                     </a>
 
                     @foreach($bancos as $b)
                     @php
                         $bSel   = $bancoId == $b->id;
-                        $bCor   = $b->cor ?: '#64748b';
+                        $bCor   = $b->cor ?: 'var(--color-text-muted)';
                         $bUrl   = $bSel
                             ? route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'tipo'=>$tipo,'familiar_id'=>$familiarId]))
                             : route('lancamentos.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'tipo'=>$tipo,'familiar_id'=>$familiarId,'banco_id'=>$b->id]));
@@ -98,22 +98,22 @@
                     <a href="{{ $bUrl }}" class="av-item" title="{{ $b->nome }}">
                         <div class="av-circulo"
                              style="border:3px solid {{ $bSel ? $bCor : 'transparent' }};
-                                    outline:{{ $bSel ? 'none' : '2px solid #e2e8f0' }};
+                                    outline:{{ $bSel ? 'none' : '2px solid var(--color-border)' }};
                                     box-shadow:{{ $bSel ? '0 0 0 2px '.$bCor.'44' : 'none' }};
-                                    background:{{ $bSel ? $bCor : '#f1f5f9' }};">
+                                    background:{{ $bSel ? $bCor : 'var(--color-bg-inset)' }};">
                             @if($b->logo)
                                 <img src="{{ asset('img/bancos/' . $b->logo) }}" alt="{{ $b->nome }}" style="width:100%;height:100%;object-fit:contain;border-radius:50%;padding:4px;">
                             @else
-                                <i class="fa-solid {{ $bIcone }}" style="font-size:13px;color:{{ $bSel ? '#fff' : $bCor }};"></i>
+                                <i class="fa-solid {{ $bIcone }}" style="font-size:13px;color:{{ $bSel ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};"></i>
                             @endif
                         </div>
-                        <span class="av-nome" style="color:{{ $bSel ? $bCor : '#94a3b8' }};font-weight:{{ $bSel ? '700' : '400' }};">{{ explode(' ', $b->nome)[0] }}</span>
+                        <span class="av-nome" style="color:{{ $bSel ? $bCor : 'var(--color-text-subtle)' }};font-weight:{{ $bSel ? '700' : '400' }};">{{ explode(' ', $b->nome)[0] }}</span>
                     </a>
                     @endforeach
                 </div>
             </div>
 
-            <div class="separador-v" style="width:1px;height:30px;background:#e2e8f0;flex-shrink:0;align-self:center;"></div>
+            <div class="separador-v" style="width:1px;height:30px;background:var(--color-border);flex-shrink:0;align-self:center;"></div>
 
             {{-- Botões Todos / Saídas / Entradas --}}
             <div class="filtro-grupo filtro-grupo-tipo">
@@ -125,11 +125,11 @@
                     <input type="hidden" name="tipo_pagamento" id="f-tipo-pag" value="{{ $tipoPagamento }}">
 
                     {{-- Date picker oculto --}}
-                    <div id="date-picker-wrapper" style="display:none;position:absolute;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:16px;max-width:340px;">
-                        <div style="font-size:12px;color:#64748b;margin-bottom:10px;font-weight:600;">Período personalizado</div>
+                    <div id="date-picker-wrapper" style="display:none;position:absolute;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:16px;z-index:200;margin-top:8px;left:16px;max-width:340px;">
+                        <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:10px;font-weight:600;">Período personalizado</div>
                         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                            <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">De</div><input type="date" id="dp-inicio" value="{{ $inicio }}" class="form-control" style="max-width:148px;"></div>
-                            <div><div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">Até</div><input type="date" id="dp-fim" value="{{ $fim }}" class="form-control" style="max-width:148px;"></div>
+                            <div><div style="font-size:11px;color:var(--color-text-subtle);margin-bottom:4px;">De</div><input type="date" id="dp-inicio" value="{{ $inicio }}" class="form-control" style="max-width:148px;"></div>
+                            <div><div style="font-size:11px;color:var(--color-text-subtle);margin-bottom:4px;">Até</div><input type="date" id="dp-fim" value="{{ $fim }}" class="form-control" style="max-width:148px;"></div>
                             <button type="button" onclick="aplicarPeriodoCustom()" class="btn btn-primary btn-sm" style="margin-top:14px;"><i class="fa-solid fa-check"></i> Aplicar</button>
                         </div>
                     </div>
@@ -137,8 +137,8 @@
                     <div class="seg-control">
                         @foreach(['todos' => 'Todos', 'debito' => '↓ Saídas', 'credito' => '↑ Entradas'] as $val => $label)
                         <button type="submit" name="tipo" value="{{ $val }}" class="seg-btn"
-                            style="background:{{ $tipo === $val ? 'var(--color-primary)' : '#fff' }};
-                                   color:{{ $tipo === $val ? '#fff' : '#64748b' }};">
+                            style="background:{{ $tipo === $val ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
+                                   color:{{ $tipo === $val ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};">
                             {{ $label }}
                         </button>
                         @endforeach
@@ -150,7 +150,7 @@
             <div style="display:flex;align-items:center;">
                 <select id="sel-tipo-pag"
                         onchange="document.getElementById('f-tipo-pag').value=this.value;document.getElementById('form-filtro').submit()"
-                        style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPagamento ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPagamento ? '#eff6ff' : '#fff' }};color:{{ $tipoPagamento ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:130px;">
+                        style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPagamento ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $tipoPagamento ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $tipoPagamento ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:130px;">
                     <option value="">Todos os tipos</option>
                     <option value="dinheiro"     {{ $tipoPagamento === 'dinheiro'     ? 'selected' : '' }}>Dinheiro</option>
                     <option value="pix"          {{ $tipoPagamento === 'pix'          ? 'selected' : '' }}>Pix</option>
@@ -165,7 +165,7 @@
 
         {{-- ─ CENTRO: navegação de mês + Hoje ─ --}}
         <div class="filtro-grupo filtro-grupo-centro">
-            <div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
                 <a href="{{ $urlMesAnterior }}" class="nav-mes-btn" title="Mês anterior"><i class="fa-solid fa-chevron-left" style="font-size:12px;"></i></a>
                 <button type="button" class="mes-label-btn" onclick="toggleDatePicker()" title="Clique para personalizar período">
                     {{ $ehHoje ? 'Hoje' : ucfirst($mesNome) }}
@@ -175,14 +175,14 @@
             <div style="display:flex;gap:6px;">
                 <a href="{{ $urlHoje }}"
                    style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
-                          border:1px solid {{ $ehHoje ? 'var(--color-primary)' : '#e2e8f0' }};
-                          background:{{ $ehHoje ? 'var(--color-primary)' : '#fff' }};
-                          color:{{ $ehHoje ? '#fff' : '#64748b' }};transition:all .15s;">
+                          border:1px solid {{ $ehHoje ? 'var(--color-primary)' : 'var(--color-border)' }};
+                          background:{{ $ehHoje ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
+                          color:{{ $ehHoje ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};transition:all .15s;">
                     <i class="fa-solid fa-calendar-day"></i> Hoje
                 </a>
                 @if(!$ehMesAtual && !$ehHoje)
                 <a href="{{ $urlMesAtualReal }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #e2e8f0;background:#fff;color:#64748b;transition:all .15s;">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);transition:all .15s;">
                     <i class="fa-solid fa-rotate-left"></i> Mês Atual
                 </a>
                 @endif
@@ -197,12 +197,12 @@
                 <a href="{{ $todasUrl }}" class="av-item" title="Todos os membros">
                     <div class="av-circulo"
                          style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};
-                                outline:{{ !$familiarId ? 'none' : '2px solid #e2e8f0' }};
-                                background:{{ !$familiarId ? 'var(--color-primary)' : '#f1f5f9' }};
+                                outline:{{ !$familiarId ? 'none' : '2px solid var(--color-border)' }};
+                                background:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-bg-inset)' }};
                                 box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
-                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? '#fff' : '#64748b' }};"></i>
+                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};"></i>
                     </div>
-                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
+                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-text-subtle)' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
                 </a>
 
                 @foreach($familiares as $fam)
@@ -218,7 +218,7 @@
                 <a href="{{ $famUrl }}" class="av-item" title="{{ $fam->nome }}">
                     <div class="av-circulo"
                          style="border:3px solid {{ $isSelected ? $cor : 'transparent' }};
-                                outline:{{ $isSelected ? 'none' : '2px solid #e2e8f0' }};
+                                outline:{{ $isSelected ? 'none' : '2px solid var(--color-border)' }};
                                 box-shadow:{{ $isSelected ? '0 0 0 2px '.$cor.'44' : 'none' }};">
                         @if($fam->foto)
                             <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}" style="width:100%;height:100%;object-fit:cover;">
@@ -226,7 +226,7 @@
                             <div style="width:100%;height:100%;background:{{ $cor }};color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:50%;">{{ $iniciais }}</div>
                         @endif
                     </div>
-                    <span class="av-nome" style="color:{{ $isSelected ? $cor : '#94a3b8' }};font-weight:{{ $isSelected ? '700' : '400' }};">{{ explode(' ', $fam->nome)[0] }}</span>
+                    <span class="av-nome" style="color:{{ $isSelected ? $cor : 'var(--color-text-subtle)' }};font-weight:{{ $isSelected ? '700' : '400' }};">{{ explode(' ', $fam->nome)[0] }}</span>
                 </a>
                 @endforeach
             </div>
@@ -239,16 +239,16 @@
 {{-- ─── Cards de resumo ──────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
     <div class="card" style="padding:12px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> Entradas</div>
-        <div class="fw-700" style="color:#16a34a;font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
+        <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-up" style="color:var(--color-success);"></i> Entradas</div>
+        <div class="fw-700" style="color:var(--color-success);font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalEntradas, 2, ',', '.') }}</div>
     </div>
     <div class="card" style="padding:12px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> Saídas</div>
-        <div class="fw-700" style="color:#dc2626;font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
+        <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;white-space:nowrap;"><i class="fa-solid fa-arrow-trend-down" style="color:var(--color-danger);"></i> Saídas</div>
+        <div class="fw-700" style="color:var(--color-danger);font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">R$ {{ number_format($totalSaidas, 2, ',', '.') }}</div>
     </div>
     <div class="card" style="padding:12px;text-align:center;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><i class="fa-solid fa-scale-balanced" style="color:#7c3aed;"></i> Saldo</div>
-        <div class="fw-700" style="color:{{ $saldoPeriodo >= 0 ? '#16a34a' : '#dc2626' }};font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">
+        <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><i class="fa-solid fa-scale-balanced" style="color:var(--color-violet);"></i> Saldo</div>
+        <div class="fw-700" style="color:{{ $saldoPeriodo >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }};font-size:clamp(13px,3vw,20px);font-weight:700;line-height:1.2;">
             R$ {{ number_format($saldoPeriodo, 2, ',', '.') }}
         </div>
     </div>
@@ -256,16 +256,16 @@
 
 {{-- ─── Botões de ação ──────────────────────────────────────────────────── --}}
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;">
-    <button onclick="openModal('modal-manual')" class="btn-acao" style="border-color:var(--color-primary);background:#f5f3ff;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+    <button onclick="openModal('modal-manual')" class="btn-acao" style="border-color:var(--color-primary);background:var(--color-violet-soft);" onmouseover="this.style.background='var(--color-violet-soft)'" onmouseout="this.style.background='var(--color-violet-soft)'">
         <div class="btn-acao-icon" style="background:var(--color-primary);"><i class="fa-solid fa-pen-to-square" style="color:#fff;font-size:18px;"></i></div>
         <div class="btn-acao-txt"><span class="btn-acao-titulo">Lançamento Manual</span><span class="btn-acao-sub">Despesa ou receita</span></div>
     </button>
-    <button onclick="document.getElementById('camera-input').click()" class="btn-acao" style="border-color:#16a34a;background:#f0fdf4;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
-        <div class="btn-acao-icon" style="background:#16a34a;"><i class="fa-solid fa-receipt" style="color:#fff;font-size:18px;"></i></div>
+    <button onclick="document.getElementById('camera-input').click()" class="btn-acao" style="border-color:var(--color-success);background:var(--color-success-soft);" onmouseover="this.style.background='var(--color-success-soft)'" onmouseout="this.style.background='var(--color-success-soft)'">
+        <div class="btn-acao-icon" style="background:var(--color-success);"><i class="fa-solid fa-receipt" style="color:#fff;font-size:18px;"></i></div>
         <div class="btn-acao-txt"><span class="btn-acao-titulo">Cupom / NF</span><span class="btn-acao-sub">Escanear ou foto</span></div>
     </button>
-    <button onclick="openModal('modal-importar')" class="btn-acao" style="border-color:#0891b2;background:#ecfeff;" onmouseover="this.style.background='#cffafe'" onmouseout="this.style.background='#ecfeff'">
-        <div class="btn-acao-icon" style="background:#0891b2;"><i class="fa-solid fa-file-arrow-up" style="color:#fff;font-size:18px;"></i></div>
+    <button onclick="openModal('modal-importar')" class="btn-acao" style="border-color:var(--color-info);background:var(--color-info-soft);" onmouseover="this.style.background='var(--color-info-soft)'" onmouseout="this.style.background='var(--color-info-soft)'">
+        <div class="btn-acao-icon" style="background:var(--color-info);"><i class="fa-solid fa-file-arrow-up" style="color:#fff;font-size:18px;"></i></div>
         <div class="btn-acao-txt"><span class="btn-acao-titulo">Importar Extrato</span><span class="btn-acao-sub">OFX / CSV</span></div>
     </button>
 </div>
@@ -298,13 +298,13 @@
     {{-- Cabeçalho do card --}}
     <div class="ext-header">
         <div style="display:flex;align-items:center;gap:8px;">
-            <i class="fa-solid fa-list-ul" style="color:#94a3b8;font-size:13px;"></i>
-            <span style="font-size:14px;font-weight:600;color:#1e293b;">Extrato</span>
+            <i class="fa-solid fa-list-ul" style="color:var(--color-text-subtle);font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:var(--color-text);">Extrato</span>
             @if($bancoBuscado)
             <span style="font-size:12px;color:var(--color-primary);font-weight:600;">— {{ $bancoBuscado->nome }}</span>
             @endif
         </div>
-        <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">
+        <span style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:var(--color-bg-inset);padding:3px 10px;border-radius:20px;">
             {{ count($movimentacoes) }} lançamentos
         </span>
     </div>
@@ -331,7 +331,7 @@
     {{-- Cabeçalho do dia --}}
     <div class="ext-date-header">
         <span class="ext-date-label">{{ $dataLabel }}</span>
-        <span style="font-size:11.5px;font-weight:700;color:{{ $totalDia >= 0 ? '#16a34a' : '#ef4444' }};">
+        <span style="font-size:11.5px;font-weight:700;color:{{ $totalDia >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }};">
             {{ $totalDia >= 0 ? '+' : '−' }} R$ {{ number_format(abs($totalDia), 2, ',', '.') }}
         </span>
     </div>
@@ -353,7 +353,7 @@
         {{-- Ícone da categoria --}}
         <div class="ext-icone ext-{{ $mov['tipo'] }}">
             <i class="fa-solid {{ $catIcone }}"
-               style="font-size:16px;color:{{ $mov['tipo'] === 'credito' ? '#16a34a' : '#ef4444' }};"></i>
+               style="font-size:16px;color:{{ $mov['tipo'] === 'credito' ? 'var(--color-success)' : 'var(--color-danger)' }};"></i>
         </div>
 
         {{-- Descrição + meta --}}
@@ -410,25 +410,25 @@
 
     {{-- Totais do período --}}
     <div class="ext-footer">
-        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <span style="font-size:10px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
         <div class="ext-footer-item">
-            <span class="ext-footer-dot" style="background:#ef4444;"></span>
-            <span style="font-size:12.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalSaidas, 2, ',', '.') }}</span>
+            <span class="ext-footer-dot" style="background:var(--color-danger);"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--color-danger);">− R$ {{ number_format($totalSaidas, 2, ',', '.') }}</span>
         </div>
-        <div style="width:1px;height:16px;background:#e2e8f0;"></div>
+        <div style="width:1px;height:16px;background:var(--color-border);"></div>
         <div class="ext-footer-item">
-            <span class="ext-footer-dot" style="background:#16a34a;"></span>
-            <span style="font-size:12.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalEntradas, 2, ',', '.') }}</span>
+            <span class="ext-footer-dot" style="background:var(--color-success);"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--color-success);">+ R$ {{ number_format($totalEntradas, 2, ',', '.') }}</span>
         </div>
     </div>
 
     @else
     <div style="text-align:center;padding:48px 20px;">
-        <div style="width:56px;height:56px;border-radius:14px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-            <i class="fa-solid fa-receipt" style="font-size:22px;color:#94a3b8;"></i>
+        <div style="width:56px;height:56px;border-radius:14px;background:var(--color-bg-inset);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-receipt" style="font-size:22px;color:var(--color-text-subtle);"></i>
         </div>
-        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhum lançamento encontrado</p>
-        <p style="font-size:12px;color:#94a3b8;">Use os botões acima para registrar movimentações.</p>
+        <p style="font-size:13px;font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">Nenhum lançamento encontrado</p>
+        <p style="font-size:12px;color:var(--color-text-subtle);">Use os botões acima para registrar movimentações.</p>
     </div>
     @endif
 
@@ -439,7 +439,7 @@
     <div style="width:56px;height:56px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:ld-spin 0.7s linear infinite;"></div>
     <div id="scan-loading-msg" style="color:#fff;font-weight:600;font-size:15px;text-align:center;max-width:260px;line-height:1.4;"></div>
 </div>
-<div id="scan-toast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:11px 22px;border-radius:8px;font-size:13px;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.35);max-width:340px;text-align:center;"></div>
+<div id="scan-toast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--color-text);color:var(--color-bg-card);padding:11px 22px;border-radius:8px;font-size:13px;z-index:600;box-shadow:0 4px 16px rgba(0,0,0,.35);max-width:340px;text-align:center;"></div>
 <style>@keyframes ld-spin { to { transform: rotate(360deg); } }</style>
 
 {{-- ═══════════════════════════════════════════════════════════════════════ --}}
@@ -455,13 +455,13 @@
         <div class="modal-body">
 
             {{-- Tabs Despesa / Receita --}}
-            <div style="display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:18px;">
+            <div style="display:flex;border-bottom:2px solid var(--color-border);margin-bottom:18px;">
                 <button type="button" id="tab-despesa" onclick="alternarTipo('despesa')"
                     style="padding:8px 20px;font-weight:600;font-size:13px;border:none;background:none;cursor:pointer;border-bottom:2px solid var(--color-primary);color:var(--color-primary);margin-bottom:-2px;">
                     <i class="fa-solid fa-arrow-trend-down"></i> Saída / Despesa
                 </button>
                 <button type="button" id="tab-receita" onclick="alternarTipo('receita')"
-                    style="padding:8px 20px;font-weight:600;font-size:13px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:#94a3b8;margin-bottom:-2px;">
+                    style="padding:8px 20px;font-weight:600;font-size:13px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-subtle);margin-bottom:-2px;">
                     <i class="fa-solid fa-arrow-trend-up"></i> Entrada / Receita
                 </button>
             </div>
@@ -511,8 +511,8 @@
 
                     {{-- Bloco cartão de crédito: aparece quando tipo = credito --}}
                     <div id="manual-info-cartao" style="display:none;grid-column:span 2;">
-                        <div id="manual-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;margin-bottom:10px;line-height:1.6;">
-                            <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                        <div id="manual-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:var(--color-warning-soft);border:1px solid var(--color-amber);font-size:12px;margin-bottom:10px;line-height:1.6;">
+                            <i class="fa-solid fa-credit-card" style="color:var(--color-amber);"></i>
                             <strong>Compra no Cartão de Crédito</strong><br>
                             <span id="manual-aviso-fatura-texto">Configure o dia de fechamento e vencimento do cartão nas configurações do banco para cálculo automático de faturas.</span>
                         </div>
@@ -523,8 +523,8 @@
                                        oninput="onParcelasLanc(this,'manual-aviso-fatura-texto','manual-banco')">
                             </div>
                             <div style="flex:1;">
-                                <label class="form-label" style="color:#64748b;font-size:11px;">Valor por parcela</label>
-                                <div id="manual-valor-parcela" style="padding:8px 12px;background:#f1f5f9;border-radius:6px;font-weight:700;color:#1e293b;font-size:13px;">—</div>
+                                <label class="form-label" style="color:var(--color-text-muted);font-size:11px;">Valor por parcela</label>
+                                <div id="manual-valor-parcela" style="padding:8px 12px;background:var(--color-bg-inset);border-radius:6px;font-weight:700;color:var(--color-text);font-size:13px;">—</div>
                             </div>
                         </div>
                     </div>
@@ -593,12 +593,12 @@
 <div class="modal-backdrop" id="modal-cupom">
     <div class="modal" style="max-width:580px;">
         <div class="modal-header">
-            <i class="fa-solid fa-receipt" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-receipt" style="color:var(--color-success);"></i>
             <h3>Confirmar Lançamento — Cupom/NF</h3>
             <button class="modal-close" onclick="closeModal('modal-cupom')">&times;</button>
         </div>
         <div class="modal-body">
-            <div id="scan-info-box" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;"></div>
+            <div id="scan-info-box" style="display:none;background:var(--color-success-soft);border:1px solid var(--color-success);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;"></div>
             <form method="POST" action="{{ route('despesas.store') }}" id="form-cupom">
                 @csrf
                 <input type="hidden" name="origem" value="ocr">
@@ -647,8 +647,8 @@
 
                     {{-- Bloco cartão de crédito (cupom) --}}
                     <div id="scan-info-cartao" style="display:none;grid-column:span 2;">
-                        <div id="scan-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;margin-bottom:10px;line-height:1.6;">
-                            <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                        <div id="scan-aviso-fatura" style="padding:10px 14px;border-radius:7px;background:var(--color-warning-soft);border:1px solid var(--color-amber);font-size:12px;margin-bottom:10px;line-height:1.6;">
+                            <i class="fa-solid fa-credit-card" style="color:var(--color-amber);"></i>
                             <strong>Compra no Cartão de Crédito</strong><br>
                             <span id="scan-aviso-fatura-texto">Configure o fechamento e vencimento do cartão nas configurações do banco.</span>
                         </div>
@@ -659,8 +659,8 @@
                                        oninput="onParcelasLanc(this,'scan-aviso-fatura-texto','scan-banco')">
                             </div>
                             <div style="flex:1;">
-                                <label class="form-label" style="color:#64748b;font-size:11px;">Valor por parcela</label>
-                                <div id="scan-valor-parcela" style="padding:8px 12px;background:#f1f5f9;border-radius:6px;font-weight:700;color:#1e293b;font-size:13px;">—</div>
+                                <label class="form-label" style="color:var(--color-text-muted);font-size:11px;">Valor por parcela</label>
+                                <div id="scan-valor-parcela" style="padding:8px 12px;background:var(--color-bg-inset);border-radius:6px;font-weight:700;color:var(--color-text);font-size:13px;">—</div>
                             </div>
                         </div>
                     </div>
@@ -684,7 +684,7 @@
 <div class="modal-backdrop" id="modal-importar">
     <div class="modal" style="max-width:700px;">
         <div class="modal-header">
-            <i class="fa-solid fa-file-arrow-up" style="color:#0891b2;"></i>
+            <i class="fa-solid fa-file-arrow-up" style="color:var(--color-info);"></i>
             <h3>Importar Extrato Bancário</h3>
             <button class="modal-close" onclick="fecharImportacao()">&times;</button>
         </div>
@@ -692,7 +692,7 @@
 
             {{-- Passo 1: Upload --}}
             <div id="import-step-1">
-                <p style="font-size:13px;color:#64748b;margin-bottom:16px;">
+                <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px;">
                     Selecione o banco de destino e faça upload do arquivo exportado pelo seu internet banking.<br>
                     <strong>Formatos suportados:</strong> OFX, OFC, QFX (Open Financial Exchange) e CSV.
                 </p>
@@ -709,7 +709,7 @@
                         <input type="file" id="import-arquivo" class="form-control" accept=".ofx,.ofc,.qfx,.csv,.txt">
                     </div>
                 </div>
-                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;font-size:11px;color:#1d4ed8;margin-bottom:16px;">
+                <div style="background:var(--color-info-soft);border:1px solid var(--color-info);border-radius:8px;padding:12px;font-size:11px;color:var(--color-info);margin-bottom:16px;">
                     <strong><i class="fa-solid fa-circle-info"></i> Como exportar o extrato:</strong><br>
                     • <strong>Bradesco / BB:</strong> Internet Banking → Extrato → Exportar OFX<br>
                     • <strong>Itaú:</strong> Itaú Online → Extrato → Baixar arquivo OFX<br>
@@ -718,7 +718,7 @@
                 </div>
                 <div style="text-align:right;">
                     <button type="button" onclick="fecharImportacao()" class="btn btn-secondary" style="margin-right:8px;">Cancelar</button>
-                    <button type="button" onclick="processarArquivo()" class="btn" style="background:#0891b2;color:#fff;"><i class="fa-solid fa-magnifying-glass"></i> Analisar Arquivo</button>
+                    <button type="button" onclick="processarArquivo()" class="btn" style="background:var(--color-info);color:#fff;"><i class="fa-solid fa-magnifying-glass"></i> Analisar Arquivo</button>
                 </div>
             </div>
 
@@ -727,16 +727,16 @@
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                     <div>
                         <div class="fw-600" style="font-size:14px;" id="import-resumo-texto"></div>
-                        <div style="font-size:11px;color:#64748b;margin-top:2px;">Marque as transações que deseja importar</div>
+                        <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">Marque as transações que deseja importar</div>
                     </div>
                     <div style="display:flex;gap:8px;">
                         <button type="button" onclick="selecionarTodos(true)" class="btn btn-secondary btn-sm">Selecionar Todos</button>
                         <button type="button" onclick="selecionarTodos(false)" class="btn btn-secondary btn-sm">Desmarcar Todos</button>
                     </div>
                 </div>
-                <div style="max-height:320px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;">
+                <div style="max-height:320px;overflow-y:auto;border:1px solid var(--color-border);border-radius:8px;">
                     <table class="table" style="margin:0;font-size:12px;">
-                        <thead style="position:sticky;top:0;background:#f8fafc;z-index:1;">
+                        <thead style="position:sticky;top:0;background:var(--color-bg-container);z-index:1;">
                             <tr>
                                 <th style="width:36px;"><input type="checkbox" id="check-all" onchange="selecionarTodos(this.checked)"></th>
                                 <th>Data</th>
@@ -754,7 +754,7 @@
                     <div id="import-campos-hidden"></div>
                     <div style="text-align:right;margin-top:16px;">
                         <button type="button" onclick="voltarImportacao()" class="btn btn-secondary" style="margin-right:8px;"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-                        <button type="submit" class="btn" style="background:#0891b2;color:#fff;" id="btn-confirmar-importacao">
+                        <button type="submit" class="btn" style="background:var(--color-info);color:#fff;" id="btn-confirmar-importacao">
                             <i class="fa-solid fa-file-import"></i> Importar Selecionados
                         </button>
                     </div>
@@ -777,7 +777,7 @@ function alternarTipo(tipo) {
     const formD = document.getElementById('form-despesa');
     const formR = document.getElementById('form-receita');
     const ativo = 'border-bottom:2px solid var(--color-primary);color:var(--color-primary);margin-bottom:-2px;';
-    const inativo = 'border-bottom:2px solid transparent;color:#94a3b8;margin-bottom:-2px;';
+    const inativo = 'border-bottom:2px solid transparent;color:var(--color-text-subtle);margin-bottom:-2px;';
     tabD.style.cssText += tipo === 'despesa' ? ativo : inativo;
     tabR.style.cssText += tipo === 'receita' ? ativo : inativo;
     formD.style.display = tipo === 'despesa' ? '' : 'none';
@@ -843,12 +843,12 @@ function preencherModalCupom(d) {
     document.getElementById('scan-numero-documento').value = d.numero_cupom || '';
 
     const infoBox = document.getElementById('scan-info-box');
-    let html = '<div style="font-weight:700;color:#15803d;margin-bottom:6px;"><i class="fa-solid fa-circle-check"></i> Dados detectados automaticamente</div>';
-    if (d.estabelecimento) html += `<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;margin-right:6px;">${d.estabelecimento}</span>`;
-    if (d.cnpj)            html += `<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:12px;margin-right:6px;">CNPJ: ${d.cnpj}</span>`;
-    if (d.numero_cupom)    html += `<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:12px;margin-right:6px;">Nº ${d.numero_cupom}</span>`;
-    if (d.forma_pagamento) html += `<span style="background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:12px;">${d.forma_pagamento}</span>`;
-    if (d.itens?.length)   html += `<div style="margin-top:8px;border-top:1px solid #bbf7d0;padding-top:8px;"><strong>Itens:</strong> ${d.itens.slice(0,5).join(', ')}</div>`;
+    let html = '<div style="font-weight:700;color:var(--color-success);margin-bottom:6px;"><i class="fa-solid fa-circle-check"></i> Dados detectados automaticamente</div>';
+    if (d.estabelecimento) html += `<span style="background:var(--color-success-soft);color:var(--color-success);padding:2px 8px;border-radius:12px;margin-right:6px;">${d.estabelecimento}</span>`;
+    if (d.cnpj)            html += `<span style="background:var(--color-bg-inset);color:var(--color-text-muted);padding:2px 8px;border-radius:12px;margin-right:6px;">CNPJ: ${d.cnpj}</span>`;
+    if (d.numero_cupom)    html += `<span style="background:var(--color-bg-inset);color:var(--color-text-muted);padding:2px 8px;border-radius:12px;margin-right:6px;">Nº ${d.numero_cupom}</span>`;
+    if (d.forma_pagamento) html += `<span style="background:var(--color-violet-soft);color:var(--color-violet);padding:2px 8px;border-radius:12px;">${d.forma_pagamento}</span>`;
+    if (d.itens?.length)   html += `<div style="margin-top:8px;border-top:1px solid var(--color-success);padding-top:8px;"><strong>Itens:</strong> ${d.itens.slice(0,5).join(', ')}</div>`;
     infoBox.innerHTML = html;
     infoBox.style.display = '';
 
@@ -913,9 +913,9 @@ function renderizarPreview(lista, total) {
     tbody.innerHTML = '';
 
     lista.forEach((t, i) => {
-        const cor  = t.tipo === 'credito' ? '#16a34a' : '#dc2626';
+        const cor  = t.tipo === 'credito' ? 'var(--color-success)' : 'var(--color-danger)';
         const sinal = t.tipo === 'credito' ? '+' : '-';
-        const tipoLabel = t.tipo === 'credito' ? '<span style="color:#16a34a;font-weight:600;">Entrada</span>' : '<span style="color:#dc2626;font-weight:600;">Saída</span>';
+        const tipoLabel = t.tipo === 'credito' ? '<span style="color:var(--color-success);font-weight:600;">Entrada</span>' : '<span style="color:var(--color-danger);font-weight:600;">Saída</span>';
         tbody.innerHTML += `
         <tr>
             <td><input type="checkbox" name="check_${i}" checked data-idx="${i}"></td>

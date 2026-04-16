@@ -11,13 +11,13 @@
 </style>
 
 {{-- Total Aportado — linha própria --}}
-<div class="card" style="padding:16px 20px;margin-bottom:14px;border-left:4px solid #d97706;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+<div class="card" style="padding:16px 20px;margin-bottom:14px;border-left:4px solid var(--color-amber);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
     <div>
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Total Aportado</div>
-        <div style="font-size:24px;font-weight:700;color:#d97706;">R$ {{ number_format($totalAportado, 2, ',', '.') }}</div>
+        <div style="font-size:24px;font-weight:700;color:var(--color-amber);">R$ {{ number_format($totalAportado, 2, ',', '.') }}</div>
     </div>
-    <div style="font-size:12px;color:var(--color-text-muted);background:#fef3c7;padding:6px 12px;border-radius:20px;font-weight:600;">
-        <i class="fa-solid fa-seedling" style="color:#d97706;"></i>
+    <div style="font-size:12px;color:var(--color-text-muted);background:var(--color-warning-soft);padding:6px 12px;border-radius:20px;font-weight:600;">
+        <i class="fa-solid fa-seedling" style="color:var(--color-amber);"></i>
         {{ $investimentos->count() }} ativo{{ $investimentos->count() !== 1 ? 's' : '' }} na carteira
     </div>
 </div>
@@ -27,7 +27,7 @@
 
     <div class="card" style="padding:16px 18px;">
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Valor Atual</div>
-        <div style="font-size:22px;font-weight:700;color:{{ $totalAtual >= $totalAportado ? '#16a34a' : '#dc2626' }};">
+        <div style="font-size:22px;font-weight:700;color:{{ $totalAtual >= $totalAportado ? 'var(--color-success)' : 'var(--color-danger)' }};">
             R$ {{ number_format($totalAtual, 2, ',', '.') }}
         </div>
         <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">Posição consolidada</div>
@@ -35,10 +35,10 @@
 
     <div class="card" style="padding:16px 18px;">
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Rendimento Total</div>
-        <div style="font-size:22px;font-weight:700;color:{{ $ganhoTotal >= 0 ? '#16a34a' : '#dc2626' }};">
+        <div style="font-size:22px;font-weight:700;color:{{ $ganhoTotal >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }};">
             {{ $ganhoTotal >= 0 ? '+' : '' }}R$ {{ number_format(abs($ganhoTotal), 2, ',', '.') }}
         </div>
-        <div style="font-size:11px;color:{{ $ganhoPercent >= 0 ? '#16a34a' : '#dc2626' }};margin-top:2px;font-weight:600;">
+        <div style="font-size:11px;color:{{ $ganhoPercent >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }};margin-top:2px;font-weight:600;">
             <i class="fa-solid {{ $ganhoPercent >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down' }}"></i>
             {{ $ganhoPercent >= 0 ? '+' : '' }}{{ number_format(abs($ganhoPercent), 2, ',', '.') }}%
         </div>
@@ -49,7 +49,7 @@
     <div class="card" style="padding:16px 18px;">
         <div style="font-size:11px;font-weight:600;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Melhor Ativo</div>
         <div style="font-size:14px;font-weight:700;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $melhor->nome_ativo }}</div>
-        <div style="font-size:13px;color:#16a34a;margin-top:2px;font-weight:600;">
+        <div style="font-size:13px;color:var(--color-success);margin-top:2px;font-weight:600;">
             {{ $melhor->ganho_percentual >= 0 ? '+' : '' }}{{ number_format($melhor->ganho_percentual, 2, ',', '.') }}%
         </div>
     </div>
@@ -75,7 +75,7 @@
 @if($investimentos->isEmpty())
 <div class="card">
     <div class="empty-state">
-        <i class="fa-solid fa-seedling" style="color:#d97706;"></i>
+        <i class="fa-solid fa-seedling" style="color:var(--color-amber);"></i>
         <p>Nenhum investimento registrado ainda.<br>Comece adicionando seu primeiro ativo!</p>
     </div>
 </div>
@@ -86,8 +86,8 @@
 @foreach($investimentos as $inv)
 @php
     $positivo     = $inv->ganho_reais >= 0;
-    $corGanho     = $positivo ? '#16a34a' : '#dc2626';
-    $bgGanho      = $positivo ? '#f0fdf4' : '#fef2f2';
+    $corGanho     = $positivo ? 'var(--color-success)' : 'var(--color-danger)';
+    $bgGanho      = $positivo ? 'var(--color-success-soft)' : 'var(--color-danger-soft)';
     $iconeGanho   = $positivo ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
     $tipoIcone    = match(true) {
         str_contains(strtolower($inv->tipo_investimento), 'tesouro')   => 'fa-landmark',
@@ -109,8 +109,8 @@
     {{-- Header do card --}}
     <div style="padding:16px 18px 12px;border-bottom:1px solid var(--color-border);">
         <div style="display:flex;align-items:flex-start;gap:12px;">
-            <span style="display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:#fef3c7;flex-shrink:0;">
-                <i class="fa-solid {{ $tipoIcone }}" style="color:#d97706;font-size:17px;"></i>
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:var(--color-warning-soft);flex-shrink:0;">
+                <i class="fa-solid {{ $tipoIcone }}" style="color:var(--color-amber);font-size:17px;"></i>
             </span>
             <div style="flex:1;min-width:0;">
                 <div style="font-weight:700;font-size:15px;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -122,7 +122,7 @@
                     <span style="font-size:11px;color:var(--color-text-subtle);"><i class="fa-solid fa-building-columns" style="font-size:9px;"></i> {{ $inv->banco->nome }}</span>
                     @endif
                     @if($inv->percentual_mensal)
-                    <span style="font-size:11px;color:#16a34a;font-weight:600;" title="Taxa mensal configurada">
+                    <span style="font-size:11px;color:var(--color-success);font-weight:600;" title="Taxa mensal configurada">
                         <i class="fa-solid fa-percent" style="font-size:9px;"></i> {{ number_format($inv->percentual_mensal, 2, ',', '.') }}%/mês
                     </span>
                     @endif
@@ -206,7 +206,7 @@
             <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--color-bg);border-radius:6px;font-size:11px;">
                 <span style="color:var(--color-text-muted);white-space:nowrap;">{{ $rend->data->format('d/m/Y') }}</span>
                 <span style="font-weight:600;color:var(--color-text);flex:1;">R$ {{ number_format($rend->valor_atual, 2, ',', '.') }}</span>
-                <span style="font-weight:600;color:{{ $varRend >= 0 ? '#16a34a' : '#dc2626' }};">
+                <span style="font-weight:600;color:{{ $varRend >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }};">
                     {{ $varRend >= 0 ? '+' : '' }}{{ number_format($varRend, 2, ',', '.') }}%
                 </span>
                 @if($rend->observacoes)
@@ -215,7 +215,7 @@
                 @if(Auth::user()->temPermissao('investimentos', 'excluir'))
                 <form method="POST" action="{{ route('investimentos.rendimentos.destroy', [$inv, $rend]) }}" onsubmit="return confirm('Excluir este registro?')" style="display:inline;">
                     @csrf @method('DELETE')
-                    <button type="submit" style="background:none;border:none;cursor:pointer;color:#dc2626;padding:0;line-height:1;" title="Excluir">
+                    <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--color-danger);padding:0;line-height:1;" title="Excluir">
                         <i class="fa-solid fa-times" style="font-size:10px;"></i>
                     </button>
                 </form>
@@ -244,7 +244,7 @@
 <div class="modal-backdrop" id="modal-novo-investimento">
     <div class="modal" style="max-width:520px;">
         <div class="modal-header">
-            <i class="fa-solid fa-seedling" style="color:#d97706;"></i>
+            <i class="fa-solid fa-seedling" style="color:var(--color-amber);"></i>
             <h3>Novo Investimento</h3>
             <button class="modal-close" onclick="closeModal('modal-novo-investimento')">&times;</button>
         </div>
@@ -317,7 +317,7 @@
 <div class="modal-backdrop" id="modal-editar-investimento">
     <div class="modal" style="max-width:520px;">
         <div class="modal-header">
-            <i class="fa-solid fa-pen" style="color:#d97706;"></i>
+            <i class="fa-solid fa-pen" style="color:var(--color-amber);"></i>
             <h3>Editar Investimento</h3>
             <button class="modal-close" onclick="closeModal('modal-editar-investimento')">&times;</button>
         </div>
@@ -382,7 +382,7 @@
 <div class="modal-backdrop" id="modal-rendimento">
     <div class="modal" style="max-width:420px;">
         <div class="modal-header">
-            <i class="fa-solid fa-chart-line" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-chart-line" style="color:var(--color-success);"></i>
             <h3>Registrar Rendimento</h3>
             <button class="modal-close" onclick="closeModal('modal-rendimento')">&times;</button>
         </div>
@@ -391,7 +391,7 @@
                 @csrf
                 <div style="display:flex;flex-direction:column;gap:12px;">
 
-                    <div style="padding:8px 12px;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;font-size:12px;color:#166534;">
+                    <div style="padding:8px 12px;background:var(--color-success-soft);border-radius:6px;border:1px solid var(--color-success);font-size:12px;color:var(--color-success);">
                         <i class="fa-solid fa-seedling"></i>
                         <strong id="rend-nome-ativo">—</strong>
                         &nbsp;·&nbsp; Valor atual: <strong id="rend-valor-atual-label">—</strong>
@@ -406,11 +406,11 @@
                         <label class="form-label">Como deseja registrar? *</label>
                         <div style="display:flex;gap:8px;">
                             <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border:2px solid var(--color-border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s;" id="lbl-tipo-valor">
-                                <input type="radio" name="tipo_entrada" value="valor" checked onchange="onTipoRendChange()" style="accent-color:#16a34a;">
+                                <input type="radio" name="tipo_entrada" value="valor" checked onchange="onTipoRendChange()" style="accent-color:var(--color-success);">
                                 <span><strong>Valor atual</strong><br><small style="color:var(--color-text-muted);">Ex: R$ 5.450,00</small></span>
                             </label>
                             <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border:2px solid var(--color-border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s;" id="lbl-tipo-percentual">
-                                <input type="radio" name="tipo_entrada" value="percentual" onchange="onTipoRendChange()" style="accent-color:#16a34a;">
+                                <input type="radio" name="tipo_entrada" value="percentual" onchange="onTipoRendChange()" style="accent-color:var(--color-success);">
                                 <span><strong>Variação %</strong><br><small style="color:var(--color-text-muted);">Ex: +1,2%</small></span>
                             </label>
                         </div>
@@ -427,7 +427,7 @@
                             <input type="number" name="percentual" id="rend-percentual" step="0.01" min="-100" max="1000" class="form-control" placeholder="Ex: 1.20" oninput="calcularPreviewRendimento()">
                             <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--color-text-muted);">%</span>
                         </div>
-                        <div id="rend-preview" style="display:none;margin-top:6px;padding:6px 10px;background:#f0fdf4;border-radius:6px;font-size:12px;color:#166534;font-weight:600;"></div>
+                        <div id="rend-preview" style="display:none;margin-top:6px;padding:6px 10px;background:var(--color-success-soft);border-radius:6px;font-size:12px;color:var(--color-success);font-weight:600;"></div>
                     </div>
 
                     <div class="form-group">
@@ -437,7 +437,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeModal('modal-rendimento')" class="btn btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn" style="background:#16a34a;color:#fff;"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+                    <button type="submit" class="btn" style="background:var(--color-success);color:#fff;"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
                 </div>
             </form>
         </div>
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!canvas || data.labels.length < 2) return;
 
         const positivo = data.ganho >= 0;
-        const cor      = positivo ? '#16a34a' : '#dc2626';
+        const cor      = positivo ? 'var(--color-success)' : 'var(--color-danger)';
         const corBg    = positivo ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.08)';
 
         new Chart(canvas, {
@@ -539,8 +539,8 @@ function onTipoRendChange() {
     document.getElementById('campo-valor-atual').style.display  = tipo === 'valor'      ? '' : 'none';
     document.getElementById('campo-percentual').style.display   = tipo === 'percentual' ? '' : 'none';
     // Destaque visual nas labels
-    document.getElementById('lbl-tipo-valor').style.borderColor      = tipo === 'valor'      ? '#16a34a' : 'var(--color-border)';
-    document.getElementById('lbl-tipo-percentual').style.borderColor = tipo === 'percentual' ? '#16a34a' : 'var(--color-border)';
+    document.getElementById('lbl-tipo-valor').style.borderColor      = tipo === 'valor'      ? 'var(--color-success)' : 'var(--color-border)';
+    document.getElementById('lbl-tipo-percentual').style.borderColor = tipo === 'percentual' ? 'var(--color-success)' : 'var(--color-border)';
     if (tipo === 'percentual') calcularPreviewRendimento();
 }
 
@@ -552,8 +552,8 @@ function calcularPreviewRendimento() {
     const novoValor = rendValorAtualBase * (1 + pct / 100);
     const ganho     = novoValor - rendValorAtualBase;
     preview.style.display = '';
-    preview.style.background = ganho >= 0 ? '#f0fdf4' : '#fef2f2';
-    preview.style.color      = ganho >= 0 ? '#166534' : '#991b1b';
+    preview.style.background = ganho >= 0 ? 'var(--color-success-soft)' : 'var(--color-danger-soft)';
+    preview.style.color      = ganho >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
     preview.textContent = `Novo valor: R$ ${novoValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})} (${ganho >= 0 ? '+' : ''}R$ ${ganho.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})})`;
 }
 

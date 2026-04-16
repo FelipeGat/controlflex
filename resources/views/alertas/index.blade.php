@@ -6,10 +6,10 @@
 
 @php
 $config = [
-    'critico'      => ['cor' => '#ef4444', 'bg' => '#fef2f2', 'borda' => '#fca5a5', 'label' => 'Crítico'],
-    'atencao'      => ['cor' => '#f59e0b', 'bg' => '#fffbeb', 'borda' => '#fcd34d', 'label' => 'Atenção'],
-    'info'         => ['cor' => '#3b82f6', 'bg' => '#eff6ff', 'borda' => '#93c5fd', 'label' => 'Informativo'],
-    'oportunidade' => ['cor' => '#16a34a', 'bg' => '#f0fdf4', 'borda' => '#86efac', 'label' => 'Oportunidade'],
+    'critico'      => ['cor' => 'var(--color-danger)',  'bg' => 'var(--color-danger-soft)',  'borda' => 'var(--color-danger)',  'label' => 'Crítico'],
+    'atencao'      => ['cor' => 'var(--color-amber)',   'bg' => 'var(--color-warning-soft)', 'borda' => 'var(--color-amber)',   'label' => 'Atenção'],
+    'info'         => ['cor' => 'var(--color-info)',    'bg' => 'var(--color-info-soft)',    'borda' => 'var(--color-info)',    'label' => 'Informativo'],
+    'oportunidade' => ['cor' => 'var(--color-success)', 'bg' => 'var(--color-success-soft)', 'borda' => 'var(--color-success)', 'label' => 'Oportunidade'],
 ];
 @endphp
 
@@ -18,9 +18,9 @@ $config = [
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(min(180px,100%), 1fr)); gap:12px; margin-bottom:20px;">
     {{-- Saldo projetado --}}
-    <div style="background:#fff; border-radius:12px; padding:16px 20px; border:1px solid {{ $resumo['saldo_projetado'] < 0 ? '#fca5a5' : '#e2e8f0' }};">
-        <div style="font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Saldo projetado</div>
-        <div style="font-size:22px; font-weight:800; color:{{ $resumo['saldo_projetado'] < 0 ? '#ef4444' : '#16a34a' }};">
+    <div style="background:var(--color-bg-card); border-radius:12px; padding:16px 20px; border:1px solid {{ $resumo['saldo_projetado'] < 0 ? 'var(--color-danger)' : 'var(--color-border)' }};">
+        <div style="font-size:11px; color:var(--color-text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Saldo projetado</div>
+        <div style="font-size:22px; font-weight:800; color:{{ $resumo['saldo_projetado'] < 0 ? 'var(--color-danger)' : 'var(--color-success)' }};">
             R$ {{ number_format($resumo['saldo_projetado'], 2, ',', '.') }}
         </div>
     </div>
@@ -28,9 +28,9 @@ $config = [
     {{-- Tendência --}}
     @php
         $tendCor = match($resumo['tendencia']) {
-            'POSITIVA' => '#16a34a',
-            'NEGATIVA' => '#ef4444',
-            default    => '#64748b',
+            'POSITIVA' => 'var(--color-success)',
+            'NEGATIVA' => 'var(--color-danger)',
+            default    => 'var(--color-text-muted)',
         };
         $tendIcone = match($resumo['tendencia']) {
             'POSITIVA' => 'fa-arrow-trend-up',
@@ -38,8 +38,8 @@ $config = [
             default    => 'fa-minus',
         };
     @endphp
-    <div style="background:#fff; border-radius:12px; padding:16px 20px; border:1px solid #e2e8f0;">
-        <div style="font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Tendência</div>
+    <div style="background:var(--color-bg-card); border-radius:12px; padding:16px 20px; border:1px solid var(--color-border);">
+        <div style="font-size:11px; color:var(--color-text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Tendência</div>
         <div style="font-size:22px; font-weight:800; color:{{ $tendCor }}; display:flex; align-items:center; gap:8px;">
             <i class="fa-solid {{ $tendIcone }}" style="font-size:18px;"></i>
             {{ $resumo['tendencia'] }}
@@ -47,22 +47,22 @@ $config = [
     </div>
 
     {{-- Alertas críticos --}}
-    <div style="background:#fff; border-radius:12px; padding:16px 20px; border:1px solid {{ $resumo['alertas_criticos'] > 0 ? '#fca5a5' : '#e2e8f0' }};">
-        <div style="font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Alertas críticos</div>
-        <div style="font-size:22px; font-weight:800; color:{{ $resumo['alertas_criticos'] > 0 ? '#ef4444' : '#16a34a' }};">
+    <div style="background:var(--color-bg-card); border-radius:12px; padding:16px 20px; border:1px solid {{ $resumo['alertas_criticos'] > 0 ? 'var(--color-danger)' : 'var(--color-border)' }};">
+        <div style="font-size:11px; color:var(--color-text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Alertas críticos</div>
+        <div style="font-size:22px; font-weight:800; color:{{ $resumo['alertas_criticos'] > 0 ? 'var(--color-danger)' : 'var(--color-success)' }};">
             {{ $resumo['alertas_criticos'] }}
         </div>
     </div>
 
     {{-- Score financeiro --}}
     @php
-        $scoreCor = $resumo['score'] >= 70 ? '#16a34a' : ($resumo['score'] >= 40 ? '#f59e0b' : '#ef4444');
+        $scoreCor = $resumo['score'] >= 70 ? 'var(--color-success)' : ($resumo['score'] >= 40 ? 'var(--color-amber)' : 'var(--color-danger)');
     @endphp
-    <div style="background:#fff; border-radius:12px; padding:16px 20px; border:1px solid #e2e8f0;">
-        <div style="font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Score financeiro</div>
+    <div style="background:var(--color-bg-card); border-radius:12px; padding:16px 20px; border:1px solid var(--color-border);">
+        <div style="font-size:11px; color:var(--color-text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;">Score financeiro</div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-size:22px; font-weight:800; color:{{ $scoreCor }};">{{ $resumo['score'] }}<span style="font-size:14px; font-weight:600; color:#94a3b8;">/100</span></div>
-            <div style="flex:1; height:8px; background:#f1f5f9; border-radius:99px; overflow:hidden;">
+            <div style="font-size:22px; font-weight:800; color:{{ $scoreCor }};">{{ $resumo['score'] }}<span style="font-size:14px; font-weight:600; color:var(--color-text-subtle);">/100</span></div>
+            <div style="flex:1; height:8px; background:var(--color-bg-inset); border-radius:99px; overflow:hidden;">
                 <div style="width:{{ $resumo['score'] }}%; height:100%; background:{{ $scoreCor }}; border-radius:99px; transition:width .6s;"></div>
             </div>
         </div>
@@ -133,13 +133,13 @@ $config = [
         margin: 0 0 6px;
         font-size: 18px;
         font-weight: 800;
-        color: #1e293b;
+        color: var(--color-text);
     }
 
     .alerta-principal-descricao {
         margin: 0 0 4px;
         font-size: 14px;
-        color: #475569;
+        color: var(--color-text-muted);
         line-height: 1.5;
     }
 
@@ -153,7 +153,7 @@ $config = [
     .alerta-principal-previsao {
         margin: 4px 0 0;
         font-size: 12px;
-        color: #64748b;
+        color: var(--color-text-muted);
         font-style: italic;
     }
 
@@ -232,7 +232,7 @@ $config = [
 
 @if($alertaPrincipal)
 @php $cp = $config[$alertaPrincipal['tipo']] ?? $config['critico']; @endphp
-<div class="alerta-principal" style="--cor: {{ $cp['cor'] }}; --cor-10: {{ $cp['cor'] }}10; --cor-08: {{ $cp['cor'] }}08;">
+<div class="alerta-principal" style="--cor: {{ $cp['cor'] }}; --cor-10: {{ $cp['bg'] }}; --cor-08: {{ $cp['bg'] }};">
     <div class="alerta-principal-icone">
         <i class="fa-solid {{ $alertaPrincipal['icone'] }}"></i>
     </div>
@@ -259,30 +259,30 @@ $config = [
 {{-- 3. FILTROS POR INTENÇÃO --}}
 {{-- ═══════════════════════════════════════════════════════════════════ --}}
 <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; justify-content:center;">
-    <span style="font-size:12px; color:#94a3b8; font-weight:600; margin-right:4px;">FILTRAR:</span>
+    <span style="font-size:12px; color:var(--color-text-subtle); font-weight:600; margin-right:4px;">FILTRAR:</span>
 
     <button onclick="filtrar('todos')" id="filtro-todos"
-            style="border:1px solid #cbd5e1; background:#1e293b; color:#fff; padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="border:1px solid var(--color-border); background:var(--color-text); color:var(--color-bg-card); padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
         Todos ({{ $contadores['total'] }})
     </button>
 
     <button onclick="filtrar('resolver')" id="filtro-resolver"
-            style="border:1px solid #fca5a5; background:#fef2f2; color:#ef4444; padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="border:1px solid var(--color-danger); background:var(--color-danger-soft); color:var(--color-danger); padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
         <i class="fa-solid fa-bolt" style="font-size:10px; margin-right:3px;"></i>Resolver agora ({{ $alertas->where('intencao', 'resolver')->count() }})
     </button>
 
     <button onclick="filtrar('economizar')" id="filtro-economizar"
-            style="border:1px solid #86efac; background:#f0fdf4; color:#16a34a; padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="border:1px solid var(--color-success); background:var(--color-success-soft); color:var(--color-success); padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
         <i class="fa-solid fa-piggy-bank" style="font-size:10px; margin-right:3px;"></i>Economizar ({{ $alertas->where('intencao', 'economizar')->count() }})
     </button>
 
     <button onclick="filtrar('entender')" id="filtro-entender"
-            style="border:1px solid #93c5fd; background:#eff6ff; color:#3b82f6; padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="border:1px solid var(--color-info); background:var(--color-info-soft); color:var(--color-info); padding:6px 14px; border-radius:99px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;">
         <i class="fa-solid fa-magnifying-glass" style="font-size:10px; margin-right:3px;"></i>Entender gastos ({{ $alertas->where('intencao', 'entender')->count() }})
     </button>
 
     {{-- Pills de tipo --}}
-    <span style="width:1px; height:20px; background:#e2e8f0; margin:0 4px;"></span>
+    <span style="width:1px; height:20px; background:var(--color-border); margin:0 4px;"></span>
     @foreach(['critico','atencao','info','oportunidade'] as $tipo)
     @if($contadores[$tipo] > 0)
     <button onclick="filtrarTipo('{{ $tipo }}')" id="tipo-{{ $tipo }}"
@@ -299,8 +299,8 @@ $config = [
 @if($alertas->isEmpty())
 <div class="card text-center" style="padding: 40px 20px;">
     <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
-    <h3 style="color:#16a34a; font-size:18px; margin-bottom:6px;">Tudo em ordem!</h3>
-    <p style="color:#64748b; font-size:14px;">Nenhum alerta financeiro identificado para o período atual.</p>
+    <h3 style="color:var(--color-success); font-size:18px; margin-bottom:6px;">Tudo em ordem!</h3>
+    <p style="color:var(--color-text-muted); font-size:14px;">Nenhum alerta financeiro identificado para o período atual.</p>
 </div>
 @else
 
@@ -313,7 +313,7 @@ $config = [
     }
 
     .alerta-card {
-        background: #fff;
+        background: var(--color-bg-card);
         border-radius: 12px;
         overflow: hidden;
         transition: all .2s;
@@ -367,7 +367,7 @@ $config = [
     .alerta-titulo {
         font-size: 13px;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--color-text);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -375,7 +375,7 @@ $config = [
 
     .alerta-descricao {
         font-size: 12px;
-        color: #64748b;
+        color: var(--color-text-muted);
         margin: 0 0 6px;
         line-height: 1.5;
     }
@@ -394,13 +394,13 @@ $config = [
 
     .alerta-previsao {
         font-size: 11px;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
         font-style: italic;
     }
 
     .alerta-chevron {
         font-size: 10px;
-        color: #94a3b8;
+        color: var(--color-text-subtle);
         flex-shrink: 0;
         margin-top: 4px;
         transition: .2s;
@@ -420,7 +420,7 @@ $config = [
     .alerta-detalhes ul {
         margin: 0;
         padding-left: 14px;
-        color: #475569;
+        color: var(--color-text-muted);
         font-size: 11px;
         line-height: 1.9;
     }
@@ -466,7 +466,7 @@ $config = [
 
         {{-- Header --}}
         <div class="alerta-header" onclick="toggleAlerta('det-{{ $alerta['id'] }}')">
-            <div class="alerta-icone" style="background:{{ $c['cor'] }}15;">
+            <div class="alerta-icone" style="background:{{ $c['bg'] }};">
                 <i class="fa-solid {{ $alerta['icone'] }}" style="font-size:14px; color:{{ $c['cor'] }};"></i>
             </div>
             <div class="alerta-conteudo">
@@ -514,7 +514,7 @@ $config = [
 @if($alertas->count() > 8)
 <div id="ver-todos-wrap" style="text-align:center; margin-top:16px;">
     <button onclick="mostrarTodos()" id="btn-ver-todos"
-            style="background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; padding:10px 24px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="background:var(--color-bg-container); border:1px solid var(--color-border); color:var(--color-text-muted); padding:10px 24px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;">
         <i class="fa-solid fa-chevron-down" style="margin-right:6px;"></i>
         Ver todos os alertas ({{ $alertas->count() - 1 }} restantes)
     </button>
@@ -524,9 +524,9 @@ $config = [
 @endif
 
 {{-- Rodapé --}}
-<div style="margin-top:20px; padding:10px 16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; display:flex; align-items:center; gap:10px;">
-    <i class="fa-solid fa-robot" style="color:#94a3b8; font-size:13px;"></i>
-    <span style="font-size:12px; color:#64748b; flex:1;">Consultor financeiro automático — alertas calculados em tempo real com base nos seus lançamentos.</span>
+<div style="margin-top:20px; padding:10px 16px; background:var(--color-bg-container); border-radius:8px; border:1px solid var(--color-border); display:flex; align-items:center; gap:10px;">
+    <i class="fa-solid fa-robot" style="color:var(--color-text-subtle); font-size:13px;"></i>
+    <span style="font-size:12px; color:var(--color-text-muted); flex:1;">Consultor financeiro automático — alertas calculados em tempo real com base nos seus lançamentos.</span>
     <a href="{{ route('alertas.index') }}" class="btn btn-secondary btn-sm" style="font-size:11px; padding:4px 10px;">
         <i class="fa-solid fa-rotate-right me-1"></i> Atualizar
     </a>
@@ -537,17 +537,17 @@ let filtroAtual = 'todos';
 let tipoAtual = null;
 
 const filtrosBtns = {
-    todos:      { bg: '#1e293b', cor: '#fff', border: '#1e293b' },
-    resolver:   { bg: '#ef4444', cor: '#fff', border: '#ef4444' },
-    economizar: { bg: '#16a34a', cor: '#fff', border: '#16a34a' },
-    entender:   { bg: '#3b82f6', cor: '#fff', border: '#3b82f6' },
+    todos:      { bg: 'var(--color-text)',    cor: 'var(--color-bg-card)', border: 'var(--color-text)' },
+    resolver:   { bg: 'var(--color-danger)',  cor: '#fff', border: 'var(--color-danger)' },
+    economizar: { bg: 'var(--color-success)', cor: '#fff', border: 'var(--color-success)' },
+    entender:   { bg: 'var(--color-info)',    cor: '#fff', border: 'var(--color-info)' },
 };
 
 const filtrosDefault = {
-    todos:      { bg: '#1e293b', cor: '#fff', border: '#cbd5e1' },
-    resolver:   { bg: '#fef2f2', cor: '#ef4444', border: '#fca5a5' },
-    economizar: { bg: '#f0fdf4', cor: '#16a34a', border: '#86efac' },
-    entender:   { bg: '#eff6ff', cor: '#3b82f6', border: '#93c5fd' },
+    todos:      { bg: 'var(--color-text)',         cor: 'var(--color-bg-card)', border: 'var(--color-border)' },
+    resolver:   { bg: 'var(--color-danger-soft)',  cor: 'var(--color-danger)',  border: 'var(--color-danger)' },
+    economizar: { bg: 'var(--color-success-soft)', cor: 'var(--color-success)', border: 'var(--color-success)' },
+    entender:   { bg: 'var(--color-info-soft)',    cor: 'var(--color-info)',    border: 'var(--color-info)' },
 };
 
 const configCores = @json($config);

@@ -11,17 +11,17 @@
 .fc-atalho-btn {
     display:inline-flex; align-items:center; gap:6px;
     padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700;
-    text-decoration:none; border:1px solid #e2e8f0;
+    text-decoration:none; border:1px solid var(--color-border);
     transition:all .15s; white-space:nowrap;
 }
 .fc-atalho-btn.ativo { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
-.fc-atalho-btn:not(.ativo) { background:#fff; color:#64748b; }
-.fc-atalho-btn:not(.ativo):hover { background:#f8fafc; }
+.fc-atalho-btn:not(.ativo) { background:var(--color-bg-card); color:var(--color-text-muted); }
+.fc-atalho-btn:not(.ativo):hover { background:var(--color-bg-container); }
 .fc-custom { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .fc-periodo-label {
     display:flex; align-items:center; gap:6px;
-    font-size:11px; color:#94a3b8; padding-top:8px;
-    border-top:1px solid #f1f5f9; margin-top:10px;
+    font-size:11px; color:var(--color-text-subtle); padding-top:8px;
+    border-top:1px solid var(--color-border); margin-top:10px;
 }
 @media (max-width:640px) {
     .fc-filtro { flex-direction:column; align-items:stretch; }
@@ -54,7 +54,7 @@
             <div class="fc-custom">
                 <input type="date" name="inicio" value="{{ $inicio }}" class="form-control"
                        style="max-width:138px;font-size:12px;">
-                <span style="color:#94a3b8;font-size:13px;">→</span>
+                <span style="color:var(--color-text-subtle);font-size:13px;">→</span>
                 <input type="date" name="fim" value="{{ $fim }}" class="form-control"
                        style="max-width:138px;font-size:12px;">
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -67,12 +67,12 @@
 
     {{-- Período ativo exibido --}}
     <div class="fc-periodo-label">
-        <i class="fa-regular fa-calendar" style="color:#cbd5e1;"></i>
+        <i class="fa-regular fa-calendar" style="color:var(--color-text-faint);"></i>
         {{ \Carbon\Carbon::parse($inicio)->locale('pt_BR')->isoFormat('D [de] MMMM') }}
-        <span style="color:#cbd5e1;">→</span>
+        <span style="color:var(--color-text-faint);">→</span>
         {{ \Carbon\Carbon::parse($fim)->locale('pt_BR')->isoFormat('D [de] MMMM [de] YYYY') }}
         @if(in_array($periodo, ['semana','mes']))
-        <span style="background:{{ $periodo === 'semana' ? '#ede9fe' : '#dbeafe' }};color:{{ $periodo === 'semana' ? '#7c3aed' : '#1d4ed8' }};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:4px;">
+        <span style="background:{{ $periodo === 'semana' ? 'var(--color-violet-soft)' : 'var(--color-info-soft)' }};color:{{ $periodo === 'semana' ? 'var(--color-violet)' : 'var(--color-info)' }};font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px;margin-left:4px;">
             {{ $periodo === 'semana' ? 'Esta Semana' : 'Este Mês' }}
         </span>
         @endif
@@ -82,27 +82,27 @@
 {{-- ─── KPIs ──────────────────────────────────────────────────────────────── --}}
 <div class="fc-kpi-grid">
 
-    <div class="card" style="border-top:3px solid #16a34a;">
-        <div class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i> A Receber</div>
+    <div class="card" style="border-top:3px solid var(--color-success);">
+        <div class="kpi-label"><i class="fa-solid fa-arrow-trend-up" style="color:var(--color-success);"></i> A Receber</div>
         <div class="kpi-value text-green">R$ {{ number_format($totalAReceber,2,',','.') }}</div>
         @if($totalRecebido > 0)
-        <div class="kpi-sub" style="color:#16a34a;">
+        <div class="kpi-sub" style="color:var(--color-success);">
             <i class="fa-solid fa-check"></i> R$ {{ number_format($totalRecebido,2,',','.') }} já recebido
         </div>
         @endif
     </div>
 
-    <div class="card" style="border-top:3px solid #dc2626;">
-        <div class="kpi-label"><i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i> A Pagar</div>
+    <div class="card" style="border-top:3px solid var(--color-danger);">
+        <div class="kpi-label"><i class="fa-solid fa-arrow-trend-down" style="color:var(--color-danger);"></i> A Pagar</div>
         <div class="kpi-value text-red">R$ {{ number_format($totalAPagar,2,',','.') }}</div>
         @if($totalPago > 0)
-        <div class="kpi-sub" style="color:#16a34a;">
+        <div class="kpi-sub" style="color:var(--color-success);">
             <i class="fa-solid fa-check"></i> R$ {{ number_format($totalPago,2,',','.') }} já pago
         </div>
         @endif
     </div>
 
-    <div class="card" style="border-top:3px solid {{ $saldoProjetado >= 0 ? '#4f46e5' : '#d97706' }};">
+    <div class="card" style="border-top:3px solid {{ $saldoProjetado >= 0 ? 'var(--color-indigo)' : 'var(--color-warning)' }};">
         <div class="kpi-label"><i class="fa-solid fa-scale-balanced" style="color:var(--color-primary);"></i> Saldo Projetado</div>
         <div class="kpi-value {{ $saldoProjetado >= 0 ? '' : 'text-red' }}" style="{{ $saldoProjetado >= 0 ? 'color:var(--color-primary)' : '' }}">
             R$ {{ number_format(abs($saldoProjetado),2,',','.') }}
@@ -118,7 +118,7 @@
     $totalReceitas = $receitas->count();
     $recebidas = $receitas->whereNotNull('data_recebimento')->count();
 @endphp
-<div class="card" style="border-top:3px solid #94a3b8;margin-bottom:20px;">
+<div class="card" style="border-top:3px solid var(--color-text-subtle);margin-bottom:20px;">
     <div class="kpi-label"><i class="fa-solid fa-list-check"></i> Progresso</div>
     <div style="margin-top:8px;display:flex;gap:24px;flex-wrap:wrap;">
         <div style="flex:1;min-width:180px;">
@@ -127,7 +127,7 @@
                 <span class="fw-600">{{ $pagas }}/{{ $totalDespesas }}</span>
             </div>
             <div class="progress-bar">
-                <div class="progress-bar-fill" style="width:{{ $totalDespesas > 0 ? round($pagas/$totalDespesas*100) : 0 }}%;background:#dc2626;"></div>
+                <div class="progress-bar-fill" style="width:{{ $totalDespesas > 0 ? round($pagas/$totalDespesas*100) : 0 }}%;background:var(--color-danger);"></div>
             </div>
         </div>
         <div style="flex:1;min-width:180px;">
@@ -136,7 +136,7 @@
                 <span class="fw-600">{{ $recebidas }}/{{ $totalReceitas }}</span>
             </div>
             <div class="progress-bar">
-                <div class="progress-bar-fill" style="width:{{ $totalReceitas > 0 ? round($recebidas/$totalReceitas*100) : 0 }}%;background:#16a34a;"></div>
+                <div class="progress-bar-fill" style="width:{{ $totalReceitas > 0 ? round($recebidas/$totalReceitas*100) : 0 }}%;background:var(--color-success);"></div>
             </div>
         </div>
     </div>
@@ -147,8 +147,8 @@
 
     {{-- ── A RECEBER ──────────────────────────────────────────────────────── --}}
     <div class="card">
-        <div class="card-title" style="color:#16a34a;">
-            <i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;"></i>
+        <div class="card-title" style="color:var(--color-success);">
+            <i class="fa-solid fa-arrow-trend-up" style="color:var(--color-success);"></i>
             A Receber
             <span class="badge badge-green" style="margin-left:auto;">{{ $receitas->count() }}</span>
         </div>
@@ -176,16 +176,16 @@
                     <tr style="{{ $recebida ? 'opacity:.55;' : '' }}">
                         <td>
                             @if($recebida)
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#dcfce7;align-items:center;justify-content:center;">
-                                    <i class="fa-solid fa-check" style="color:#16a34a;font-size:11px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-success-soft);align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-check" style="color:var(--color-success);font-size:11px;"></i>
                                 </span>
                             @elseif($r->status === 'vencido')
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#fee2e2;align-items:center;justify-content:center;" title="Vencido">
-                                    <i class="fa-solid fa-exclamation" style="color:#dc2626;font-size:11px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-danger-soft);align-items:center;justify-content:center;" title="Vencido">
+                                    <i class="fa-solid fa-exclamation" style="color:var(--color-danger);font-size:11px;"></i>
                                 </span>
                             @else
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#f0fdf4;align-items:center;justify-content:center;">
-                                    <i class="fa-solid fa-clock" style="color:#16a34a;font-size:10px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-success-soft);align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-clock" style="color:var(--color-success);font-size:10px;"></i>
                                 </span>
                             @endif
                         </td>
@@ -199,7 +199,7 @@
                             </div>
                             @endif
                             @if($recebida)
-                            <div style="font-size:10px;color:#16a34a;">
+                            <div style="font-size:10px;color:var(--color-success);">
                                 Recebido em {{ $r->data_recebimento->format('d/m/Y') }}
                             </div>
                             @endif
@@ -207,10 +207,10 @@
                         <td style="white-space:nowrap;font-size:12px;">
                             {{ $r->data_prevista_recebimento->format('d/m') }}
                             @if($r->status === 'vencido' && !$recebida)
-                            <div style="font-size:10px;color:#dc2626;">Vencido</div>
+                            <div style="font-size:10px;color:var(--color-danger);">Vencido</div>
                             @endif
                         </td>
-                        <td style="text-align:right;font-weight:700;color:#16a34a;white-space:nowrap;font-size:13px;">
+                        <td style="text-align:right;font-weight:700;color:var(--color-success);white-space:nowrap;font-size:13px;">
                             R$ {{ number_format($r->valor,2,',','.') }}
                         </td>
                         <td>
@@ -240,8 +240,8 @@
 
     {{-- ── A PAGAR ─────────────────────────────────────────────────────────── --}}
     <div class="card">
-        <div class="card-title" style="color:#dc2626;">
-            <i class="fa-solid fa-arrow-trend-down" style="color:#dc2626;"></i>
+        <div class="card-title" style="color:var(--color-danger);">
+            <i class="fa-solid fa-arrow-trend-down" style="color:var(--color-danger);"></i>
             A Pagar
             <span class="badge badge-red" style="margin-left:auto;">{{ $despesas->count() }}</span>
         </div>
@@ -269,16 +269,16 @@
                     <tr style="{{ $paga ? 'opacity:.55;' : '' }}">
                         <td>
                             @if($paga)
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#dcfce7;align-items:center;justify-content:center;">
-                                    <i class="fa-solid fa-check" style="color:#16a34a;font-size:11px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-success-soft);align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-check" style="color:var(--color-success);font-size:11px;"></i>
                                 </span>
                             @elseif($d->status === 'vencido')
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#fee2e2;align-items:center;justify-content:center;" title="Vencido">
-                                    <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;font-size:10px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-danger-soft);align-items:center;justify-content:center;" title="Vencido">
+                                    <i class="fa-solid fa-triangle-exclamation" style="color:var(--color-danger);font-size:10px;"></i>
                                 </span>
                             @else
-                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:#fff0f0;align-items:center;justify-content:center;">
-                                    <i class="fa-solid fa-clock" style="color:#dc2626;font-size:10px;"></i>
+                                <span style="display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--color-danger-soft);align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-clock" style="color:var(--color-danger);font-size:10px;"></i>
                                 </span>
                             @endif
                         </td>
@@ -292,7 +292,7 @@
                             </div>
                             @endif
                             @if($paga)
-                            <div style="font-size:10px;color:#16a34a;">
+                            <div style="font-size:10px;color:var(--color-success);">
                                 Pago em {{ $d->data_pagamento->format('d/m/Y') }}
                             </div>
                             @endif
@@ -300,10 +300,10 @@
                         <td style="white-space:nowrap;font-size:12px;">
                             {{ $d->data_compra->format('d/m') }}
                             @if($d->status === 'vencido' && !$paga)
-                            <div style="font-size:10px;color:#dc2626;">Vencido</div>
+                            <div style="font-size:10px;color:var(--color-danger);">Vencido</div>
                             @endif
                         </td>
-                        <td style="text-align:right;font-weight:700;color:#dc2626;white-space:nowrap;font-size:13px;">
+                        <td style="text-align:right;font-weight:700;color:var(--color-danger);white-space:nowrap;font-size:13px;">
                             R$ {{ number_format($d->valor,2,',','.') }}
                         </td>
                         <td>
@@ -337,7 +337,7 @@
 <div class="modal-backdrop" id="modal-baixa-receita">
     <div class="modal" style="max-width:380px;">
         <div class="modal-header">
-            <i class="fa-solid fa-check-circle" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-check-circle" style="color:var(--color-success);"></i>
             <h3>Confirmar Recebimento</h3>
             <button class="modal-close" onclick="closeModal('modal-baixa-receita')">&times;</button>
         </div>
@@ -345,7 +345,7 @@
             <div id="baixa-receita-desc"
                  style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--color-text);"></div>
             <div id="baixa-receita-val"
-                 style="font-size:20px;font-weight:700;color:#16a34a;margin-bottom:16px;"></div>
+                 style="font-size:20px;font-weight:700;color:var(--color-success);margin-bottom:16px;"></div>
             <form method="POST" action="" id="form-baixa-receita">
                 @csrf
                 <div class="form-group">
@@ -368,7 +368,7 @@
 <div class="modal-backdrop" id="modal-baixa-despesa">
     <div class="modal" style="max-width:380px;">
         <div class="modal-header">
-            <i class="fa-solid fa-check-circle" style="color:#dc2626;"></i>
+            <i class="fa-solid fa-check-circle" style="color:var(--color-danger);"></i>
             <h3>Confirmar Pagamento</h3>
             <button class="modal-close" onclick="closeModal('modal-baixa-despesa')">&times;</button>
         </div>
@@ -376,7 +376,7 @@
             <div id="baixa-despesa-desc"
                  style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--color-text);"></div>
             <div id="baixa-despesa-val"
-                 style="font-size:20px;font-weight:700;color:#dc2626;margin-bottom:16px;"></div>
+                 style="font-size:20px;font-weight:700;color:var(--color-danger);margin-bottom:16px;"></div>
             <form method="POST" action="" id="form-baixa-despesa">
                 @csrf
                 <div class="form-group">

@@ -35,7 +35,7 @@
 
         {{-- Mês --}}
         <div class="filtro-grupo filtro-grupo-centro">
-            <div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
                 <a href="{{ $urlRMesAnt }}" class="nav-mes-btn" title="Mês anterior"><i class="fa-solid fa-chevron-left" style="font-size:12px;"></i></a>
                 <span class="mes-label-btn">{{ $ehHojeR ? 'Hoje' : ucfirst($mesNomeR) }}</span>
                 <a href="{{ $urlRMesProx }}" class="nav-mes-btn" title="Próximo mês"><i class="fa-solid fa-chevron-right" style="font-size:12px;"></i></a>
@@ -43,14 +43,14 @@
             <div style="display:flex;gap:6px;">
                 <a href="{{ $urlRHoje }}"
                    style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
-                          border:1px solid {{ $ehHojeR ? 'var(--color-primary)' : '#e2e8f0' }};
-                          background:{{ $ehHojeR ? 'var(--color-primary)' : '#fff' }};
-                          color:{{ $ehHojeR ? '#fff' : '#64748b' }};">
+                          border:1px solid {{ $ehHojeR ? 'var(--color-primary)' : 'var(--color-border)' }};
+                          background:{{ $ehHojeR ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
+                          color:{{ $ehHojeR ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};">
                     <i class="fa-solid fa-calendar-day"></i> Hoje
                 </a>
                 @if(!$ehMesAtualR && !$ehHojeR)
                 <a href="{{ $urlRMesAtu }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #e2e8f0;background:#fff;color:#64748b;">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);">
                     <i class="fa-solid fa-rotate-left"></i> Mês Atual
                 </a>
                 @endif
@@ -62,10 +62,10 @@
         <div class="filtro-grupo filtro-grupo-members">
             <div class="av-grupo">
                 <a href="{{ $urlRTodas }}" class="av-item" title="Todos da Casa">
-                    <div class="av-circulo" style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};outline:{{ !$familiarId ? 'none' : '2px solid #e2e8f0' }};background:{{ !$familiarId ? 'var(--color-primary)' : '#f1f5f9' }};box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
-                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? '#fff' : '#64748b' }};"></i>
+                    <div class="av-circulo" style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};outline:{{ !$familiarId ? 'none' : '2px solid var(--color-border)' }};background:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-bg-inset)' }};box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
+                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};"></i>
                     </div>
-                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
+                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-text-subtle)' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
                 </a>
                 @foreach($familiares as $fam)
                 @php
@@ -78,14 +78,14 @@
                         : route('receitas.index', array_filter(array_merge($filtrosAtivosR, ['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id])));
                 @endphp
                 <a href="{{ $rUrl }}" class="av-item" title="{{ $fam->nome }}">
-                    <div class="av-circulo" style="border:3px solid {{ $rSel ? $rCor : 'transparent' }};outline:{{ $rSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $rSel ? '0 0 0 2px '.$rCor.'44' : 'none' }};">
+                    <div class="av-circulo" style="border:3px solid {{ $rSel ? $rCor : 'transparent' }};outline:{{ $rSel ? 'none' : '2px solid var(--color-border)' }};box-shadow:{{ $rSel ? '0 0 0 2px '.$rCor.'44' : 'none' }};">
                         @if($fam->foto)
                             <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}" style="width:100%;height:100%;object-fit:cover;">
                         @else
                             <div style="width:100%;height:100%;background:{{ $rCor }};color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:50%;">{{ $rIni }}</div>
                         @endif
                     </div>
-                    <span class="av-nome" style="color:{{ $rSel ? $rCor : '#94a3b8' }};font-weight:{{ $rSel ? '700' : '400' }};">{{ explode(' ',$fam->nome)[0] }}</span>
+                    <span class="av-nome" style="color:{{ $rSel ? $rCor : 'var(--color-text-subtle)' }};font-weight:{{ $rSel ? '700' : '400' }};">{{ explode(' ',$fam->nome)[0] }}</span>
                 </a>
                 @endforeach
             </div>
@@ -102,20 +102,20 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
 
         {{-- Intervalo de datas --}}
-        <div style="display:flex;align-items:center;gap:4px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;background:#fff;">
-            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:#94a3b8;"></i>
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--color-border);border-radius:6px;padding:3px 8px;background:var(--color-bg-card);">
+            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:var(--color-text-subtle);"></i>
             <input type="date" name="inicio" value="{{ $inicio }}"
                    onchange="document.getElementById('form-filtros-rec').submit()"
-                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
-            <span style="font-size:11px;color:#94a3b8;">até</span>
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:var(--color-text-muted);cursor:pointer;">
+            <span style="font-size:11px;color:var(--color-text-subtle);">até</span>
             <input type="date" name="fim" value="{{ $fim }}"
                    onchange="document.getElementById('form-filtros-rec').submit()"
-                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:var(--color-text-muted);cursor:pointer;">
         </div>
 
         {{-- Banco / Conta de recebimento --}}
         <select name="banco_id" onchange="document.getElementById('form-filtros-rec').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $bancoId ? '#f0fdf4' : '#fff' }};color:{{ $bancoId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:150px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? 'var(--color-success)' : 'var(--color-border)' }};border-radius:6px;background:{{ $bancoId ? 'var(--color-success-soft)' : 'var(--color-bg-card)' }};color:{{ $bancoId ? 'var(--color-success)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:150px;">
             <option value="">Todas as contas</option>
             @foreach($bancos as $b)
                 <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
@@ -124,7 +124,7 @@
 
         {{-- Categoria --}}
         <select name="categoria_id" onchange="document.getElementById('form-filtros-rec').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $categoriaId ? '#f0fdf4' : '#fff' }};color:{{ $categoriaId ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? 'var(--color-success)' : 'var(--color-border)' }};border-radius:6px;background:{{ $categoriaId ? 'var(--color-success-soft)' : 'var(--color-bg-card)' }};color:{{ $categoriaId ? 'var(--color-success)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:140px;">
             <option value="">Todas as categorias</option>
             @foreach($categorias as $c)
                 <option value="{{ $c->id }}" {{ $categoriaId == $c->id ? 'selected' : '' }}>{{ $c->nome }}</option>
@@ -133,7 +133,7 @@
 
         {{-- Tipo de Recebimento --}}
         <select name="tipo_pagamento" onchange="document.getElementById('form-filtros-rec').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? '#16a34a' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPag ? '#f0fdf4' : '#fff' }};color:{{ $tipoPag ? '#16a34a' : '#374151' }};cursor:pointer;min-width:140px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? 'var(--color-success)' : 'var(--color-border)' }};border-radius:6px;background:{{ $tipoPag ? 'var(--color-success-soft)' : 'var(--color-bg-card)' }};color:{{ $tipoPag ? 'var(--color-success)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:140px;">
             <option value="">Todos os tipos</option>
             <option value="dinheiro"    {{ $tipoPag === 'dinheiro'    ? 'selected' : '' }}>Dinheiro</option>
             <option value="pix"         {{ $tipoPag === 'pix'         ? 'selected' : '' }}>Pix</option>
@@ -144,7 +144,7 @@
 
         @if($temFiltroAtivoR)
         <a href="{{ route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
-           style="font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;white-space:nowrap;">
+           style="font-size:12px;color:var(--color-text-muted);text-decoration:none;padding:5px 10px;border:1px solid var(--color-border);border-radius:6px;white-space:nowrap;">
             <i class="fa-solid fa-xmark"></i> Limpar filtros
         </a>
         @endif
@@ -160,15 +160,15 @@
     {{-- Cabeçalho --}}
     <div class="ext-header">
         <div style="display:flex;align-items:center;gap:8px;">
-            <i class="fa-solid fa-arrow-trend-up" style="color:#16a34a;font-size:13px;"></i>
-            <span style="font-size:14px;font-weight:600;color:#1e293b;">Receitas</span>
-            <span style="font-size:11px;color:#64748b;">
+            <i class="fa-solid fa-arrow-trend-up" style="color:var(--color-success);font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:var(--color-text);">Receitas</span>
+            <span style="font-size:11px;color:var(--color-text-muted);">
                 {{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}
             </span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:13px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
-            <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">{{ $receitas->total() }}</span>
+            <span style="font-size:13px;font-weight:700;color:var(--color-success);">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:var(--color-bg-inset);padding:3px 10px;border-radius:20px;">{{ $receitas->total() }}</span>
         </div>
     </div>
 
@@ -185,7 +185,7 @@
 
     <div class="ext-date-header">
         <span class="ext-date-label">{{ $labelR2 }}</span>
-        <span style="font-size:11.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalDiaR, 2, ',', '.') }}</span>
+        <span style="font-size:11.5px;font-weight:700;color:var(--color-success);">+ R$ {{ number_format($totalDiaR, 2, ',', '.') }}</span>
     </div>
 
     @foreach($itens as $receita)
@@ -198,19 +198,19 @@
         $rDesc  = $receita->observacoes ?? '—';
         $rIcone = $receita->categoria?->icone ?? 'fa-circle-dollar-sign';
         $rConta = $receita->banco?->nome ?? '—';
-        $rCor   = $receita->banco?->cor ?? '#94a3b8';
+        $rCor   = $receita->banco?->cor ?? 'var(--color-text-subtle)';
     @endphp
 
     <div class="ext-row ext-credito">
 
         <div class="ext-icone ext-credito">
-            <i class="fa-solid {{ $rIcone }}" style="font-size:16px;color:#16a34a;"></i>
+            <i class="fa-solid {{ $rIcone }}" style="font-size:16px;color:var(--color-success);"></i>
         </div>
 
         <div class="ext-info">
             <div class="ext-desc" title="{{ $rDesc }}">{{ $rDesc }}</div>
             <div class="ext-meta">
-                <span style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:5px;white-space:nowrap;">
+                <span style="font-size:11px;font-weight:600;color:var(--color-text-muted);background:var(--color-bg-inset);padding:2px 7px;border-radius:5px;white-space:nowrap;">
                     <i class="fa-regular fa-calendar" style="font-size:10px;"></i> {{ $receita->data_prevista_recebimento->format('d/m') }}
                 </span>
                 <span class="ext-conta-pill">
@@ -221,7 +221,7 @@
                 <span class="ext-tag ext-tag-cat">{{ $receita->categoria->nome }}</span>
                 @endif
                 @if($receita->familiar)
-                <span class="ext-tag" style="background:#f0fdf4;color:#16a34a;">{{ $receita->familiar->nome }}</span>
+                <span class="ext-tag" style="background:var(--color-success-soft);color:var(--color-success);">{{ $receita->familiar->nome }}</span>
                 @endif
                 @if($receita->recorrente)
                 <span class="ext-tag ext-tag-rec"><i class="fa-solid fa-rotate" style="font-size:8px;"></i> Recorrente</span>
@@ -250,20 +250,20 @@
     @endforeach
 
     <div class="ext-footer">
-        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <span style="font-size:10px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
         <div class="ext-footer-item">
-            <span class="ext-footer-dot" style="background:#16a34a;"></span>
-            <span style="font-size:12.5px;font-weight:700;color:#16a34a;">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span class="ext-footer-dot" style="background:var(--color-success);"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--color-success);">+ R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
         </div>
     </div>
 
     @else
     <div style="text-align:center;padding:48px 20px;">
-        <div style="width:56px;height:56px;border-radius:14px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-            <i class="fa-solid fa-inbox" style="font-size:22px;color:#16a34a;opacity:.5;"></i>
+        <div style="width:56px;height:56px;border-radius:14px;background:var(--color-success-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-inbox" style="font-size:22px;color:var(--color-success);opacity:.5;"></i>
         </div>
-        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhuma receita encontrada</p>
-        <p style="font-size:12px;color:#94a3b8;">Ajuste o período ou os filtros acima.</p>
+        <p style="font-size:13px;font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">Nenhuma receita encontrada</p>
+        <p style="font-size:12px;color:var(--color-text-subtle);">Ajuste o período ou os filtros acima.</p>
     </div>
     @endif
 
@@ -275,7 +275,7 @@
 <div class="modal-backdrop" id="modal-nova-receita">
     <div class="modal">
         <div class="modal-header">
-            <i class="fa-solid fa-plus" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-plus" style="color:var(--color-success);"></i>
             <h3>Nova Receita</h3>
             <button class="modal-close" onclick="closeModal('modal-nova-receita')">&times;</button>
         </div>
@@ -293,7 +293,7 @@
                     </div>
                     <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end;">
                         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text);margin-bottom:6px;">
-                            <input type="checkbox" id="rec-novo-marcar-recebida" onchange="toggleMarcarRecebida(this)" style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;">
+                            <input type="checkbox" id="rec-novo-marcar-recebida" onchange="toggleMarcarRecebida(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-success);">
                             Marcar como recebida
                         </label>
                         <input type="date" name="data_recebimento" id="rec-novo-dr" class="form-control" style="display:none;">
@@ -379,7 +379,7 @@
 <div class="modal-backdrop" id="modal-editar-receita">
     <div class="modal">
         <div class="modal-header">
-            <i class="fa-solid fa-pen" style="color:#16a34a;"></i>
+            <i class="fa-solid fa-pen" style="color:var(--color-success);"></i>
             <h3>Editar Receita</h3>
             <button class="modal-close" onclick="closeModal('modal-editar-receita')">&times;</button>
         </div>
@@ -445,8 +445,8 @@
 
                     {{-- Escopo da edição (só para recorrentes) --}}
                     <div id="r-edit-escopo-container" style="display:none;" class="form-group span-2">
-                        <div class="alert alert-info" style="padding:8px 12px; border-radius:6px; background:#fffbeb; border:1px solid #fde68a; font-size:13px; margin-bottom:8px;">
-                            <i class="fa-solid fa-rotate" style="color:#f59e0b;"></i>
+                        <div class="alert alert-info" style="padding:8px 12px; border-radius:6px; background:var(--color-warning-soft); border:1px solid var(--color-amber); font-size:13px; margin-bottom:8px;">
+                            <i class="fa-solid fa-rotate" style="color:var(--color-amber);"></i>
                             Esta é uma receita recorrente. Escolha o que deseja alterar:
                         </div>
                         <select name="escopo" id="r-edit-escopo" class="form-control">
@@ -478,7 +478,7 @@
 <div class="modal-backdrop" id="modal-confirmar-exclusao-receita" style="z-index:1100;">
     <div class="modal" style="max-width:420px;">
         <div class="modal-header">
-            <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
+            <i class="fa-solid fa-triangle-exclamation" style="color:var(--color-danger);"></i>
             <h3>Excluir Receita</h3>
             <button class="modal-close" onclick="closeModal('modal-confirmar-exclusao-receita')">&times;</button>
         </div>
@@ -492,7 +492,7 @@
                     <button type="button" onclick="closeModal('modal-confirmar-exclusao-receita')" class="btn btn-secondary">
                         <i class="fa-solid fa-times"></i> Cancelar
                     </button>
-                    <button type="button" onclick="confirmarExclusaoReceita('apenas_esta')" class="btn" style="background:#dc2626;color:#fff;">
+                    <button type="button" onclick="confirmarExclusaoReceita('apenas_esta')" class="btn" style="background:var(--color-danger);color:#fff;">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -503,15 +503,15 @@
                     Esta é uma <strong>receita recorrente</strong>. O que você deseja fazer?
                 </p>
                 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;" id="lbl-exc-r-apenas">
-                        <input type="radio" name="opcao-excluir-r" value="apenas_esta" checked onchange="excRAtualizarSelecao()" style="margin-top:2px;accent-color:#16a34a;">
+                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid var(--color-border);border-radius:8px;cursor:pointer;" id="lbl-exc-r-apenas">
+                        <input type="radio" name="opcao-excluir-r" value="apenas_esta" checked onchange="excRAtualizarSelecao()" style="margin-top:2px;accent-color:var(--color-success);">
                         <div>
                             <div style="font-weight:600;font-size:13px;">Somente esta</div>
                             <div style="font-size:12px;color:var(--color-text-muted);">Remove apenas esta ocorrência</div>
                         </div>
                     </label>
-                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;" id="lbl-exc-r-futuras">
-                        <input type="radio" name="opcao-excluir-r" value="esta_e_futuras" onchange="excRAtualizarSelecao()" style="margin-top:2px;accent-color:#16a34a;">
+                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid var(--color-border);border-radius:8px;cursor:pointer;" id="lbl-exc-r-futuras">
+                        <input type="radio" name="opcao-excluir-r" value="esta_e_futuras" onchange="excRAtualizarSelecao()" style="margin-top:2px;accent-color:var(--color-success);">
                         <div>
                             <div style="font-weight:600;font-size:13px;">Esta e todas as próximas</div>
                             <div style="font-size:12px;color:var(--color-text-muted);">Remove esta e todas as ocorrências futuras da recorrência</div>
@@ -522,7 +522,7 @@
                     <button type="button" onclick="closeModal('modal-confirmar-exclusao-receita')" class="btn btn-secondary">
                         <i class="fa-solid fa-times"></i> Cancelar
                     </button>
-                    <button type="button" onclick="confirmarExclusaoReceita()" class="btn" style="background:#dc2626;color:#fff;">
+                    <button type="button" onclick="confirmarExclusaoReceita()" class="btn" style="background:var(--color-danger);color:#fff;">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -606,8 +606,8 @@ function excluirReceita(id, isRecorrente) {
 
 function excRAtualizarSelecao() {
     const val = document.querySelector('[name="opcao-excluir-r"]:checked').value;
-    document.getElementById('lbl-exc-r-apenas').style.borderColor  = val === 'apenas_esta'    ? '#16a34a' : '#e2e8f0';
-    document.getElementById('lbl-exc-r-futuras').style.borderColor = val === 'esta_e_futuras' ? '#16a34a' : '#e2e8f0';
+    document.getElementById('lbl-exc-r-apenas').style.borderColor  = val === 'apenas_esta'    ? 'var(--color-success)' : 'var(--color-border)';
+    document.getElementById('lbl-exc-r-futuras').style.borderColor = val === 'esta_e_futuras' ? 'var(--color-success)' : 'var(--color-border)';
 }
 
 function confirmarExclusaoReceita(escopoFixo) {

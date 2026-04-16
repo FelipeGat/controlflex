@@ -30,11 +30,15 @@
             --sidebar-w-collapsed: 70px;
             --topbar-h: 64px;
             --bottom-nav-h: 60px;
-            --color-primary: #4f46e5;
-            --color-primary-hover: #4338ca;
+            --color-primary: #1696a3;
+            --color-primary-hover: #117a85;
             --color-success: #16a34a;
-            --color-danger: #dc2626;
+            --color-danger:  #dc2626;
             --color-warning: #d97706;
+            --color-info:    #0ea5e9;
+            --color-violet:  #7c3aed;
+            --color-indigo:  #4f46e5;
+            --color-amber:   #f59e0b;
             --color-sidebar: #0f172a;
             /* Light mode — 3-level surface hierarchy */
             --color-bg:          #F7F9FC;   /* page background   */
@@ -43,6 +47,12 @@
             --color-text:        #1F2937;   /* primary text      */
             --color-text-muted:  #6B7280;   /* secondary text    */
             --color-text-subtle: #9CA3AF;   /* placeholder/hints */
+            /* Soft tinted backgrounds (icon chips, mini-cards) */
+            --color-success-soft: #dcfce7;
+            --color-danger-soft:  #fee2e2;
+            --color-warning-soft: #fef3c7;
+            --color-info-soft:    #e0f2fe;
+            --color-violet-soft:  #ede9fe;
             --radius-card: 8px;
             --radius-btn: 6px;
             --radius-badge: 4px;
@@ -59,7 +69,7 @@
         /* Prevent flash of unstyled bg on dark mode reload */
         .ah-dark-preload body,
         .ah-dark-preload {
-            background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%) !important;
+            background: #0b1120 !important;
         }
 
         /* ─── Sidebar ───────────────────────────────────────────── */
@@ -137,8 +147,9 @@
         }
         .sidebar-link i { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
         .sidebar-link span { transition: opacity .2s; }
-        .sidebar.collapsed .sidebar-link { justify-content: center; }
-        .sidebar.collapsed .sidebar-link span { opacity: 0; width: 0; overflow: hidden; }
+        .sidebar.collapsed .sidebar-link { justify-content: center; gap: 0; padding: 11px 0; }
+        .sidebar.collapsed .sidebar-link i { font-size: 18px; width: auto; }
+        .sidebar.collapsed .sidebar-link span { display: none; }
         .sidebar-link:hover { background: #f1f5f9; color: #1e293b; }
         .sidebar-link.active { background: var(--color-primary); color: #fff; }
         .sidebar-link.active i { color: #fff; }
@@ -172,12 +183,27 @@
         }
         .sidebar-user-details { transition: opacity .2s; min-width: 0; }
         .sidebar.collapsed .sidebar-user-details { opacity: 0; width: 0; overflow: hidden; }
-        .sidebar-user-name { color: #1e293b; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
-        .sidebar-user-edit { color: #94a3b8; font-size: 11px; flex-shrink: 0; line-height: 1; }
-        .sidebar-user-edit:hover { color: var(--color-primary); }
-        .sidebar-user-logout { color: #94a3b8; font-size: 11px; flex-shrink: 0; line-height: 1; background:none; border:none; cursor:pointer; padding:0; }
-        .sidebar-user-logout:hover { color: #ef4444; }
+        .sidebar-user-name { color: #1e293b; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sidebar-user-email { color: #94a3b8; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-actions { display: flex; gap: 6px; padding: 8px 10px 0; margin-top: 4px; }
+        .sidebar-user-action {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+            height: 32px; padding: 0 10px;
+            border: 1px solid transparent; border-radius: 6px;
+            background: transparent; color: #94a3b8;
+            font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+        .sidebar-user-action i { font-size: 12px; }
+        .sidebar-user-action:hover { background: rgba(148,163,184,.1); color: var(--color-primary); border-color: var(--color-border); }
+        .sidebar-user-action--danger:hover { color: #ef4444; border-color: var(--color-border); }
+        .sidebar-user-actions form { flex: 1; display: flex; }
+        .sidebar.collapsed .sidebar-user-info { justify-content: center; padding: 6px 0; gap: 0; }
+        .sidebar.collapsed .sidebar-user-actions { flex-direction: column; gap: 4px; padding: 8px 0 0; align-items: center; }
+        .sidebar.collapsed .sidebar-user-actions form { flex: none; width: 36px; }
+        .sidebar.collapsed .sidebar-user-action { height: 36px; width: 36px; padding: 0; flex: none; }
+        .sidebar.collapsed .sidebar-user-action i { font-size: 14px; }
+        .sidebar.collapsed .sidebar-user-action span { display: none; }
 
         /* ─── Overlay (mobile) ──────────────────────────────────── */
         .sidebar-overlay {
@@ -258,24 +284,48 @@
            DARK MODE COMPLETO — cobre todos os elementos do sistema
            ═══════════════════════════════════════════════════════════ */
         body.dark-mode {
-            /* ── Dark mode 3-level surface hierarchy ── */
-            --color-bg:           #0B1120;   /* deepest — page bg */
-            --color-bg-container: #111827;   /* mid — section wrap */
-            --color-bg-card:      #1F2937;   /* top — cards        */
-            --color-bg-hover:     #273449;   /* hover state        */
-            --color-border:       #243447;   /* subtle dividers    */
-            --color-text:         #E5E7EB;
-            --color-text-muted:   #9CA3AF;
-            --color-text-subtle:  #6B7280;
-            --shadow-card: 0 2px 8px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.25);
-            background: linear-gradient(180deg, #0B1120 0%, #0F172A 100%);
-            background-attachment: fixed;
+            /* ── Paleta 1:1 do AlfaGym (dark) ── */
+            --color-bg:            #0b1120;   /* bg-body    */
+            --color-bg-container:  #0f172a;   /* bg-section */
+            --color-bg-card:       #1e293b;   /* bg-card    */
+            --color-bg-elevated:   #263548;   /* faq-hover  */
+            --color-bg-hover:      #263548;
+            --color-bg-inset:      #0b1120;
+
+            --color-border:         #334155;
+            --color-border-strong:  #334155;
+            --color-border-focus:   rgba(22, 150, 163, 0.6);
+
+            --color-text:         #e2e8f0;
+            --color-text-muted:   #cbd5e1;
+            --color-text-subtle:  #94a3b8;
+            --color-text-faint:   #64748b;
+
+            /* Soft tinted backgrounds (ícones semânticos) */
+            --color-success-soft: rgba(34, 197, 94, 0.14);
+            --color-danger-soft:  rgba(239, 68, 68, 0.14);
+            --color-warning-soft: rgba(245, 158, 11, 0.16);
+            --color-info-soft:    rgba(56, 189, 248, 0.14);
+            --color-violet-soft:  rgba(139, 92, 246, 0.16);
+
+            /* Semantic accents — tons claros para leitura no card escuro */
+            --color-success: #4ade80;
+            --color-danger:  #f87171;
+            --color-warning: #fbbf24;
+            --color-info:    #38bdf8;
+            --color-violet:  #a78bfa;
+            --color-indigo:  #818cf8;
+            --color-amber:   #fbbf24;
+
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.2);
+
+            background: var(--color-bg);
             color: var(--color-text);
         }
 
         /* ── Sidebar dark ── */
         body.dark-mode .sidebar {
-            background: var(--color-bg-container, #111827);
+            background: var(--color-bg-container);
             border-right: 1px solid var(--color-border);
             box-shadow: 2px 0 12px rgba(0,0,0,.3);
         }
@@ -300,13 +350,13 @@
         body.dark-mode .sidebar-user { border-top-color: rgba(255,255,255,.06); }
         body.dark-mode .sidebar-user-avatar { background: rgba(79,70,229,.3); color: #a5b4fc; }
         body.dark-mode .sidebar-user-name { color: #cbd5e1; }
-        body.dark-mode .sidebar-user-email { color: #475569; }
-        body.dark-mode .sidebar-user-edit { color: #475569; }
-        body.dark-mode .sidebar-user-logout { color: #475569; }
+        body.dark-mode .sidebar-user-email { color: #94a3b8; }
+        body.dark-mode .sidebar-user-action { color: #94a3b8; }
+        body.dark-mode .sidebar-user-action:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
 
         /* ── Topbar dark ── */
         body.dark-mode .topbar {
-            background: var(--color-bg-container, #111827);
+            background: var(--color-bg-container);
             border-bottom: 1px solid var(--color-border);
             box-shadow: 0 1px 0 rgba(255,255,255,.03), 0 2px 8px rgba(0,0,0,.2);
         }
@@ -1157,20 +1207,20 @@
                 @endif
             </div>
             <div class="sidebar-user-details">
-                <div class="sidebar-user-name">
-                    {{ Auth::user()->name }}
-                    <a href="{{ route('profile.edit') }}" class="sidebar-user-edit" title="Editar perfil">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </a>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline; margin-left:2px;">
-                        @csrf
-                        <button type="submit" class="sidebar-user-logout" title="Sair">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </button>
-                    </form>
-                </div>
+                <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
                 <div class="sidebar-user-email">{{ Auth::user()->email }}</div>
             </div>
+        </div>
+        <div class="sidebar-user-actions">
+            <a href="{{ route('profile.edit') }}" class="sidebar-user-action" title="Editar perfil">
+                <i class="fa-solid fa-pen-to-square"></i><span>Editar</span>
+            </a>
+            <form method="POST" action="{{ route('logout') }}" style="flex:1; display:flex;">
+                @csrf
+                <button type="submit" class="sidebar-user-action sidebar-user-action--danger" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i><span>Sair</span>
+                </button>
+            </form>
         </div>
     </div>
 </aside>
@@ -1213,6 +1263,7 @@
             if (!btn) return;
             btn.addEventListener('click', function () {
                 var isDark = document.body.classList.toggle('dark-mode');
+                document.documentElement.classList.toggle('ah-dark-preload', isDark);
                 localStorage.setItem('alfahome-theme', isDark ? 'dark' : 'light');
                 /* Atualiza cores padrão do Chart.js para os gráficos já renderizados */
                 if (typeof Chart !== 'undefined') {

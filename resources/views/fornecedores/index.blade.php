@@ -8,7 +8,7 @@
     <div style="position:relative;flex:1;max-width:320px;min-width:0;width:100%;">
         <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-subtle);font-size:13px;pointer-events:none;"></i>
         <input type="text" id="busca-fornecedor" placeholder="Buscar fornecedor..." autocomplete="off"
-            style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--color-border);border-radius:var(--radius-btn);font-size:13px;background:#fff;color:var(--color-text);">
+            style="width:100%;padding:8px 10px 8px 32px;border:1px solid var(--color-border);border-radius:var(--radius-btn);font-size:13px;background:var(--color-bg-card);color:var(--color-text);">
     </div>
     <div class="d-flex gap-2">
         @if(Auth::user()->temPermissao('fornecedores', 'criar'))
@@ -29,10 +29,10 @@
 @else
 
 {{-- Aviso de busca ativa --}}
-<div id="aviso-busca" style="display:none;margin-bottom:12px;padding:8px 14px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#92400e;">
+<div id="aviso-busca" style="display:none;margin-bottom:12px;padding:8px 14px;background:var(--color-warning-soft);border:1px solid var(--color-amber);border-radius:6px;font-size:12px;color:var(--color-amber);">
     <i class="fa-solid fa-magnifying-glass"></i>
     Mostrando resultados para: <strong id="termo-busca-label"></strong>
-    — <a href="#" onclick="limparBusca();return false;" style="color:#b45309;">limpar</a>
+    — <a href="#" onclick="limparBusca();return false;" style="color:var(--color-amber);">limpar</a>
 </div>
 
 {{-- Grade de grupos --}}
@@ -82,9 +82,9 @@
             <div class="card-fornecedor"
                  data-nome="{{ strtolower($forn->nome) }}"
                  data-grupo="{{ strtolower($grupo) }}"
-                 style="background:#fff;border:1px solid var(--color-border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;position:relative;">
+                 style="background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;position:relative;">
 
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#f1f5f9;flex-shrink:0;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--color-bg-inset);flex-shrink:0;">
                     <i class="fa-solid {{ $forn->icone ?? 'fa-store' }}" style="color:var(--color-primary);font-size:14px;"></i>
                 </span>
 

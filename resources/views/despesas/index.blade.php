@@ -37,7 +37,7 @@
 
         {{-- Mês --}}
         <div class="filtro-grupo filtro-grupo-centro">
-            <div style="display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+            <div style="display:flex;align-items:center;border:1px solid var(--color-border);border-radius:8px;overflow:hidden;">
                 <a href="{{ $urlDMesAnt }}" class="nav-mes-btn" title="Mês anterior"><i class="fa-solid fa-chevron-left" style="font-size:12px;"></i></a>
                 <span class="mes-label-btn">{{ $ehHojeD ? 'Hoje' : ucfirst($mesNomeD) }}</span>
                 <a href="{{ $urlDMesProx }}" class="nav-mes-btn" title="Próximo mês"><i class="fa-solid fa-chevron-right" style="font-size:12px;"></i></a>
@@ -45,14 +45,14 @@
             <div style="display:flex;gap:6px;">
                 <a href="{{ $urlDHoje }}"
                    style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
-                          border:1px solid {{ $ehHojeD ? 'var(--color-primary)' : '#e2e8f0' }};
-                          background:{{ $ehHojeD ? 'var(--color-primary)' : '#fff' }};
-                          color:{{ $ehHojeD ? '#fff' : '#64748b' }};">
+                          border:1px solid {{ $ehHojeD ? 'var(--color-primary)' : 'var(--color-border)' }};
+                          background:{{ $ehHojeD ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
+                          color:{{ $ehHojeD ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};">
                     <i class="fa-solid fa-calendar-day"></i> Hoje
                 </a>
                 @if(!$ehMesAtualD && !$ehHojeD)
                 <a href="{{ $urlDMesAtu }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid #e2e8f0;background:#fff;color:#64748b;">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);">
                     <i class="fa-solid fa-rotate-left"></i> Mês Atual
                 </a>
                 @endif
@@ -64,10 +64,10 @@
         <div class="filtro-grupo filtro-grupo-members">
             <div class="av-grupo">
                 <a href="{{ $urlDTodas }}" class="av-item" title="Todos da Casa">
-                    <div class="av-circulo" style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};outline:{{ !$familiarId ? 'none' : '2px solid #e2e8f0' }};background:{{ !$familiarId ? 'var(--color-primary)' : '#f1f5f9' }};box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
-                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? '#fff' : '#64748b' }};"></i>
+                    <div class="av-circulo" style="border:3px solid {{ !$familiarId ? 'var(--color-primary)' : 'transparent' }};outline:{{ !$familiarId ? 'none' : '2px solid var(--color-border)' }};background:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-bg-inset)' }};box-shadow:{{ !$familiarId ? '0 0 0 2px var(--color-primary)44' : 'none' }};">
+                        <i class="fa-solid fa-house" style="font-size:13px;color:{{ !$familiarId ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};"></i>
                     </div>
-                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : '#94a3b8' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
+                    <span class="av-nome" style="color:{{ !$familiarId ? 'var(--color-primary)' : 'var(--color-text-subtle)' }};font-weight:{{ !$familiarId ? '700' : '400' }};">Todos</span>
                 </a>
                 @foreach($familiares as $fam)
                 @php
@@ -80,14 +80,14 @@
                         : route('despesas.index', array_filter(array_merge($filtrosAtivos, ['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$fam->id])));
                 @endphp
                 <a href="{{ $dUrl }}" class="av-item" title="{{ $fam->nome }}">
-                    <div class="av-circulo" style="border:3px solid {{ $dSel ? $dCor : 'transparent' }};outline:{{ $dSel ? 'none' : '2px solid #e2e8f0' }};box-shadow:{{ $dSel ? '0 0 0 2px '.$dCor.'44' : 'none' }};">
+                    <div class="av-circulo" style="border:3px solid {{ $dSel ? $dCor : 'transparent' }};outline:{{ $dSel ? 'none' : '2px solid var(--color-border)' }};box-shadow:{{ $dSel ? '0 0 0 2px '.$dCor.'44' : 'none' }};">
                         @if($fam->foto)
                             <img src="{{ Storage::url($fam->foto) }}" alt="{{ $fam->nome }}" style="width:100%;height:100%;object-fit:cover;">
                         @else
                             <div style="width:100%;height:100%;background:{{ $dCor }};color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:50%;">{{ $dIni }}</div>
                         @endif
                     </div>
-                    <span class="av-nome" style="color:{{ $dSel ? $dCor : '#94a3b8' }};font-weight:{{ $dSel ? '700' : '400' }};">{{ explode(' ',$fam->nome)[0] }}</span>
+                    <span class="av-nome" style="color:{{ $dSel ? $dCor : 'var(--color-text-subtle)' }};font-weight:{{ $dSel ? '700' : '400' }};">{{ explode(' ',$fam->nome)[0] }}</span>
                 </a>
                 @endforeach
             </div>
@@ -104,20 +104,20 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
 
         {{-- Intervalo de datas --}}
-        <div style="display:flex;align-items:center;gap:4px;border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;background:#fff;">
-            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:#94a3b8;"></i>
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--color-border);border-radius:6px;padding:3px 8px;background:var(--color-bg-card);">
+            <i class="fa-solid fa-calendar-range" style="font-size:11px;color:var(--color-text-subtle);"></i>
             <input type="date" name="inicio" value="{{ $inicio }}"
                    onchange="document.getElementById('form-filtros-desp').submit()"
-                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
-            <span style="font-size:11px;color:#94a3b8;">até</span>
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:var(--color-text-muted);cursor:pointer;">
+            <span style="font-size:11px;color:var(--color-text-subtle);">até</span>
             <input type="date" name="fim" value="{{ $fim }}"
                    onchange="document.getElementById('form-filtros-desp').submit()"
-                   style="font-size:12px;border:none;outline:none;background:transparent;color:#374151;cursor:pointer;">
+                   style="font-size:12px;border:none;outline:none;background:transparent;color:var(--color-text-muted);cursor:pointer;">
         </div>
 
         {{-- Status: Pago / A Pagar --}}
         <select name="status" onchange="document.getElementById('form-filtros-desp').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $statusFiltro ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $statusFiltro ? '#eff6ff' : '#fff' }};color:{{ $statusFiltro ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:130px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $statusFiltro ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $statusFiltro ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $statusFiltro ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:130px;">
             <option value="">Todos os status</option>
             <option value="pago"    {{ $statusFiltro === 'pago'    ? 'selected' : '' }}>✅ Pago</option>
             <option value="a_pagar" {{ $statusFiltro === 'a_pagar' ? 'selected' : '' }}>🕐 A Pagar</option>
@@ -126,7 +126,7 @@
 
         {{-- Fornecedor --}}
         <select name="fornecedor_id" onchange="document.getElementById('form-filtros-desp').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $fornecedorId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $fornecedorId ? '#eff6ff' : '#fff' }};color:{{ $fornecedorId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:150px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $fornecedorId ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $fornecedorId ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $fornecedorId ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:150px;">
             <option value="">Todos os fornecedores</option>
             @foreach($fornecedores as $f)
                 <option value="{{ $f->id }}" {{ $fornecedorId == $f->id ? 'selected' : '' }}>{{ $f->nome }}</option>
@@ -135,7 +135,7 @@
 
         {{-- Banco / Conta --}}
         <select name="banco_id" onchange="document.getElementById('form-filtros-desp').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $bancoId ? '#eff6ff' : '#fff' }};color:{{ $bancoId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $bancoId ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $bancoId ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $bancoId ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:140px;">
             <option value="">Todas as contas</option>
             @foreach($bancos as $b)
                 <option value="{{ $b->id }}" {{ $bancoId == $b->id ? 'selected' : '' }}>{{ $b->nome }}</option>
@@ -144,7 +144,7 @@
 
         {{-- Categoria --}}
         <select name="categoria_id" onchange="document.getElementById('form-filtros-desp').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $categoriaId ? '#eff6ff' : '#fff' }};color:{{ $categoriaId ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $categoriaId ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $categoriaId ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $categoriaId ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:140px;">
             <option value="">Todas as categorias</option>
             @foreach($categorias as $c)
                 <option value="{{ $c->id }}" {{ $categoriaId == $c->id ? 'selected' : '' }}>{{ $c->nome }}</option>
@@ -153,7 +153,7 @@
 
         {{-- Tipo de Pagamento --}}
         <select name="tipo_pagamento" onchange="document.getElementById('form-filtros-desp').submit()"
-                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? 'var(--color-primary)' : '#e2e8f0' }};border-radius:6px;background:{{ $tipoPag ? '#eff6ff' : '#fff' }};color:{{ $tipoPag ? 'var(--color-primary)' : '#374151' }};cursor:pointer;min-width:140px;">
+                style="font-size:12px;padding:5px 10px;border:1px solid {{ $tipoPag ? 'var(--color-primary)' : 'var(--color-border)' }};border-radius:6px;background:{{ $tipoPag ? 'var(--color-info-soft)' : 'var(--color-bg-card)' }};color:{{ $tipoPag ? 'var(--color-primary)' : 'var(--color-text-muted)' }};cursor:pointer;min-width:140px;">
             <option value="">Todos os tipos</option>
             <option value="dinheiro"     {{ $tipoPag === 'dinheiro'     ? 'selected' : '' }}>Dinheiro</option>
             <option value="pix"          {{ $tipoPag === 'pix'          ? 'selected' : '' }}>Pix</option>
@@ -165,7 +165,7 @@
 
         @if($temFiltroAtivo)
         <a href="{{ route('despesas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
-           style="font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;white-space:nowrap;">
+           style="font-size:12px;color:var(--color-text-muted);text-decoration:none;padding:5px 10px;border:1px solid var(--color-border);border-radius:6px;white-space:nowrap;">
             <i class="fa-solid fa-xmark"></i> Limpar filtros
         </a>
         @endif
@@ -181,15 +181,15 @@
     {{-- Cabeçalho --}}
     <div class="ext-header">
         <div style="display:flex;align-items:center;gap:8px;">
-            <i class="fa-solid fa-arrow-trend-down" style="color:#ef4444;font-size:13px;"></i>
-            <span style="font-size:14px;font-weight:600;color:#1e293b;">Despesas</span>
-            <span style="font-size:11px;color:#64748b;">
+            <i class="fa-solid fa-arrow-trend-down" style="color:var(--color-danger);font-size:13px;"></i>
+            <span style="font-size:14px;font-weight:600;color:var(--color-text);">Despesas</span>
+            <span style="font-size:11px;color:var(--color-text-muted);">
                 {{ \Carbon\Carbon::parse($inicio)->format('d/m/Y') }} → {{ \Carbon\Carbon::parse($fim)->format('d/m/Y') }}
             </span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:13px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
-            <span style="font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;padding:3px 10px;border-radius:20px;">{{ $despesas->total() }}</span>
+            <span style="font-size:13px;font-weight:700;color:var(--color-danger);">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:var(--color-bg-inset);padding:3px 10px;border-radius:20px;">{{ $despesas->total() }}</span>
         </div>
     </div>
 
@@ -206,7 +206,7 @@
 
     <div class="ext-date-header">
         <span class="ext-date-label">{{ $labelD2 }}</span>
-        <span style="font-size:11.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalDia2, 2, ',', '.') }}</span>
+        <span style="font-size:11.5px;font-weight:700;color:var(--color-danger);">− R$ {{ number_format($totalDia2, 2, ',', '.') }}</span>
     </div>
 
     @foreach($itens as $despesa)
@@ -219,19 +219,19 @@
         $dDesc  = $despesa->observacoes ?? $despesa->fornecedor?->nome ?? '—';
         $dIcone = $despesa->categoria?->icone ?? 'fa-cart-shopping';
         $dConta = $despesa->banco?->nome ?? '—';
-        $dCor   = $despesa->banco?->cor ?? '#94a3b8';
+        $dCor   = $despesa->banco?->cor ?? 'var(--color-text-subtle)';
     @endphp
 
     <div class="ext-row ext-debito">
 
         <div class="ext-icone ext-debito">
-            <i class="fa-solid {{ $dIcone }}" style="font-size:16px;color:#ef4444;"></i>
+            <i class="fa-solid {{ $dIcone }}" style="font-size:16px;color:var(--color-danger);"></i>
         </div>
 
         <div class="ext-info">
             <div class="ext-desc" title="{{ $dDesc }}">{{ $dDesc }}</div>
             <div class="ext-meta">
-                <span style="font-size:11px;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:5px;white-space:nowrap;">
+                <span style="font-size:11px;font-weight:600;color:var(--color-text-muted);background:var(--color-bg-inset);padding:2px 7px;border-radius:5px;white-space:nowrap;">
                     <i class="fa-regular fa-calendar" style="font-size:10px;"></i> {{ $despesa->data_compra->format('d/m') }}
                 </span>
                 <span class="ext-conta-pill">
@@ -242,7 +242,7 @@
                 <span class="ext-tag ext-tag-cat">{{ $despesa->categoria->nome }}</span>
                 @endif
                 @if($despesa->familiar)
-                <span class="ext-tag" style="background:#f0f9ff;color:#0369a1;">{{ $despesa->familiar->nome }}</span>
+                <span class="ext-tag" style="background:var(--color-info-soft);color:var(--color-info);">{{ $despesa->familiar->nome }}</span>
                 @endif
                 @if($despesa->recorrente)
                 <span class="ext-tag ext-tag-rec"><i class="fa-solid fa-rotate" style="font-size:8px;"></i> Recorrente</span>
@@ -274,20 +274,20 @@
     @endforeach
 
     <div class="ext-footer">
-        <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
+        <span style="font-size:10px;font-weight:700;color:var(--color-text-subtle);text-transform:uppercase;letter-spacing:.05em;margin-right:auto;">Total do período</span>
         <div class="ext-footer-item">
-            <span class="ext-footer-dot" style="background:#ef4444;"></span>
-            <span style="font-size:12.5px;font-weight:700;color:#ef4444;">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
+            <span class="ext-footer-dot" style="background:var(--color-danger);"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--color-danger);">− R$ {{ number_format($totalValor, 2, ',', '.') }}</span>
         </div>
     </div>
 
     @else
     <div style="text-align:center;padding:48px 20px;">
-        <div style="width:56px;height:56px;border-radius:14px;background:#fff1f2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-            <i class="fa-solid fa-inbox" style="font-size:22px;color:#ef4444;opacity:.5;"></i>
+        <div style="width:56px;height:56px;border-radius:14px;background:var(--color-danger-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-inbox" style="font-size:22px;color:var(--color-danger);opacity:.5;"></i>
         </div>
-        <p style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:4px;">Nenhuma despesa encontrada</p>
-        <p style="font-size:12px;color:#94a3b8;">Ajuste o período ou os filtros acima.</p>
+        <p style="font-size:13px;font-weight:600;color:var(--color-text-muted);margin-bottom:4px;">Nenhuma despesa encontrada</p>
+        <p style="font-size:12px;color:var(--color-text-subtle);">Ajuste o período ou os filtros acima.</p>
     </div>
     @endif
 
@@ -391,20 +391,20 @@
 
                     {{-- Bloco cartão de crédito: aparece quando tipo = credito --}}
                     <div id="novo-info-credito" style="display:none;" class="form-group span-2">
-                        <div style="padding:10px 14px;border-radius:7px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;margin-bottom:10px;line-height:1.7;">
-                            <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                        <div style="padding:10px 14px;border-radius:7px;background:var(--color-warning-soft);border:1px solid var(--color-amber);font-size:12px;margin-bottom:10px;line-height:1.7;">
+                            <i class="fa-solid fa-credit-card" style="color:var(--color-amber);"></i>
                             <strong>Compra no Cartão de Crédito</strong><br>
                             <span id="novo-aviso-fatura-texto">Selecione o banco para ver as informações de fatura.</span>
                         </div>
                         <div style="display:flex;gap:12px;align-items:flex-end;">
                             <div style="flex:1;">
-                                <label class="form-label">Nº de Parcelas <span style="font-size:11px;color:#94a3b8;">(0 = recorrente mensal)</span></label>
+                                <label class="form-label">Nº de Parcelas <span style="font-size:11px;color:var(--color-text-subtle);">(0 = recorrente mensal)</span></label>
                                 <input type="number" name="parcelas" id="novo-parcelas" value="1" min="0" max="48" class="form-control"
                                        oninput="despesaOnParcelasChange(this)">
                             </div>
                             <div style="flex:1;">
-                                <label class="form-label" style="color:#64748b;font-size:11px;">Valor por parcela</label>
-                                <div id="novo-valor-parcela" style="padding:8px 12px;background:#f1f5f9;border-radius:6px;font-weight:700;color:#1e293b;font-size:13px;">—</div>
+                                <label class="form-label" style="color:var(--color-text-muted);font-size:11px;">Valor por parcela</label>
+                                <div id="novo-valor-parcela" style="padding:8px 12px;background:var(--color-bg-inset);border-radius:6px;font-weight:700;color:var(--color-text);font-size:13px;">—</div>
                             </div>
                         </div>
                     </div>
@@ -529,8 +529,8 @@
 
                     {{-- Escopo da edição (aparece só em despesas recorrentes) --}}
                     <div id="edit-escopo-container" style="display:none;" class="form-group span-2">
-                        <div class="alert alert-info" style="padding:8px 12px; border-radius:6px; background:#fffbeb; border:1px solid #fde68a; font-size:13px; margin-bottom:8px;">
-                            <i class="fa-solid fa-rotate" style="color:#f59e0b;"></i>
+                        <div class="alert alert-info" style="padding:8px 12px; border-radius:6px; background:var(--color-warning-soft); border:1px solid var(--color-amber); font-size:13px; margin-bottom:8px;">
+                            <i class="fa-solid fa-rotate" style="color:var(--color-amber);"></i>
                             Esta é uma despesa recorrente. Escolha o que deseja alterar:
                         </div>
                         <select name="escopo" id="edit-escopo" class="form-control">
@@ -562,7 +562,7 @@
 <div class="modal-backdrop" id="modal-confirmar-exclusao-despesa" style="z-index:1100;">
     <div class="modal" style="max-width:420px;">
         <div class="modal-header">
-            <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
+            <i class="fa-solid fa-triangle-exclamation" style="color:var(--color-danger);"></i>
             <h3>Excluir Despesa</h3>
             <button class="modal-close" onclick="closeModal('modal-confirmar-exclusao-despesa')">&times;</button>
         </div>
@@ -576,7 +576,7 @@
                     <button type="button" onclick="closeModal('modal-confirmar-exclusao-despesa')" class="btn btn-secondary">
                         <i class="fa-solid fa-times"></i> Cancelar
                     </button>
-                    <button type="button" onclick="confirmarExclusaoDespesa('apenas_esta')" class="btn" style="background:#dc2626;color:#fff;">
+                    <button type="button" onclick="confirmarExclusaoDespesa('apenas_esta')" class="btn" style="background:var(--color-danger);color:#fff;">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -587,15 +587,15 @@
                     Esta é uma <strong>despesa recorrente</strong>. O que você deseja fazer?
                 </p>
                 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;" id="lbl-exc-d-apenas">
-                        <input type="radio" name="opcao-excluir-d" value="apenas_esta" checked onchange="excDAtualizarSelecao()" style="margin-top:2px;accent-color:#dc2626;">
+                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid var(--color-border);border-radius:8px;cursor:pointer;" id="lbl-exc-d-apenas">
+                        <input type="radio" name="opcao-excluir-d" value="apenas_esta" checked onchange="excDAtualizarSelecao()" style="margin-top:2px;accent-color:var(--color-danger);">
                         <div>
                             <div style="font-weight:600;font-size:13px;">Somente esta</div>
                             <div style="font-size:12px;color:var(--color-text-muted);">Remove apenas este lançamento</div>
                         </div>
                     </label>
-                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;" id="lbl-exc-d-futuras">
-                        <input type="radio" name="opcao-excluir-d" value="esta_e_futuras" onchange="excDAtualizarSelecao()" style="margin-top:2px;accent-color:#dc2626;">
+                    <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:2px solid var(--color-border);border-radius:8px;cursor:pointer;" id="lbl-exc-d-futuras">
+                        <input type="radio" name="opcao-excluir-d" value="esta_e_futuras" onchange="excDAtualizarSelecao()" style="margin-top:2px;accent-color:var(--color-danger);">
                         <div>
                             <div style="font-weight:600;font-size:13px;">Esta e todas as próximas</div>
                             <div style="font-size:12px;color:var(--color-text-muted);">Remove este e todos os lançamentos futuros da recorrência</div>
@@ -606,7 +606,7 @@
                     <button type="button" onclick="closeModal('modal-confirmar-exclusao-despesa')" class="btn btn-secondary">
                         <i class="fa-solid fa-times"></i> Cancelar
                     </button>
-                    <button type="button" onclick="confirmarExclusaoDespesa()" class="btn" style="background:#dc2626;color:#fff;">
+                    <button type="button" onclick="confirmarExclusaoDespesa()" class="btn" style="background:var(--color-danger);color:#fff;">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -822,8 +822,8 @@ function excluirDespesa(id, isRecorrente) {
 
 function excDAtualizarSelecao() {
     const val = document.querySelector('[name="opcao-excluir-d"]:checked').value;
-    document.getElementById('lbl-exc-d-apenas').style.borderColor  = val === 'apenas_esta'    ? '#dc2626' : '#e2e8f0';
-    document.getElementById('lbl-exc-d-futuras').style.borderColor = val === 'esta_e_futuras' ? '#dc2626' : '#e2e8f0';
+    document.getElementById('lbl-exc-d-apenas').style.borderColor  = val === 'apenas_esta'    ? 'var(--color-danger)' : 'var(--color-border)';
+    document.getElementById('lbl-exc-d-futuras').style.borderColor = val === 'esta_e_futuras' ? 'var(--color-danger)' : 'var(--color-border)';
 }
 
 function confirmarExclusaoDespesa(escopoFixo) {
