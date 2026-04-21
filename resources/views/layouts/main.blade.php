@@ -54,7 +54,7 @@
             --color-info-soft:    #e0f2fe;
             --color-violet-soft:  #ede9fe;
             --radius-card: 8px;
-            --radius-btn: 6px;
+            --radius-btn: 9999px;
             --radius-badge: 4px;
             --shadow-card: 0 2px 8px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
         }
@@ -189,7 +189,7 @@
         .sidebar-user-action {
             flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
             height: 32px; padding: 0 10px;
-            border: 1px solid transparent; border-radius: 6px;
+            border: 1px solid transparent; border-radius: 9999px;
             background: transparent; color: #94a3b8;
             font-size: 12px; font-weight: 500; text-decoration: none; cursor: pointer;
             transition: background .15s, color .15s, border-color .15s;
@@ -238,7 +238,7 @@
             display: none;
             width: 36px; height: 36px;
             border: none; background: none; cursor: pointer;
-            border-radius: 6px; color: #64748b;
+            border-radius: 9999px; color: #64748b;
             align-items: center; justify-content: center;
             font-size: 16px;
             flex-shrink: 0;
@@ -263,7 +263,7 @@
             display: flex; align-items: center; justify-content: center;
             width: 36px; height: 36px;
             border: 1px solid var(--color-border);
-            border-radius: 8px;
+            border-radius: 9999px;
             background: var(--color-bg);
             color: #64748b;
             cursor: pointer;
@@ -707,7 +707,7 @@
         .form-control {
             width: 100%; padding: 8px 10px;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius-btn); font-size: 13px;
+            border-radius: 6px; font-size: 13px;
             color: var(--color-text); background: var(--color-bg-card, #fff); outline: none;
             transition: border-color .15s, box-shadow .15s;
         }
@@ -830,7 +830,7 @@
         /* Logout button (looks like sidebar-link) */
         .sidebar-logout {
             display: flex; align-items: center; gap: 10px;
-            padding: 8px 10px; border-radius: 6px; width: 100%;
+            padding: 8px 10px; border-radius: 9999px; width: 100%;
             background: none; border: none; cursor: pointer;
             color: #64748b; font-size: 14px; font-weight: 500;
             transition: background .15s, color .15s;
@@ -928,7 +928,7 @@
         .s-venc { color:#ef4444; }
         .s-pend { color:#d97706; }
         .ext-actions { display:flex; align-items:center; gap:2px; flex-shrink:0; }
-        .ext-del-btn, .ext-edit-btn { opacity:0; transition:opacity .15s; background:none; border:none; cursor:pointer; padding:6px; border-radius:6px; line-height:1; }
+        .ext-del-btn, .ext-edit-btn { opacity:0; transition:opacity .15s; background:none; border:none; cursor:pointer; padding:6px; border-radius:9999px; line-height:1; }
         .ext-del-btn  { color:#94a3b8; }
         .ext-edit-btn { color:#94a3b8; }
         .ext-del-btn:hover  { background:#fff1f2; color:#ef4444; }

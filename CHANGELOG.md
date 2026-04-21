@@ -1,5 +1,24 @@
 # Changelog
 
+## AlfaHome — 21/04/2026 — Ícone de calendário visível no modo escuro
+
+### Correções
+- O ícone de calendário nos campos de data (despesas, receitas, fluxo de caixa e outras telas) agora aparece corretamente no modo escuro, sem ficar invisível sobre o fundo escuro.
+
+## AlfaHome — 15/04/2026 — Tema escuro consistente e sidebar mais acessível
+
+### Novidades
+- Os botões **Editar perfil** e **Sair** no rodapé da barra lateral ganharam uma linha própria, com rótulos visíveis e área de clique muito maior. Antes eram ícones minúsculos de ~11px colados ao nome do usuário; agora ficam lado a lado como dois botões confortáveis, fáceis de acertar em um clique. Com a barra lateral recolhida, viram dois quadrados de 36×36 empilhados.
+
+### Melhorias
+- **Tema escuro padronizado em todas as telas principais**: Despesas, Receitas, Investimentos, Membros, Fornecedores, Categorias, Indicar Amigos, Bancos, Alertas, Dashboard, Fluxo de Caixa e Lançamentos. Cores de fundo, bordas, textos e ícones agora se adaptam automaticamente ao tema ativo, sem áreas "presas" no claro quando o resto está escuro.
+- **Ícones do menu lateral recolhido** ficam maiores e perfeitamente centralizados. Antes apareciam deslocados para a esquerda porque um espaço invisível do rótulo ainda ocupava a linha.
+
+### Correções
+- **Ao trocar do tema escuro para o claro**, o fundo da página às vezes continuava escuro até o usuário dar F5. Agora a troca é imediata e completa.
+- **Card do C6 Bank** (que tem a cor de identidade preta) voltou a ter a borda superior visível no tema escuro. Antes ficava invisível sobre o fundo escuro e dava a impressão de que o card não tinha borda.
+- **Nome, e-mail e botões do usuário** no rodapé da sidebar ficavam quase ilegíveis no tema escuro (cinza muito escuro sobre fundo escuro). Agora usam um cinza mais claro, bem legível.
+
 ## AlfaHome — 15/04/2026 — Sair da conta agora funciona mesmo em abas antigas
 
 ### Melhorias

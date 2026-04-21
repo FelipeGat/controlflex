@@ -1,0 +1,3555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlfaGym — Gestão inteligente para academias</title>
+  <meta name="description" content="Sistema completo para gestão de academias. Alunos, finanças, controle de acesso, treinos e muito mais. Experimente grátis." />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script>
+    // Aplicar tema antes do render para evitar flash
+    (function() {
+      var saved = localStorage.getItem('lp-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = saved || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:       #ffffff;
+      --bg-alt:      #f8fafc;
+      --navy:        #0f172a;
+      --teal:        #1696a3;
+      --teal-dark:   #117a85;
+      --orange:      #ff7a0d;
+      --orange-dark: #e06800;
+      --text:        #0f172a;
+      --text-sm:     #64748b;
+      --border:      #e2e8f0;
+      --radius:      12px;
+      --shadow:      0 4px 24px rgba(15,23,42,.08);
+      --shadow-lg:   0 12px 48px rgba(15,23,42,.14);
+      --bg-body:     #ffffff;
+      --bg-section:  #ffffff;
+      --bg-card:     #ffffff;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.06);
+      --dep-text:    #334155;
+      --faq-bg:      #ffffff;
+      --faq-hover:   #f8fafc;
+    }
+
+    [data-theme="dark"] {
+      --white:       #0f172a;
+      --bg-alt:      #1e293b;
+      --text:        #e2e8f0;
+      --text-sm:     #94a3b8;
+      --border:      #334155;
+      --shadow:      0 4px 24px rgba(0,0,0,.25);
+      --shadow-lg:   0 12px 48px rgba(0,0,0,.35);
+      --bg-body:     #0b1120;
+      --bg-section:  #0f172a;
+      --bg-card:     #1e293b;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.2);
+      --dep-text:    #cbd5e1;
+      --faq-bg:      #1e293b;
+      --faq-hover:   #263548;
+    }
+
+    /* ─── Light overrides para seções escuras ──────────────────────────────── */
+    [data-theme="light"] #hero {
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 40%, #e8f4f8 70%, #f0f9ff 100%);
+    }
+    [data-theme="light"] #hero::before {
+      background:
+        radial-gradient(ellipse 60% 50% at 70% 40%, rgba(22,150,163,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(255,122,13,.05) 0%, transparent 50%);
+    }
+    [data-theme="light"] .hero-title { color: #0f172a; }
+    [data-theme="light"] .hero-title span { color: var(--orange); }
+    [data-theme="light"] .hero-subtitle { color: #64748b; }
+    [data-theme="light"] .hero-eyebrow-text { color: #94a3b8; }
+    [data-theme="light"] .hero-trust-text { color: #94a3b8; }
+    [data-theme="light"] .hero-trust-text strong { color: #475569; }
+    [data-theme="light"] .hero-trust-avatars span { border-color: #e2e8f0; }
+    [data-theme="light"] .btn-ghost {
+      color: #0f172a;
+      border-color: rgba(15,23,42,.2);
+    }
+    [data-theme="light"] .btn-ghost:hover {
+      background: rgba(15,23,42,.06);
+      border-color: rgba(15,23,42,.35);
+    }
+
+    /* Navbar light */
+    [data-theme="light"] #navbar.scrolled {
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    [data-theme="light"] .nav-links a { color: #475569; }
+    [data-theme="light"] .nav-links a:hover { color: #0f172a; }
+    [data-theme="light"] .nav-logo-text { color: #0f172a; }
+    [data-theme="light"] .nav-hamburger span { background: #0f172a; }
+    [data-theme="light"] #navbar.scrolled .btn-ghost {
+      color: #0f172a;
+      border-color: rgba(15,23,42,.2);
+    }
+    [data-theme="light"] #navbar.scrolled .btn-ghost:hover {
+      background: rgba(15,23,42,.06);
+      border-color: rgba(15,23,42,.35);
+    }
+    [data-theme="light"] .theme-toggle { background: rgba(15,23,42,.08); }
+    [data-theme="light"] .theme-toggle:hover { background: rgba(15,23,42,.14); }
+    [data-theme="light"] .theme-toggle svg { color: #475569; }
+
+    /* Números bar — mantém orange */
+
+    /* Planos light */
+    [data-theme="light"] #planos { background: #f8fafc; }
+    [data-theme="light"] #planos::before {
+      background: radial-gradient(circle, rgba(22,150,163,.06) 0%, transparent 70%);
+    }
+    [data-theme="light"] #planos .section-header .section-title { color: #0f172a; }
+    [data-theme="light"] #planos .section-header .section-subtitle { color: #64748b; }
+    [data-theme="light"] .plano-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+    [data-theme="light"] .plano-card:hover {
+      background: #ffffff;
+      border-color: rgba(22,150,163,.3);
+      box-shadow: 0 12px 48px rgba(15,23,42,.1);
+    }
+    [data-theme="light"] .plano-card.featured {
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+    [data-theme="light"] .plano-name { color: #0f172a; }
+    [data-theme="light"] .plano-card.featured .plano-name { color: #fff; }
+    [data-theme="light"] .plano-desc { color: #64748b; }
+    [data-theme="light"] .plano-card.featured .plano-desc { color: rgba(255,255,255,.8); }
+    [data-theme="light"] .plano-item { color: #475569; }
+    [data-theme="light"] .plano-card.featured .plano-item { color: rgba(255,255,255,.9); }
+    [data-theme="light"] .plano-item svg { color: #475569; }
+    [data-theme="light"] .plano-card.featured .plano-item svg { color: rgba(255,255,255,.9); }
+    [data-theme="light"] .plano-cta-ghost {
+      border-color: #e2e8f0;
+      color: #475569;
+    }
+    [data-theme="light"] .plano-cta-ghost:hover {
+      background: #f8fafc;
+      border-color: rgba(22,150,163,.3);
+      color: #0f172a;
+    }
+    [data-theme="light"] .plano-badge { background: rgba(22,150,163,.1); color: var(--teal); }
+    [data-theme="light"] .plano-card.featured .plano-badge { background: rgba(255,255,255,.2); color: #fff; }
+
+    /* Contato light */
+    [data-theme="light"] #contato { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); }
+    [data-theme="light"] #contato::before { background: rgba(255,122,13,.04); }
+    [data-theme="light"] #contato::after { background: rgba(255,122,13,.03); }
+    [data-theme="light"] .contato-text .section-label { color: var(--orange); }
+    [data-theme="light"] .contato-text .section-title { color: #0f172a; }
+    [data-theme="light"] .contato-text .section-subtitle { color: #64748b; }
+    [data-theme="light"] .contato-item { color: #475569; }
+    [data-theme="light"] .contato-item-icon { background: rgba(255,122,13,.1); }
+    [data-theme="light"] .contato-item-icon svg { stroke: var(--orange); }
+    [data-theme="light"] .contato-form {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+    [data-theme="light"] .contato-form h3 { color: #0f172a; }
+    [data-theme="light"] .form-group-lp label { color: #64748b; }
+    [data-theme="light"] .form-group-lp input,
+    [data-theme="light"] .form-group-lp select {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+    [data-theme="light"] .form-group-lp input::placeholder { color: #94a3b8; }
+    [data-theme="light"] .form-group-lp input:focus,
+    [data-theme="light"] .form-group-lp select:focus {
+      border-color: var(--orange);
+      background: #ffffff;
+    }
+    [data-theme="light"] .form-group-lp select option { background: #fff; color: #0f172a; }
+    [data-theme="light"] .form-submit {
+      background: var(--orange);
+      color: #fff;
+    }
+    [data-theme="light"] .form-submit:hover {
+      background: var(--orange-dark);
+      box-shadow: 0 6px 24px rgba(255,122,13,.25);
+    }
+
+    /* Revenda light */
+    [data-theme="light"] #revenda { background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 50%, #f0f9ff 100%); }
+    [data-theme="light"] #revenda::before { background: rgba(22,150,163,.05); }
+    [data-theme="light"] #revenda::after { background: rgba(255,122,13,.03); }
+    [data-theme="light"] .revenda-text .section-title { color: #0f172a; }
+    [data-theme="light"] .revenda-text .section-subtitle { color: #64748b; }
+    [data-theme="light"] .revenda-benefit-icon { background: rgba(22,150,163,.1); }
+    [data-theme="light"] .revenda-benefit-content h4 { color: #0f172a; }
+    [data-theme="light"] .revenda-benefit-content p { color: #64748b; }
+    [data-theme="light"] .revenda-form {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+    [data-theme="light"] .revenda-form h3 { color: #0f172a; }
+    [data-theme="light"] .revenda-form .form-group-lp input,
+    [data-theme="light"] .revenda-form .form-group-lp select {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+    [data-theme="light"] .revenda-form .form-group-lp input::placeholder { color: #94a3b8; }
+    [data-theme="light"] .revenda-form .form-group-lp input:focus,
+    [data-theme="light"] .revenda-form .form-group-lp select:focus {
+      border-color: var(--teal);
+      background: #ffffff;
+    }
+    [data-theme="light"] .revenda-form .form-group-lp select option { background: #fff; color: #0f172a; }
+    [data-theme="light"] .revenda-form .form-submit {
+      background: var(--teal);
+      color: #fff;
+    }
+    [data-theme="light"] .revenda-form .form-submit:hover {
+      background: var(--teal-dark);
+    }
+
+    /* Footer light */
+    [data-theme="light"] footer { background: #f8fafc; }
+    [data-theme="light"] .footer-brand-text { color: #64748b; }
+    [data-theme="light"] .footer-col-title { color: #94a3b8; }
+    [data-theme="light"] .footer-links a { color: #475569; }
+    [data-theme="light"] .footer-links a:hover { color: #0f172a; }
+    [data-theme="light"] .footer-top { border-bottom-color: #e2e8f0; }
+    [data-theme="light"] .footer-bottom { color: #94a3b8; }
+    [data-theme="light"] .footer-bottom a { color: #64748b; }
+    [data-theme="light"] .footer-bottom a:hover { color: #0f172a; }
+
+    /* Mobile menu light */
+    [data-theme="light"] .mobile-menu { background: #ffffff; }
+    [data-theme="light"] .mobile-menu a { color: #475569; border-bottom-color: #e2e8f0; }
+    [data-theme="light"] .mobile-menu-close { background: rgba(15,23,42,.06); color: #475569; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+
+    /* ─── Utilities ────────────────────────────────────────────────────────── */
+    .container {
+      width: 100%;
+      max-width: 1140px;
+      margin-inline: auto;
+      padding-inline: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1;
+      transition: all .18s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--orange);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,122,13,.35); }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,.4);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.7); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--orange);
+      border: 1.5px solid var(--orange);
+    }
+    .btn-outline:hover { background: var(--orange); color: #fff; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .badge-teal {
+      background: rgba(22,150,163,.12);
+      color: var(--teal);
+      border: 1px solid rgba(22,150,163,.2);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text);
+      margin-top: 8px;
+    }
+
+    .section-subtitle {
+      font-size: 1.0625rem;
+      color: var(--text-sm);
+      margin-top: 14px;
+      max-width: 600px;
+    }
+
+    /* ─── Navbar ────────────────────────────────────────────────────────────── */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 900;
+      padding: 0;
+      transition: background .25s, backdrop-filter .25s, box-shadow .25s;
+    }
+
+    #navbar.scrolled {
+      background: rgba(15,23,42,.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      height: 68px;
+      gap: 40px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .nav-logo-text {
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo-text span { color: var(--orange); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex: 1;
+    }
+
+    .nav-links a {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: rgba(255,255,255,.75);
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: #fff; }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .nav-mobile-right {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .theme-toggle-mobile { display: none; }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 8px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: all .2s;
+    }
+
+    /* ─── Hero ──────────────────────────────────────────────────────────────── */
+    #hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1a2744 40%, #0f3441 70%, #0a2332 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 70% 40%, rgba(22,150,163,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 20% 70%, rgba(255,122,13,.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 48px;
+      align-items: center;
+      padding-block: 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .hero-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--orange);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .6; transform: scale(.8); }
+    }
+
+    .hero-eyebrow-text {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.6);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .hero-title span { color: var(--orange); }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: rgba(255,255,255,.65);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .hero-trust {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .hero-trust-avatars {
+      display: flex;
+    }
+
+    .hero-trust-avatars span {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid #1a2744;
+      background: linear-gradient(135deg, var(--teal), var(--orange));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: #fff;
+      margin-left: -8px;
+    }
+    .hero-trust-avatars span:first-child { margin-left: 0; }
+
+    .hero-trust-text {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,.55);
+    }
+    .hero-trust-text strong { color: rgba(255,255,255,.85); font-weight: 600; }
+
+    /* Dashboard Mockup */
+    .hero-mockup {
+      position: relative;
+    }
+
+    .hero-mockup img {
+      width: 130%;
+      max-width: none;
+      border-radius: 14px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+      transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+    }
+
+    .mockup-window {
+      background: #1e293b;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+      transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+    }
+
+    .mockup-titlebar {
+      background: #0f172a;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mockup-dot:nth-child(1) { background: #ff5f57; }
+    .mockup-dot:nth-child(2) { background: #febc2e; }
+    .mockup-dot:nth-child(3) { background: #28c840; }
+
+    .mockup-url {
+      flex: 1;
+      background: #1e293b;
+      border-radius: 6px;
+      height: 22px;
+      margin-left: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+    }
+
+    .mockup-url-text {
+      font-size: 0.6875rem;
+      color: rgba(255,255,255,.35);
+    }
+
+    .mockup-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mockup-sidebar {
+      position: absolute;
+      left: 0; top: 42px; bottom: 0;
+      width: 48px;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 16px 0;
+    }
+
+    .mockup-sidebar-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mockup-sidebar-icon.active {
+      background: var(--orange);
+    }
+
+    .mockup-kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .mockup-kpi {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .mockup-kpi-label {
+      font-size: 0.5rem;
+      color: rgba(255,255,255,.4);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .mockup-kpi-value {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .mockup-kpi-value.orange { color: var(--orange); }
+    .mockup-kpi-value.teal { color: var(--teal); }
+    .mockup-kpi-value.green { color: #22d3ee; }
+
+    .mockup-chart {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 12px;
+      height: 100px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .mockup-bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: rgba(22,150,163,.3);
+      transition: height .3s;
+    }
+    .mockup-bar.highlight { background: var(--orange); }
+
+    .mockup-table {
+      background: #0f172a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .mockup-table-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+
+    .mockup-table-row:last-child { border-bottom: none; }
+
+    .mockup-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .mockup-table-name {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,.7);
+      flex: 1;
+    }
+
+    .mockup-table-status {
+      font-size: 0.5rem;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .mockup-table-status.active {
+      background: rgba(34,197,94,.15);
+      color: #4ade80;
+    }
+
+    .mockup-table-status.warning {
+      background: rgba(255,122,13,.15);
+      color: var(--orange);
+    }
+
+    .mockup-floating {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .mockup-floating-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: rgba(22,150,163,.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mockup-floating-label {
+      font-size: 0.6875rem;
+      color: var(--text-sm);
+    }
+
+    .mockup-floating-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mockup-floating-2 {
+      position: absolute;
+      bottom: -16px;
+      left: -16px;
+      background: var(--orange);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(255,122,13,.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── Numbers Bar ───────────────────────────────────────────────────────── */
+    #numeros {
+      background: var(--orange);
+      padding: 48px 0;
+    }
+
+    .numeros-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+
+    .numeros-item {
+      position: relative;
+    }
+
+    .numeros-item + .numeros-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%;
+      width: 1px;
+      height: 60%;
+      background: rgba(255,255,255,.25);
+    }
+
+    .numeros-value {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .numeros-label {
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.75);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* ─── Features ──────────────────────────────────────────────────────────── */
+    #funcionalidades {
+      padding: 96px 0;
+      background: var(--bg-section);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .section-header .section-subtitle {
+      margin-inline: auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all .2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(22,150,163,.3);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .feature-icon.teal { background: rgba(22,150,163,.1); }
+    .feature-icon.orange { background: rgba(255,122,13,.1); }
+    .feature-icon.green { background: rgba(34,197,94,.1); }
+    .feature-icon.purple { background: rgba(139,92,246,.1); }
+    .feature-icon.blue { background: rgba(59,130,246,.1); }
+    .feature-icon.rose { background: rgba(244,63,94,.1); }
+
+    .feature-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 0.9375rem;
+      color: var(--text-sm);
+      line-height: 1.6;
+    }
+
+    /* ─── Spotlight ─────────────────────────────────────────────────────────── */
+    .spotlight {
+      padding: 80px 0;
+    }
+
+    .spotlight:nth-child(even) { background: var(--bg-alt); }
+
+    .spotlight-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+    }
+
+    .spotlight-inner.reverse {
+      direction: rtl;
+    }
+    .spotlight-inner.reverse > * {
+      direction: ltr;
+    }
+
+    .spotlight-text .section-label { margin-bottom: 10px; display: block; }
+
+    .spotlight-text .section-title { margin-top: 0; }
+
+    .spotlight-text p {
+      font-size: 1rem;
+      color: var(--text-sm);
+      line-height: 1.7;
+      margin-top: 14px;
+    }
+
+    .spotlight-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .spotlight-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9375rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .spotlight-visual::before {
+      background: rgba(22,150,163,.08);
+    }
+    [data-theme="dark"] .spotlight-visual::before {
+      background: rgba(22,150,163,.15);
+    }
+
+    .check-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(22,150,163,.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .spotlight-cta { margin-top: 28px; }
+
+    /* Spotlight Mockups */
+    .spotlight-visual {
+      background: var(--bg-alt);
+      border-radius: 18px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spotlight-visual--img {
+      background: none;
+      padding: 0;
+      min-height: auto;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .spotlight-visual--img img {
+      width: 100%;
+      display: block;
+      border-radius: 14px;
+    }
+
+    .spotlight-visual::before {
+      content: '';
+      position: absolute;
+      bottom: -40px; right: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(22,150,163,.08);
+    }
+
+    .spot-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spot-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .spot-info { flex: 1; }
+
+    .spot-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .spot-meta {
+      font-size: 0.75rem;
+      color: var(--text-sm);
+      margin-top: 2px;
+    }
+
+    .spot-status {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    .spot-status.ok { background: rgba(34,197,94,.12); color: #16a34a; }
+    .spot-status.warn { background: rgba(255,122,13,.12); color: var(--orange); }
+    .spot-status.late { background: rgba(244,63,94,.12); color: #e11d48; }
+
+    .spot-stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .spot-stat {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+    }
+
+    .spot-stat-value {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .spot-stat-label {
+      font-size: 0.6875rem;
+      color: var(--text-sm);
+      margin-top: 2px;
+    }
+
+    /* ─── Planos ────────────────────────────────────────────────────────────── */
+    #planos {
+      padding: 96px 0;
+      background: var(--navy);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #planos::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(22,150,163,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #planos .section-header .section-title { color: #fff; }
+    #planos .section-header .section-subtitle { color: rgba(255,255,255,.55); }
+
+    .planos-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .plano-card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all .2s;
+    }
+
+    .plano-card:hover {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.2);
+      transform: translateY(-4px);
+    }
+
+    .plano-card.featured {
+      background: var(--orange);
+      border-color: var(--orange);
+      transform: scale(1.02);
+      box-shadow: 0 20px 60px rgba(255,122,13,.4);
+    }
+
+    .plano-card.featured:hover {
+      transform: scale(1.02) translateY(-4px);
+    }
+
+    .plano-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.2);
+      color: #fff;
+      align-self: flex-start;
+    }
+
+    .plano-name {
+      font-size: 1.375rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .plano-desc {
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.65);
+      line-height: 1.55;
+    }
+
+    .plano-card.featured .plano-desc { color: rgba(255,255,255,.8); }
+
+    .plano-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .plano-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.8);
+    }
+
+    .plano-item svg { flex-shrink: 0; }
+
+    .plano-card.featured .plano-item { color: rgba(255,255,255,.9); }
+
+    .plano-cta {
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      text-align: center;
+      transition: all .18s;
+      display: block;
+    }
+
+    .plano-cta-ghost {
+      border: 1.5px solid rgba(255,255,255,.25);
+      color: rgba(255,255,255,.8);
+    }
+    .plano-cta-ghost:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.5); color: #fff; }
+
+    .plano-cta-solid {
+      background: #fff;
+      color: var(--orange);
+    }
+    .plano-cta-solid:hover { background: rgba(255,255,255,.92); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+
+    /* ─── Depoimentos ───────────────────────────────────────────────────────── */
+    #depoimentos {
+      padding: 96px 0;
+      background: var(--bg-alt);
+    }
+
+    .depoimentos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .depoimento-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: box-shadow .2s;
+    }
+
+    .depoimento-card:hover { box-shadow: var(--shadow-lg); }
+
+    .depoimento-stars {
+      display: flex;
+      gap: 3px;
+    }
+
+    .star {
+      color: #fbbf24;
+      font-size: 1rem;
+    }
+
+    .depoimento-text {
+      font-size: 0.9375rem;
+      color: var(--dep-text);
+      line-height: 1.7;
+      font-style: italic;
+      flex: 1;
+    }
+
+    .depoimento-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .depoimento-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .depoimento-name {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .depoimento-academia {
+      font-size: 0.8125rem;
+      color: var(--text-sm);
+    }
+
+    /* ─── FAQ ───────────────────────────────────────────────────────────────── */
+    #faq {
+      padding: 96px 0;
+      background: var(--bg-section);
+    }
+
+    .faq-list {
+      max-width: 720px;
+      margin-inline: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .faq-question {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: left;
+      background: var(--faq-bg);
+      transition: background .15s;
+      gap: 16px;
+    }
+
+    .faq-question:hover { background: var(--faq-hover); }
+
+    .faq-question.open { background: var(--faq-hover); color: var(--teal); }
+
+    .faq-chevron {
+      flex-shrink: 0;
+      transition: transform .25s;
+      color: var(--text-sm);
+    }
+
+    .faq-question.open .faq-chevron { transform: rotate(180deg); color: var(--teal); }
+
+    .faq-answer {
+      display: none;
+      padding: 0 24px 20px;
+      font-size: 0.9375rem;
+      color: var(--text-sm);
+      line-height: 1.7;
+      background: var(--faq-hover);
+    }
+
+    .faq-answer.open { display: block; }
+
+    /* ─── CTA Final / Contato ───────────────────────────────────────────────── */
+    #contato {
+      padding: 96px 0;
+      background: linear-gradient(135deg, var(--orange) 0%, #e05800 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #contato::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+
+    #contato::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.06);
+    }
+
+    .contato-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .contato-text .section-label { color: rgba(255,255,255,.7); }
+    .contato-text .section-title { color: #fff; }
+    .contato-text .section-subtitle { color: rgba(255,255,255,.75); }
+
+    .contato-items {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .contato-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.85);
+      font-weight: 500;
+    }
+
+    .contato-item-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: rgba(255,255,255,.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contato-form {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 36px;
+    }
+
+    .contato-form h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+
+    .form-group-lp {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-group-lp label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.75);
+    }
+
+    .form-group-lp input,
+    .form-group-lp select {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9375rem;
+      color: #fff;
+      font-family: inherit;
+      width: 100%;
+      transition: border-color .15s;
+      outline: none;
+    }
+
+    .form-group-lp input::placeholder { color: rgba(255,255,255,.4); }
+
+    .form-group-lp input:focus,
+    .form-group-lp select:focus {
+      border-color: rgba(255,255,255,.5);
+      background: rgba(255,255,255,.16);
+    }
+
+    .form-group-lp select option { background: #0f172a; color: #fff; }
+
+    .form-submit {
+      width: 100%;
+      padding: 15px;
+      background: #fff;
+      color: var(--orange);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .18s;
+      margin-top: 20px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .form-submit:hover {
+      background: rgba(255,255,255,.92);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(0,0,0,.15);
+    }
+
+    /* ─── Revenda ──────────────────────────────────────────────────────────── */
+    #revenda {
+      padding: 96px 0;
+      background: linear-gradient(135deg, var(--navy) 0%, #0c2d3f 50%, #134e5e 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #revenda::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(22,150,163,.12);
+    }
+
+    #revenda::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,122,13,.08);
+    }
+
+    .revenda-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .revenda-text .section-label { color: var(--teal); }
+    .revenda-text .section-title { color: #fff; }
+    .revenda-text .section-subtitle { color: rgba(255,255,255,.75); }
+
+    .revenda-benefits {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 32px;
+    }
+
+    .revenda-benefit {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .revenda-benefit-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(22,150,163,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .revenda-benefit-content h4 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .revenda-benefit-content p {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,.65);
+      line-height: 1.5;
+    }
+
+    .revenda-form {
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 36px;
+    }
+
+    .revenda-form h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+
+    .revenda-form .form-group-lp label { color: rgba(255,255,255,.75); }
+    .revenda-form .form-group-lp input,
+    .revenda-form .form-group-lp select {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+    }
+    .revenda-form .form-group-lp input::placeholder { color: rgba(255,255,255,.35); }
+    .revenda-form .form-group-lp input:focus,
+    .revenda-form .form-group-lp select:focus {
+      border-color: var(--teal);
+      background: rgba(255,255,255,.14);
+    }
+    .revenda-form .form-group-lp select option { background: #0f172a; color: #fff; }
+
+    .revenda-form .form-submit {
+      background: var(--teal);
+      color: #fff;
+    }
+    .revenda-form .form-submit:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(22,150,163,.3);
+    }
+
+    /* ─── Footer ────────────────────────────────────────────────────────────── */
+    footer {
+      background: var(--navy);
+      padding: 56px 0 32px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .footer-brand-text {
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.45);
+      line-height: 1.65;
+      margin-top: 12px;
+      max-width: 280px;
+    }
+
+    .footer-col-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,.35);
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 0.9375rem;
+      color: rgba(255,255,255,.55);
+      transition: color .15s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,.9); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 28px;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,.3);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-bottom a { color: rgba(255,255,255,.4); }
+    .footer-bottom a:hover { color: rgba(255,255,255,.7); }
+
+    /* ─── Mobile Menu ───────────────────────────────────────────────────────── */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--navy);
+      z-index: 950;
+      flex-direction: column;
+      padding: 80px 24px 40px;
+      gap: 8px;
+    }
+
+    .mobile-menu.open { display: flex; }
+
+    .mobile-menu a {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.75);
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .mobile-menu-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .mobile-menu-actions .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .mobile-menu-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: rgba(255,255,255,.7);
+    }
+
+    /* Hero mockup light */
+    [data-theme="light"] .mockup-window { background: #ffffff; box-shadow: 0 32px 80px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.06); }
+    [data-theme="light"] .mockup-titlebar { background: #f1f5f9; }
+    [data-theme="light"] .mockup-url { background: #e2e8f0; }
+    [data-theme="light"] .mockup-url-text { color: #94a3b8; }
+    [data-theme="light"] .mockup-kpi { background: #f8fafc; }
+    [data-theme="light"] .mockup-kpi-label { color: #94a3b8; }
+    [data-theme="light"] .mockup-kpi-value { color: #0f172a; }
+    [data-theme="light"] .mockup-chart { background: #f8fafc; }
+    [data-theme="light"] .mockup-bar { background: rgba(22,150,163,.15); }
+    [data-theme="light"] .mockup-table { background: #f8fafc; }
+    [data-theme="light"] .mockup-table-row { border-bottom-color: #e2e8f0; }
+    [data-theme="light"] .mockup-table-name { color: #475569; }
+    [data-theme="light"] .mockup-sidebar { background: #f1f5f9; }
+
+    /* ─── Theme Toggle ─────────────────────────────────────────────────────── */
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,.22); }
+    .theme-toggle svg { width: 18px; height: 18px; color: #fff; }
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+    /* ─── Theme Transitions ──────────────────────────────────────────────── */
+    body, #hero, #funcionalidades, #depoimentos, #faq,
+    #planos, #contato, #revenda, footer,
+    #navbar, .mobile-menu,
+    .feature-card, .depoimento-card,
+    .faq-question, .faq-answer, .faq-item,
+    .spotlight-visual, .spot-card, .spot-stat,
+    .mockup-floating, .section-title, .section-subtitle,
+    .feature-title, .feature-desc, .spotlight-check,
+    .depoimento-text, .depoimento-name, .spot-name,
+    .spot-stat-value, .spot-meta, .mockup-floating-value,
+    .mockup-floating-label, .badge-teal,
+    .plano-card, .plano-name, .plano-desc, .plano-item,
+    .plano-cta-ghost, .plano-badge,
+    .contato-form, .contato-item,
+    .revenda-form, .revenda-benefit-content h4, .revenda-benefit-content p,
+    .hero-title, .hero-subtitle, .hero-eyebrow-text,
+    .nav-links a, .btn-ghost, .theme-toggle,
+    .footer-brand-text, .footer-col-title, .footer-links a, .footer-bottom,
+    .form-group-lp input, .form-group-lp select, .form-group-lp label,
+    .form-submit {
+      transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    /* ─── Responsive ────────────────────────────────────────────────────────── */
+    @media (max-width: 1280px) {
+      .planos-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        text-align: center;
+      }
+      .hero-eyebrow { justify-content: center; }
+      .hero-subtitle { max-width: none; }
+      .hero-actions { justify-content: center; }
+      .hero-trust { justify-content: center; }
+      .hero-mockup {
+        display: block;
+      }
+      .hero-mockup img {
+        width: 100%;
+        transform: none;
+      }
+
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .spotlight-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .spotlight-inner.reverse { direction: ltr; }
+
+      .spotlight-visual--img img {
+        border-radius: 10px;
+      }
+
+      .planos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 600px;
+        margin-inline: auto;
+      }
+
+      .plano-card.featured { transform: none; }
+      .plano-card.featured:hover { transform: translateY(-4px); }
+
+      .depoimentos-grid {
+        grid-template-columns: 1fr;
+        max-width: 560px;
+        margin-inline: auto;
+      }
+
+      .contato-inner,
+      .revenda-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links,
+      .nav-actions { display: none; }
+      .nav-mobile-right { display: flex; }
+      .theme-toggle-mobile { display: flex; }
+      .nav-mobile-right .nav-hamburger { display: flex; }
+
+      .numeros-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .numeros-item::before { display: none; }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .planos-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .contato-form,
+      .revenda-form { padding: 24px; }
+
+      .mockup-kpis { grid-template-columns: repeat(2, 1fr); }
+
+      .hero-mockup img {
+        width: 100%;
+        transform: none;
+        border-radius: 10px;
+      }
+
+      .spotlight-visual--img {
+        border-radius: 10px;
+      }
+
+      .whatsapp-wrap {
+        bottom: 16px;
+        right: 16px;
+      }
+
+      .whatsapp-float {
+        width: 52px;
+        height: 52px;
+      }
+
+      .whatsapp-float svg {
+        width: 26px;
+        height: 26px;
+      }
+
+      .whatsapp-tooltip {
+        display: none;
+      }
+    }
+
+    /* ─── Scroll reveal ─────────────────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+    .reveal-delay-5 { transition-delay: .5s; }
+
+    /* ─── Chat Widget ──────────────────────────────────────────────────────── */
+    .chat-widget {
+      position: fixed;
+      bottom: 28px;
+      right: 100px;
+      z-index: 1000;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .chat-toggle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(22,150,163,.4);
+      transition: transform .2s, box-shadow .2s;
+      cursor: pointer;
+      border: none;
+      position: relative;
+    }
+    .chat-toggle::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: rgba(22,150,163,.3);
+      animation: wpp-pulse 2s ease-in-out infinite;
+    }
+    .chat-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(22,150,163,.5);
+    }
+    .chat-toggle:hover::before { animation: none; }
+
+    .chat-tooltip {
+      position: absolute;
+      right: 72px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-card, #1e293b);
+      color: var(--color-text, #e2e8f0);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s;
+    }
+    .chat-tooltip::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 6px solid transparent;
+      border-left-color: var(--bg-card, #1e293b);
+      border-right: none;
+    }
+    .chat-tooltip.show { opacity: 1; }
+    [data-theme="light"] .chat-tooltip { background: #fff; color: #0f172a; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+    [data-theme="light"] .chat-tooltip::after { border-left-color: #fff; }
+    .chat-toggle svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chat-panel {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      right: 28px;
+      width: 380px;
+      height: 520px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1001;
+    }
+    .chat-panel.open { display: flex; }
+
+    .chat-header {
+      background: var(--teal);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .chat-header h4 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .chat-header-close {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,.8);
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .chat-header-close:hover { color: #fff; }
+
+    .chat-start {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 24px;
+      gap: 16px;
+    }
+    .chat-start p {
+      font-size: 0.875rem;
+      color: var(--text-sm);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .chat-start-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-start-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .chat-start-field input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg-section);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .chat-start-field input:focus {
+      border-color: var(--teal);
+    }
+    .chat-start-btn {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+      margin-top: 8px;
+    }
+    .chat-start-btn:hover { background: var(--teal-dark); }
+    .chat-start-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-msg {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .chat-msg.sistema,
+    .chat-msg.suporte {
+      background: var(--bg-alt);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .chat-msg.cliente {
+      background: var(--teal);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-input-wrap {
+      display: flex;
+      padding: 12px;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-input-wrap input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg-section);
+      outline: none;
+    }
+    .chat-input-wrap input:focus {
+      border-color: var(--teal);
+    }
+    .chat-input-send {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .chat-input-send:hover { background: var(--teal-dark); }
+    .chat-input-send svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .chat-closed-msg {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.8125rem;
+      color: var(--text-sm);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 480px) {
+      .chat-panel {
+        width: calc(100vw - 24px);
+        right: 12px;
+        bottom: 80px;
+        height: 70vh;
+      }
+      .chat-widget { bottom: 16px; right: 16px; }
+      .chat-toggle { width: 52px; height: 52px; }
+      .chat-toggle svg { width: 24px; height: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ NAVBAR -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <img src="/landing-assets/alfagym-logo.png" alt="AlfaGym" style="height: 36px; width: auto;" />
+      </a>
+
+      <div class="nav-links">
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#planos">Planos</a>
+        <a href="#depoimentos">Depoimentos</a>
+        <a href="#faq">FAQ</a>
+        <a href="#revenda">Seja Parceiro</a>
+        <a href="#contato">Contato</a>
+      </div>
+
+      <div class="nav-actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="Alternar tema" onclick="toggleTheme()">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <a href="https://gym.alfasolucoes.cloud/login" class="btn btn-ghost" style="padding: 10px 20px; font-size: 0.875rem;">Entrar</a>
+        <a href="#contato" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.875rem;">Fale conosco</a>
+      </div>
+
+      <div class="nav-mobile-right">
+        <button class="theme-toggle theme-toggle-mobile" aria-label="Alternar tema" onclick="toggleTheme()">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <button class="nav-hamburger" id="hamburgerBtn" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+  <a href="#funcionalidades" class="mobile-link">Funcionalidades</a>
+  <a href="#planos" class="mobile-link">Planos</a>
+  <a href="#depoimentos" class="mobile-link">Depoimentos</a>
+  <a href="#faq" class="mobile-link">FAQ</a>
+  <a href="#revenda" class="mobile-link">Seja Parceiro</a>
+  <a href="#contato" class="mobile-link">Contato</a>
+  <div class="mobile-menu-actions">
+    <a href="https://gym.alfasolucoes.cloud/login" class="btn btn-ghost" style="text-align:center;">Entrar</a>
+    <a href="#contato" class="btn btn-primary" style="text-align:center;">Fale conosco</a>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-eyebrow reveal">
+          <div class="hero-dot"></div>
+          <span class="hero-eyebrow-text">Sistema de gestão #1 para academias</span>
+        </div>
+
+        <h1 class="hero-title reveal reveal-delay-1">
+          Gerencie sua academia<br>
+          com <span>inteligência</span>
+        </h1>
+
+        <p class="hero-subtitle reveal reveal-delay-2">
+          Tudo que você precisa para administrar sua academia em um só lugar. Alunos, finanças, controle de acesso, treinos e relatórios — simples e poderoso.
+        </p>
+
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="https://gym.alfasolucoes.cloud/cadastrar" class="btn btn-ghost">Ver demonstração</a>
+        </div>
+
+        <div class="hero-trust reveal reveal-delay-4">
+          <div class="hero-trust-avatars">
+            <span>AR</span><span>MS</span><span>JC</span><span>PL</span>
+          </div>
+          <span class="hero-trust-text"><strong>+500 academias</strong> já utilizam o AlfaGym</span>
+        </div>
+      </div>
+
+      <!-- Dashboard screenshot -->
+      <div class="hero-mockup reveal reveal-delay-3">
+        <img class="theme-img" data-light="/landing-assets/hero-dashboard-light.png" data-dark="/landing-assets/hero-dashboard.png" src="/landing-assets/hero-dashboard.png" alt="Dashboard Operacional do AlfaGym — KPIs, gráficos de presença e métricas em tempo real" />
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ NUMEROS -->
+<section id="numeros">
+  <div class="container">
+    <div class="numeros-grid">
+      <div class="numeros-item reveal">
+        <div class="numeros-value">500+</div>
+        <div class="numeros-label">Academias ativas</div>
+      </div>
+      <div class="numeros-item reveal reveal-delay-2">
+        <div class="numeros-value">50.000+</div>
+        <div class="numeros-label">Alunos gerenciados</div>
+      </div>
+      <div class="numeros-item reveal reveal-delay-3">
+        <div class="numeros-value">R$2M+</div>
+        <div class="numeros-label">Processados por mês</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ FEATURES -->
+<section id="funcionalidades">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label reveal">Funcionalidades</span>
+      <h2 class="section-title reveal reveal-delay-1">Tudo que sua academia precisa</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Do cadastro do aluno ao relatório financeiro — uma plataforma completa, simples de usar.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon teal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="feature-title">Alunos & Matrículas</div>
+        <div class="feature-desc">Cadastro completo, histórico de matrículas, foto, contratos digitais e renovação automática de planos.</div>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon orange">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff7a0d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="feature-title">Controle Financeiro</div>
+        <div class="feature-desc">Contas a receber, cobranças automáticas, conciliação bancária, fluxo de caixa e relatórios detalhados.</div>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="feature-title">Contratos & Planos</div>
+        <div class="feature-desc">Geração de contratos digitais, gestão de planos com preços e vigência, histórico de assinaturas.</div>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon purple">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="feature-title">Controle de Acesso</div>
+        <div class="feature-desc">Integração com catracas e dispositivos de acesso. Entrada liberada somente para alunos com matrícula ativa e pagamento em dia.</div>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        </div>
+        <div class="feature-title">Treinos & Exercícios</div>
+        <div class="feature-desc">Montagem de fichas de treino, banco de exercícios, histórico de sessões e acompanhamento do progresso do aluno.</div>
+      </div>
+
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon rose">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="feature-title">CRM & Relatórios</div>
+        <div class="feature-desc">Funil de leads, follow-up automatizado, relatórios de retenção, churn e performance da academia em tempo real.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ SPOTLIGHT 1 -->
+<section class="spotlight" style="background: var(--bg-alt);">
+  <div class="container">
+    <div class="spotlight-inner">
+      <div class="spotlight-text">
+        <span class="section-label reveal">Gestão de Alunos</span>
+        <h2 class="section-title reveal reveal-delay-1">Gerencie seus alunos<br>com facilidade</h2>
+        <p class="reveal reveal-delay-2">Tenha o controle total sobre cada aluno: histórico de matrículas, frequência, pagamentos, treinos e muito mais — tudo em uma única tela.</p>
+        <div class="spotlight-checks reveal reveal-delay-3">
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Cadastro com foto e documentos
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Alerta de alunos em risco de churn
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Histórico completo de frequência
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Renovação automática de matrícula
+          </div>
+        </div>
+        <div class="spotlight-cta reveal reveal-delay-4">
+          <a href="https://gym.alfasolucoes.cloud/cadastrar" class="btn btn-primary">Experimentar grátis</a>
+        </div>
+      </div>
+
+      <div class="spotlight-visual spotlight-visual--img reveal reveal-delay-1">
+        <img class="theme-img" data-light="/landing-assets/spotlight-alunos-light.png" data-dark="/landing-assets/spotlight-alunos.png" src="/landing-assets/spotlight-alunos.png" alt="Tela de gestão de alunos do AlfaGym" />
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ SPOTLIGHT 2 -->
+<section class="spotlight" style="background: var(--white);">
+  <div class="container">
+    <div class="spotlight-inner reverse">
+      <div class="spotlight-text">
+        <span class="section-label reveal">Financeiro</span>
+        <h2 class="section-title reveal reveal-delay-1">Financeiro sob<br>total controle</h2>
+        <p class="reveal reveal-delay-2">Acompanhe receitas, despesas e inadimplência em tempo real. Gere cobranças automáticas e nunca mais perca um pagamento.</p>
+        <div class="spotlight-checks reveal reveal-delay-3">
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Contas a pagar e receber
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Relatório de inadimplência
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            PDV integrado para venda de produtos
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Fluxo de caixa diário/mensal
+          </div>
+        </div>
+        <div class="spotlight-cta reveal reveal-delay-4">
+          <a href="https://gym.alfasolucoes.cloud/cadastrar" class="btn btn-primary">Ver demonstração</a>
+        </div>
+      </div>
+
+      <div class="spotlight-visual spotlight-visual--img reveal reveal-delay-1">
+        <img class="theme-img" data-light="/landing-assets/spotlight-financeiro-light.png" data-dark="/landing-assets/spotlight-financeiro.png" src="/landing-assets/spotlight-financeiro.png" alt="Tela do módulo financeiro do AlfaGym" />
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ SPOTLIGHT 3 -->
+<section class="spotlight" style="background: var(--bg-alt);">
+  <div class="container">
+    <div class="spotlight-inner">
+      <div class="spotlight-text">
+        <span class="section-label reveal">Controle de Acesso</span>
+        <h2 class="section-title reveal reveal-delay-1">Acesso inteligente<br>na sua academia</h2>
+        <p class="reveal reveal-delay-2">Integre catracas e dispositivos de acesso ao AlfaGym. Somente alunos com matrícula ativa e pagamento em dia entram — automático, sem intervenção manual.</p>
+        <div class="spotlight-checks reveal reveal-delay-3">
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Integração com catracas e leitores de acesso
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Bloqueio automático por inadimplência
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Log de check-ins em tempo real
+          </div>
+          <div class="spotlight-check">
+            <div class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            Suporte biometria, cartão e facial
+          </div>
+        </div>
+        <div class="spotlight-cta reveal reveal-delay-4">
+          <a href="https://gym.alfasolucoes.cloud/cadastrar" class="btn btn-primary">Começar agora</a>
+        </div>
+      </div>
+
+      <div class="spotlight-visual spotlight-visual--img reveal reveal-delay-1">
+        <img class="theme-img" data-light="/landing-assets/spotlight-checkin-light.png" data-dark="/landing-assets/spotlight-checkin.png" src="/landing-assets/spotlight-checkin.png" alt="Tela de controle de acesso e check-in do AlfaGym" />
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ PLANOS -->
+<section id="planos">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label reveal">Planos</span>
+      <h2 class="section-title reveal reveal-delay-1">Escolha o plano ideal</h2>
+      <p class="section-subtitle reveal reveal-delay-2" style="color:rgba(255,255,255,.55);">Planos flexíveis para academias de todos os tamanhos. Sem taxa de setup, sem fidelidade.</p>
+    </div>
+
+    <div class="planos-grid">
+      <!-- TRIAL -->
+      <div class="plano-card reveal">
+        <div class="plano-name">Trial</div>
+        <div class="plano-desc">Grátis para conhecer a plataforma sem compromisso.</div>
+        <div class="plano-items">
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            1 Unidade
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Até 100 alunos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gestão básica de alunos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gestão de planos
+          </div>
+        </div>
+        <a href="#contato" class="plano-cta plano-cta-ghost">Começar grátis</a>
+      </div>
+
+      <!-- START -->
+      <div class="plano-card reveal reveal-delay-1">
+        <div class="plano-name">Start</div>
+        <div class="plano-desc">Ideal para academias que estão começando.</div>
+        <div class="plano-items">
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            1 Unidade
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Até 500 alunos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gestão de matrículas e planos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Controle financeiro
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gestão de cobranças
+          </div>
+        </div>
+        <a href="javascript:void(0)" onclick="abrirChat()" class="plano-cta plano-cta-ghost">Falar com consultor</a>
+      </div>
+
+      <!-- BASIC -->
+      <div class="plano-card reveal reveal-delay-2">
+        <div class="plano-name">Basic</div>
+        <div class="plano-desc">Para academias em crescimento que precisam de mais recursos.</div>
+        <div class="plano-items">
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            1 Unidade
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Até 1.000 alunos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Financeiro completo
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            CRM básico
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gestão de contratos
+          </div>
+        </div>
+        <a href="javascript:void(0)" onclick="abrirChat()" class="plano-cta plano-cta-ghost">Falar com consultor</a>
+      </div>
+
+      <!-- PRO (destaque) -->
+      <div class="plano-card featured reveal reveal-delay-3">
+        <div class="plano-badge">Mais popular</div>
+        <div class="plano-name">Pro</div>
+        <div class="plano-desc">Para academias consolidadas que querem controle total.</div>
+        <div class="plano-items">
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            2 Unidades
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Até 5.000 alunos
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Relatórios avançados
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            CRM completo
+          </div>
+        </div>
+        <a href="javascript:void(0)" onclick="abrirChat()" class="plano-cta plano-cta-solid">Falar com consultor</a>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="plano-card reveal reveal-delay-4">
+        <div class="plano-name">Premium</div>
+        <div class="plano-desc">Para redes de academias com múltiplas unidades.</div>
+        <div class="plano-items">
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            3 Unidades
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Alunos ilimitados
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Tudo do plano Pro
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Relatórios consolidados por rede
+          </div>
+          <div class="plano-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Gerente de conta dedicado
+          </div>
+        </div>
+        <a href="javascript:void(0)" onclick="abrirChat()" class="plano-cta plano-cta-ghost">Falar com consultor</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ DEPOIMENTOS -->
+<section id="depoimentos">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label reveal">Depoimentos</span>
+      <h2 class="section-title reveal reveal-delay-1">O que dizem nossas academias</h2>
+      <p class="section-subtitle reveal reveal-delay-2">Centenas de donos de academia já transformaram sua gestão com o AlfaGym.</p>
+    </div>
+
+    <div class="depoimentos-grid">
+      <div class="depoimento-card reveal">
+        <div class="depoimento-stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="depoimento-text">"O AlfaGym transformou completamente a gestão da minha academia. Antes eu perdia muito tempo em planilhas, hoje tudo é automático. A integração com o controle de acesso foi um diferencial enorme."</p>
+        <div class="depoimento-author">
+          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#1696a3,#0a4a52)">MF</div>
+          <div>
+            <div class="depoimento-name">Marcos Ferreira</div>
+            <div class="depoimento-academia">Proprietário de academia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="depoimento-card reveal reveal-delay-2">
+        <div class="depoimento-stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="depoimento-text">"Sistema muito fácil de usar. Em 2 dias já estava com tudo configurado e minha equipe aprendeu rápido. O controle financeiro e os relatórios de inadimplência me salvaram!"</p>
+        <div class="depoimento-author">
+          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#ff7a0d,#7a3a00)">CR</div>
+          <div>
+            <div class="depoimento-name">Carla Rocha</div>
+            <div class="depoimento-academia">Proprietária de studio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="depoimento-card reveal reveal-delay-3">
+        <div class="depoimento-stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="depoimento-text">"Tenho 3 unidades e o AlfaGym consolidou tudo. Consigo ver o desempenho de cada academia em tempo real, o que era impossível antes. O suporte é excelente."</p>
+        <div class="depoimento-author">
+          <div class="depoimento-avatar" style="background:linear-gradient(135deg,#8b5cf6,#4c1d95)">RA</div>
+          <div>
+            <div class="depoimento-name">Ricardo Alves</div>
+            <div class="depoimento-academia">Proprietário de rede de academias</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-label reveal">Perguntas Frequentes</span>
+      <h2 class="section-title reveal reveal-delay-1">Tire suas dúvidas</h2>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Preciso instalar algum software para usar o AlfaGym?
+          <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          Não. O AlfaGym é 100% online — basta um navegador moderno (Chrome, Safari, Edge) para acessar pelo computador ou celular. Para a integração com dispositivos de controle de acesso, é necessário instalar o AlfaSync (software Windows gratuito incluso no plano).
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-1">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Consigo migrar de outro sistema?
+          <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          Sim! Nossa equipe auxilia na migração dos dados da sua academia — alunos, planos e histórico financeiro. O processo é acompanhado de perto para garantir que nenhuma informação seja perdida e que a transição aconteça sem interromper a operação da sua academia.
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-2">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Posso experimentar antes de contratar?
+          <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          Sim! Você pode criar sua conta gratuitamente e explorar o sistema. Nossa equipe também oferece uma demonstração guiada onde mostramos todas as funcionalidades adaptadas para a realidade da sua academia. Entre em contato pelo formulário abaixo para agendar.
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-3">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          O AlfaGym funciona para redes com múltiplas unidades?
+          <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          Sim. O plano Enterprise suporta múltiplas unidades com gestão centralizada. Cada unidade tem seus próprios alunos, finanças e dispositivos, mas o gestor da rede tem visão consolidada de todas as unidades em um único painel. Entre em contato para saber mais sobre esse plano.
+        </div>
+      </div>
+
+      <div class="faq-item reveal reveal-delay-4">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          Meus dados ficam seguros? O que acontece se eu cancelar?
+          <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-answer">
+          Seus dados ficam armazenados em servidores seguros com backups diários. Em caso de cancelamento, você tem acesso aos seus dados para exportação por 30 dias. Não há fidelidade — você pode cancelar a qualquer momento sem multa. Operamos em conformidade com a LGPD.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ REVENDA -->
+<section id="revenda">
+  <div class="container">
+    <div class="revenda-inner">
+      <div class="revenda-text">
+        <span class="section-label reveal">Programa de Revenda</span>
+        <h2 class="section-title reveal reveal-delay-1">Gerencie múltiplas academias<br>em um só lugar</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Faça parte do nosso programa de revenda e leve tecnologia de ponta para as academias da sua região. Nós cuidamos do sistema, você foca no relacionamento.</p>
+
+        <div class="revenda-benefits reveal reveal-delay-3">
+          <div class="revenda-benefit">
+            <div class="revenda-benefit-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="revenda-benefit-content">
+              <h4>Painel centralizado de gestão</h4>
+              <p>Acompanhe todas as academias da sua carteira em um painel exclusivo com métricas, relatórios e visão geral de cada unidade.</p>
+            </div>
+          </div>
+          <div class="revenda-benefit">
+            <div class="revenda-benefit-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="revenda-benefit-content">
+              <h4>Onboarding simplificado</h4>
+              <p>Cadastre novas academias de forma rápida e acompanhe a implantação de cada uma direto pelo seu painel.</p>
+            </div>
+          </div>
+          <div class="revenda-benefit">
+            <div class="revenda-benefit-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="revenda-benefit-content">
+              <h4>Suporte dedicado ao revendedor</h4>
+              <p>Canal direto com nossa equipe para dúvidas técnicas, suporte às academias e materiais de apoio.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="revenda-form reveal reveal-delay-2">
+        <h3>Quero ser revendedor</h3>
+        <form id="revendaForm" onsubmit="submitRevendaForm(event)">
+          <div class="form-group-lp">
+            <label for="revNome">Seu nome</label>
+            <input type="text" id="revNome" placeholder="Ex: Maria Silva" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="revWhatsapp">WhatsApp</label>
+            <input type="tel" id="revWhatsapp" placeholder="(11) 99999-9999" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="revCidade">Cidade / Estado</label>
+            <input type="text" id="revCidade" placeholder="Ex: São Paulo - SP" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="revQtd">Quantas academias você atende?</label>
+            <select id="revQtd">
+              <option value="1-5">1 a 5 academias</option>
+              <option value="6-15">6 a 15 academias</option>
+              <option value="16-30">16 a 30 academias</option>
+              <option value="30+">Mais de 30 academias</option>
+            </select>
+          </div>
+          <button type="submit" class="form-submit" id="revendaSubmitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Quero ser revendedor
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ CTA FINAL / CONTATO -->
+<section id="contato">
+  <div class="container">
+    <div class="contato-inner">
+      <div class="contato-text">
+        <span class="section-label reveal">Vamos conversar</span>
+        <h2 class="section-title reveal reveal-delay-1">Pronto para transformar<br>sua academia?</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Fale com nossa equipe e descubra o plano ideal para o seu negócio. Respondemos em minutos.</p>
+
+        <div class="contato-items reveal reveal-delay-3">
+          <div class="contato-item">
+            <div class="contato-item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.11 6.11l1.27-.82a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            Fale conosco pelo WhatsApp
+          </div>
+          <div class="contato-item">
+            <div class="contato-item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            Demonstração em até 24 horas úteis
+          </div>
+          <div class="contato-item">
+            <div class="contato-item-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            Sem compromisso, sem cartão de crédito
+          </div>
+        </div>
+      </div>
+
+      <div class="contato-form reveal reveal-delay-2">
+        <h3>Fale com um consultor</h3>
+        <form id="contactForm" onsubmit="submitForm(event)">
+          <div class="form-group-lp">
+            <label for="nome">Seu nome</label>
+            <input type="text" id="nome" placeholder="Ex: João Silva" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="academia">Nome da academia</label>
+            <input type="text" id="academia" placeholder="Ex: Academia FitLife" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="whatsapp">WhatsApp</label>
+            <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" required />
+          </div>
+          <div class="form-group-lp">
+            <label for="interesse">Principal interesse</label>
+            <select id="interesse">
+              <option value="demo">Quero uma demonstração</option>
+              <option value="preco">Saber sobre preços</option>
+              <option value="catraca">Integração com controle de acesso</option>
+              <option value="migracao">Migrar de outro sistema</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <button type="submit" class="form-submit" id="formSubmitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Enviar mensagem
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════ FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <div class="nav-logo" style="margin-bottom:0;">
+          <img src="/landing-assets/alfagym-logo.png" alt="AlfaGym" style="height: 32px; width: auto;" />
+        </div>
+        <p class="footer-brand-text">Gestão inteligente para academias. Simples, completo e acessível para qualquer tamanho de negócio.</p>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Produto</div>
+        <div class="footer-links">
+          <a href="#funcionalidades">Funcionalidades</a>
+          <a href="#planos">Planos</a>
+          <a href="https://gym.alfasolucoes.cloud/cadastrar">Criar conta</a>
+          <a href="https://gym.alfasolucoes.cloud/login">Entrar</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Empresa</div>
+        <div class="footer-links">
+          <a href="#depoimentos">Depoimentos</a>
+          <a href="#faq">FAQ</a>
+          <a href="#revenda">Seja Revendedor</a>
+          <a href="#contato">Contato</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <div class="footer-links">
+          <a href="https://gym.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a>
+          <a href="https://gym.alfasolucoes.cloud/termos-de-uso">Termos de Uso</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© <script>document.write(new Date().getFullYear())</script> Alfa Soluções. Todos os direitos reservados.</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════ JS -->
+<script>
+  // ── Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // ── Mobile menu
+  const hamburger = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose = document.getElementById('mobileMenuClose');
+
+  hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+  mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+
+  document.querySelectorAll('.mobile-link').forEach(link => {
+    link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  });
+
+  // ── FAQ accordion
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = btn.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+
+    // Open clicked (if wasn't open)
+    if (!isOpen) {
+      btn.classList.add('open');
+      answer.classList.add('open');
+    }
+  }
+
+  // ── Máscara de telefone
+  function maskPhone(value) {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 10) {
+      return digits.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    return digits.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  document.querySelectorAll('input[type="tel"]').forEach(function(input) {
+    input.addEventListener('input', function() { this.value = maskPhone(this.value); });
+  });
+
+  // ── Contact form → API Leads
+  const API_BASE = '';
+
+  function submitForm(e) {
+    e.preventDefault();
+    const btn = document.getElementById('formSubmitBtn');
+    const nome = document.getElementById('nome').value.trim();
+    const academia = document.getElementById('academia').value.trim();
+    const whatsapp = document.getElementById('whatsapp').value.trim();
+    const interesse = document.getElementById('interesse');
+    const interesseText = interesse.options[interesse.selectedIndex].text;
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    fetch(`${API_BASE}/api/landing/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, academia, whatsapp, interesse: interesseText })
+    })
+    .then(r => {
+      if (!r.ok) throw new Error('Erro ao enviar');
+      return r.json();
+    })
+    .then(() => {
+      const form = document.getElementById('contactForm');
+      form.innerHTML = '<div style="text-align:center;padding:24px 0;">' +
+        '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#25d366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        '<h3 style="color:#fff;margin-top:16px;font-size:1.125rem;">Mensagem enviada!</h3>' +
+        '<p style="color:rgba(255,255,255,.7);margin-top:8px;font-size:0.875rem;">Entraremos em contato em breve pelo WhatsApp.</p>' +
+        '</div>';
+    })
+    .catch(() => {
+      // Fallback: abre WhatsApp
+      const msg = encodeURIComponent(
+        `Olá! Tenho interesse no AlfaGym.\n\n*Nome:* ${nome}\n*Academia:* ${academia}\n*WhatsApp:* ${whatsapp}\n*Interesse:* ${interesseText}`
+      );
+      window.open(`https://api.whatsapp.com/send?phone=5527992250122&text=${msg}`, '_blank');
+      btn.disabled = false;
+      btn.textContent = 'Enviar mensagem';
+    });
+  }
+
+  // ── Revenda form → API Leads
+  function submitRevendaForm(e) {
+    e.preventDefault();
+    const btn = document.getElementById('revendaSubmitBtn');
+    const nome = document.getElementById('revNome').value.trim();
+    const whatsapp = document.getElementById('revWhatsapp').value.trim();
+    const cidade = document.getElementById('revCidade').value.trim();
+    const qtdSelect = document.getElementById('revQtd');
+    const qtdAcademias = qtdSelect.options[qtdSelect.selectedIndex].value;
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    fetch(`${API_BASE}/api/landing/leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, whatsapp, tipo: 'REVENDA', cidade, qtdAcademias })
+    })
+    .then(r => {
+      if (!r.ok) throw new Error('Erro ao enviar');
+      return r.json();
+    })
+    .then(() => {
+      const form = document.getElementById('revendaForm');
+      form.innerHTML = '<div style="text-align:center;padding:24px 0;">' +
+        '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1696a3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        '<h3 style="color:#fff;margin-top:16px;font-size:1.125rem;">Cadastro enviado!</h3>' +
+        '<p style="color:rgba(255,255,255,.7);margin-top:8px;font-size:0.875rem;">Nossa equipe entrará em contato pelo WhatsApp em breve.</p>' +
+        '</div>';
+    })
+    .catch(() => {
+      const msg = encodeURIComponent(
+        `Olá! Tenho interesse em ser revendedor AlfaGym.\n\n*Nome:* ${nome}\n*WhatsApp:* ${whatsapp}\n*Cidade:* ${cidade}\n*Academias que atendo:* ${qtdAcademias}`
+      );
+      window.open(`https://api.whatsapp.com/send?phone=5527992250122&text=${msg}`, '_blank');
+      btn.disabled = false;
+      btn.textContent = 'Quero ser revendedor';
+    });
+  }
+
+  // ── Theme toggle
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('lp-theme', next);
+    updateThemeImages(next);
+  }
+
+  function updateThemeImages(theme) {
+    document.querySelectorAll('.theme-img').forEach(function(img) {
+      img.src = theme === 'dark' ? img.dataset.dark : img.dataset.light;
+    });
+  }
+
+  // Aplicar imagens corretas no load + preload do tema oposto
+  (function() {
+    var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    updateThemeImages(theme);
+    // Preload opposite theme images so toggle is instant
+    document.querySelectorAll('.theme-img').forEach(function(img) {
+      var preload = new Image();
+      preload.src = theme === 'dark' ? img.dataset.light : img.dataset.dark;
+    });
+  })();
+
+  // ── Scroll reveal
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // ── Smooth close mobile menu on resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) mobileMenu.classList.remove('open');
+  });
+</script>
+
+<!-- WhatsApp floating button -->
+<style>
+  .whatsapp-wrap {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: wpp-enter .5s ease forwards;
+    animation-delay: 3s;
+  }
+
+  .whatsapp-tooltip {
+    background: #fff;
+    color: #1e293b;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(8px);
+    animation: wpp-tooltip .4s ease forwards;
+    animation-delay: 5s;
+    position: relative;
+  }
+
+  .whatsapp-tooltip::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: #fff;
+  }
+
+  .whatsapp-tooltip-close {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    border: none;
+    font-size: 10px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .whatsapp-tooltip-close:hover { background: #cbd5e1; }
+
+  .whatsapp-float {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #25d366;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(37,211,102,.4);
+    transition: transform .2s, box-shadow .2s;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .whatsapp-float::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: rgba(37,211,102,.3);
+    animation: wpp-pulse 2s ease-in-out infinite;
+  }
+
+  .whatsapp-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(37,211,102,.5);
+  }
+  .whatsapp-float:hover::before { animation: none; }
+
+  .whatsapp-float svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes wpp-enter {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes wpp-tooltip {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes wpp-pulse {
+    0%, 100% { transform: scale(1); opacity: .6; }
+    50% { transform: scale(1.35); opacity: 0; }
+  }
+</style>
+
+<!-- Cookie consent banner -->
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 998;
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+    transform: translateY(100%);
+    animation: cookie-enter .4s ease forwards;
+    animation-delay: 2s;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.3);
+  }
+
+  .cookie-banner.hidden { display: none; }
+
+  .cookie-banner-text {
+    color: rgba(255,255,255,.8);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+
+  .cookie-banner-text a {
+    color: var(--orange);
+    text-decoration: underline;
+  }
+
+  .cookie-banner-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .cookie-btn-accept {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .cookie-btn-accept:hover { background: var(--orange-dark); }
+
+  @keyframes cookie-enter {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .cookie-banner {
+      flex-direction: column;
+      text-align: center;
+      padding: 16px;
+      gap: 12px;
+    }
+  }
+</style>
+
+<div class="cookie-banner hidden" id="cookieBanner">
+  <p class="cookie-banner-text">
+    Utilizamos cookies essenciais para o funcionamento do site. Nenhum dado é compartilhado com terceiros para fins publicitários.
+    Saiba mais na nossa <a href="https://gym.alfasolucoes.cloud/politica-privacidade">Política de Privacidade</a>.
+  </p>
+  <div class="cookie-banner-actions">
+    <button class="cookie-btn-accept" onclick="acceptCookies()">Aceitar</button>
+  </div>
+</div>
+
+<script>
+  function acceptCookies() {
+    localStorage.setItem('alfagym_cookies_accepted', '1');
+    document.getElementById('cookieBanner').classList.add('hidden');
+  }
+
+  if (!localStorage.getItem('alfagym_cookies_accepted')) {
+    document.getElementById('cookieBanner').classList.remove('hidden');
+  }
+</script>
+
+<!-- ═══════════════════════════════════════════════════ CHAT WIDGET -->
+<div class="chat-widget" id="chatWidget">
+  <span class="chat-tooltip" id="chatTooltip">Fale conosco!</span>
+  <button class="chat-toggle" id="chatToggle" aria-label="Abrir chat">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  </button>
+</div>
+
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <h4>Fale com um consultor</h4>
+    <button class="chat-header-close" id="chatClose" aria-label="Fechar">&times;</button>
+  </div>
+
+  <!-- Banner fora do horário -->
+  <div id="chatHorarioBanner" style="display:none; background:#fff3cd; color:#856404; padding:10px 14px; font-size:0.82rem; line-height:1.4; border-bottom:1px solid #ffc107;">
+    <strong>⏰ Fora do horário de atendimento</strong>
+    <div id="chatHorarioDesc" style="margin-top:4px; opacity:0.85;"></div>
+    <div style="margin-top:4px; opacity:0.85;">Você pode deixar sua mensagem e responderemos assim que possível.</div>
+  </div>
+
+  <!-- Tela inicial -->
+  <div class="chat-start" id="chatStart">
+    <p>Olá! Preencha seus dados para iniciar uma conversa com nosso time comercial.</p>
+    <div class="chat-start-field">
+      <label for="chatNome">Seu nome</label>
+      <input type="text" id="chatNome" placeholder="Ex: João Silva" required />
+    </div>
+    <div class="chat-start-field">
+      <label for="chatWhatsapp">WhatsApp</label>
+      <input type="tel" id="chatWhatsapp" placeholder="(11) 99999-9999" required />
+    </div>
+    <button class="chat-start-btn" id="chatStartBtn">Iniciar conversa</button>
+  </div>
+
+  <!-- Area de mensagens (oculta ate iniciar) -->
+  <div class="chat-messages" id="chatMessages" style="display:none;"></div>
+  <div class="chat-input-wrap" id="chatInputWrap" style="display:none;">
+    <input type="text" id="chatInput" placeholder="Digite sua mensagem..." />
+    <button class="chat-input-send" id="chatSendBtn">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+
+<script>
+// ── Chat Widget Logic ──
+(function() {
+  const API = '';
+  let chatToken = localStorage.getItem('alfagym_chat_token');
+  let pollInterval = null;
+  let lastMsgCount = 0;
+
+  // Expirar token após 24h
+  const tokenTs = parseInt(localStorage.getItem('alfagym_chat_token_ts') || '0');
+  if (chatToken && (Date.now() - tokenTs > 24 * 60 * 60 * 1000)) {
+    limparSessaoChat();
+  }
+
+  const panel = document.getElementById('chatPanel');
+  const toggle = document.getElementById('chatToggle');
+  const closeBtn = document.getElementById('chatClose');
+  const startScreen = document.getElementById('chatStart');
+  const startBtn = document.getElementById('chatStartBtn');
+  const messagesDiv = document.getElementById('chatMessages');
+  const inputWrap = document.getElementById('chatInputWrap');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSendBtn');
+
+  function limparSessaoChat() {
+    localStorage.removeItem('alfagym_chat_token');
+    localStorage.removeItem('alfagym_chat_token_ts');
+    chatToken = null;
+    lastMsgCount = 0;
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+  }
+
+  function resetarParaTelaInicial() {
+    messagesDiv.style.display = 'none';
+    messagesDiv.innerHTML = '';
+    inputWrap.style.display = 'none';
+    startScreen.style.display = 'flex';
+    startBtn.disabled = false;
+    startBtn.textContent = 'Iniciar conversa';
+    document.getElementById('chatNome').value = '';
+    document.getElementById('chatWhatsapp').value = '';
+  }
+
+  function verificarHorario() {
+    fetch(`${API}/api/landing/chat/horario-status`)
+      .then(r => r.json())
+      .then(data => {
+        const banner = document.getElementById('chatHorarioBanner');
+        if (!data.dentroDoHorario) {
+          const desc = document.getElementById('chatHorarioDesc');
+          if (data.descricaoHorario) {
+            desc.textContent = 'Horário de atendimento: ' + data.descricaoHorario + '.';
+          } else {
+            desc.textContent = '';
+          }
+          banner.style.display = 'block';
+        } else {
+          banner.style.display = 'none';
+        }
+      })
+      .catch(() => {});
+  }
+
+  function abrirChatPanel() {
+    panel.classList.add('open');
+    verificarHorario();
+    if (chatToken) {
+      showChatView();
+      carregarMensagens();
+      iniciarPolling();
+    }
+  }
+
+  function fecharChatPanel() {
+    panel.classList.remove('open');
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+  }
+
+  toggle.addEventListener('click', function() {
+    if (panel.classList.contains('open')) fecharChatPanel();
+    else abrirChatPanel();
+    // Hide tooltip when chat is opened
+    var tip = document.getElementById('chatTooltip');
+    if (tip) tip.classList.remove('show');
+  });
+  closeBtn.addEventListener('click', fecharChatPanel);
+
+  // Tooltip: show after 5s, hide after 13s (8s visible)
+  setTimeout(function() {
+    var tip = document.getElementById('chatTooltip');
+    if (tip && !panel.classList.contains('open')) {
+      tip.classList.add('show');
+      setTimeout(function() { tip.classList.remove('show'); }, 8000);
+    }
+  }, 5000);
+
+  // Expor globalmente para os botões "Falar com consultor"
+  window.abrirChat = function() {
+    abrirChatPanel();
+  };
+
+  function showChatView() {
+    startScreen.style.display = 'none';
+    messagesDiv.style.display = 'flex';
+    inputWrap.style.display = 'flex';
+  }
+
+  startBtn.addEventListener('click', function() {
+    const nome = document.getElementById('chatNome').value.trim();
+    const whatsapp = document.getElementById('chatWhatsapp').value.trim();
+    if (!nome || !whatsapp) return;
+
+    startBtn.disabled = true;
+    startBtn.textContent = 'Conectando...';
+
+    fetch(`${API}/api/landing/chat/iniciar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, whatsapp })
+    })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(data => {
+      chatToken = data.token;
+      localStorage.setItem('alfagym_chat_token', chatToken);
+      localStorage.setItem('alfagym_chat_token_ts', Date.now().toString());
+      showChatView();
+      carregarMensagens();
+      iniciarPolling();
+    })
+    .catch(() => {
+      startBtn.disabled = false;
+      startBtn.textContent = 'Iniciar conversa';
+      alert('Erro ao conectar. Tente novamente.');
+    });
+  });
+
+  function carregarMensagens() {
+    if (!chatToken) return;
+    fetch(`${API}/api/landing/chat/${chatToken}/mensagens`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(data => {
+        if (data.status === 'FECHADO') {
+          renderMensagens(data.mensagens);
+          limparSessaoChat();
+          inputWrap.style.display = 'none';
+          return;
+        }
+        if (data.mensagens.length === lastMsgCount) return;
+        lastMsgCount = data.mensagens.length;
+        renderMensagens(data.mensagens);
+      })
+      .catch(() => {});
+  }
+
+  function renderMensagens(msgs) {
+    messagesDiv.innerHTML = '';
+    msgs.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + m.autorTipo.toLowerCase();
+      div.textContent = m.conteudo;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  function enviarMensagem() {
+    const text = chatInput.value.trim();
+    if (!text || !chatToken) return;
+
+    chatInput.value = '';
+
+    // Optimistic: mostrar imediatamente
+    const div = document.createElement('div');
+    div.className = 'chat-msg cliente';
+    div.textContent = text;
+    messagesDiv.appendChild(div);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    lastMsgCount++;
+
+    fetch(`${API}/api/landing/chat/${chatToken}/mensagens`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conteudo: text })
+    })
+    .then(r => { if (!r.ok) throw new Error(); })
+    .catch(() => {});
+  }
+
+  sendBtn.addEventListener('click', enviarMensagem);
+  chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); enviarMensagem(); }
+  });
+
+  function iniciarPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(carregarMensagens, 3000);
+  }
+
+  // Restaurar sessão existente
+  if (chatToken) {
+    showChatView();
+  }
+})();
+</script>
+
+</body>
+</html>
+___BEGIN___COMMAND_DONE_MARKER___0

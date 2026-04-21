@@ -1,0 +1,977 @@
+=== 1200-1450 ===
+1200:      background: var(--bg-card);
+1201:      border: 1px solid var(--border);
+1202:      border-radius: var(--radius);
+1203:      padding: 28px;
+1204:      display: flex;
+1205:      flex-direction: column;
+1206:      gap: 20px;
+1207:      transition: box-shadow .2s;
+1208:    }
+1209:
+1210:    .depoimento-card:hover { box-shadow: var(--shadow-lg); }
+1211:
+1212:    .depoimento-stars {
+1213:      display: flex;
+1214:      gap: 3px;
+1215:    }
+1216:
+1217:    .star {
+1218:      color: #fbbf24;
+1219:      font-size: 1rem;
+1220:    }
+1221:
+1222:    .depoimento-text {
+1223:      font-size: 0.9375rem;
+1224:      color: var(--dep-text);
+1225:      line-height: 1.7;
+1226:      font-style: italic;
+1227:      flex: 1;
+1228:    }
+1229:
+1230:    .depoimento-author {
+1231:      display: flex;
+1232:      align-items: center;
+1233:      gap: 12px;
+1234:    }
+1235:
+1236:    .depoimento-avatar {
+1237:      width: 44px;
+1238:      height: 44px;
+1239:      border-radius: 50%;
+1240:      display: flex;
+1241:      align-items: center;
+1242:      justify-content: center;
+1243:      font-size: 1rem;
+1244:      font-weight: 700;
+1245:      color: #fff;
+1246:      flex-shrink: 0;
+1247:    }
+1248:
+1249:    .depoimento-name {
+1250:      font-size: 0.9375rem;
+1251:      font-weight: 700;
+1252:      color: var(--text);
+1253:    }
+1254:
+1255:    .depoimento-academia {
+1256:      font-size: 0.8125rem;
+1257:      color: var(--text-sm);
+1258:    }
+1259:
+1260:    /* ─── FAQ ───────────────────────────────────────────────────────────────── */
+1261:    #faq {
+1262:      padding: 96px 0;
+1263:      background: var(--bg-section);
+1264:    }
+1265:
+1266:    .faq-list {
+1267:      max-width: 720px;
+1268:      margin-inline: auto;
+1269:      display: flex;
+1270:      flex-direction: column;
+1271:      gap: 12px;
+1272:    }
+1273:
+1274:    .faq-item {
+1275:      border: 1px solid var(--border);
+1276:      border-radius: var(--radius);
+1277:      overflow: hidden;
+1278:    }
+1279:
+1280:    .faq-question {
+1281:      width: 100%;
+1282:      display: flex;
+1283:      align-items: center;
+1284:      justify-content: space-between;
+1285:      padding: 20px 24px;
+1286:      font-size: 1rem;
+1287:      font-weight: 600;
+1288:      color: var(--text);
+1289:      text-align: left;
+1290:      background: var(--faq-bg);
+1291:      transition: background .15s;
+1292:      gap: 16px;
+1293:    }
+1294:
+1295:    .faq-question:hover { background: var(--faq-hover); }
+1296:
+1297:    .faq-question.open { background: var(--faq-hover); color: var(--teal); }
+1298:
+1299:    .faq-chevron {
+1300:      flex-shrink: 0;
+1301:      transition: transform .25s;
+1302:      color: var(--text-sm);
+1303:    }
+1304:
+1305:    .faq-question.open .faq-chevron { transform: rotate(180deg); color: var(--teal); }
+1306:
+1307:    .faq-answer {
+1308:      display: none;
+1309:      padding: 0 24px 20px;
+1310:      font-size: 0.9375rem;
+1311:      color: var(--text-sm);
+1312:      line-height: 1.7;
+1313:      background: var(--faq-hover);
+1314:    }
+1315:
+1316:    .faq-answer.open { display: block; }
+1317:
+1318:    /* ─── CTA Final / Contato ───────────────────────────────────────────────── */
+1319:    #contato {
+1320:      padding: 96px 0;
+1321:      background: linear-gradient(135deg, var(--orange) 0%, #e05800 100%);
+1322:      position: relative;
+1323:      overflow: hidden;
+1324:    }
+1325:
+1326:    #contato::before {
+1327:      content: '';
+1328:      position: absolute;
+1329:      top: -100px; right: -100px;
+1330:      width: 400px; height: 400px;
+1331:      border-radius: 50%;
+1332:      background: rgba(255,255,255,.06);
+1333:    }
+1334:
+1335:    #contato::after {
+1336:      content: '';
+1337:      position: absolute;
+1338:      bottom: -80px; left: -80px;
+1339:      width: 300px; height: 300px;
+1340:      border-radius: 50%;
+1341:      background: rgba(0,0,0,.06);
+1342:    }
+1343:
+1344:    .contato-inner {
+1345:      display: grid;
+1346:      grid-template-columns: 1fr 1fr;
+1347:      gap: 72px;
+1348:      align-items: center;
+1349:      position: relative;
+1350:      z-index: 1;
+1351:    }
+1352:
+1353:    .contato-text .section-label { color: rgba(255,255,255,.7); }
+1354:    .contato-text .section-title { color: #fff; }
+1355:    .contato-text .section-subtitle { color: rgba(255,255,255,.75); }
+1356:
+1357:    .contato-items {
+1358:      display: flex;
+1359:      flex-direction: column;
+1360:      gap: 16px;
+1361:      margin-top: 28px;
+1362:    }
+1363:
+1364:    .contato-item {
+1365:      display: flex;
+1366:      align-items: center;
+1367:      gap: 12px;
+1368:      font-size: 0.9375rem;
+1369:      color: rgba(255,255,255,.85);
+1370:      font-weight: 500;
+1371:    }
+1372:
+1373:    .contato-item-icon {
+1374:      width: 36px;
+1375:      height: 36px;
+1376:      border-radius: 9px;
+1377:      background: rgba(255,255,255,.15);
+1378:      display: flex;
+1379:      align-items: center;
+1380:      justify-content: center;
+1381:      flex-shrink: 0;
+1382:    }
+1383:
+1384:    .contato-form {
+1385:      background: rgba(255,255,255,.12);
+1386:      backdrop-filter: blur(12px);
+1387:      border: 1px solid rgba(255,255,255,.2);
+1388:      border-radius: 20px;
+1389:      padding: 36px;
+1390:    }
+1391:
+1392:    .contato-form h3 {
+1393:      font-size: 1.25rem;
+1394:      font-weight: 700;
+1395:      color: #fff;
+1396:      margin-bottom: 24px;
+1397:    }
+1398:
+1399:    .form-group-lp {
+1400:      display: flex;
+1401:      flex-direction: column;
+1402:      gap: 6px;
+1403:      margin-bottom: 16px;
+1404:    }
+1405:
+1406:    .form-group-lp label {
+1407:      font-size: 0.8125rem;
+1408:      font-weight: 600;
+1409:      color: rgba(255,255,255,.75);
+1410:    }
+1411:
+1412:    .form-group-lp input,
+1413:    .form-group-lp select {
+1414:      background: rgba(255,255,255,.12);
+1415:      border: 1px solid rgba(255,255,255,.2);
+1416:      border-radius: 8px;
+1417:      padding: 12px 16px;
+1418:      font-size: 0.9375rem;
+1419:      color: #fff;
+1420:      font-family: inherit;
+1421:      width: 100%;
+1422:      transition: border-color .15s;
+1423:      outline: none;
+1424:    }
+1425:
+1426:    .form-group-lp input::placeholder { color: rgba(255,255,255,.4); }
+1427:
+1428:    .form-group-lp input:focus,
+1429:    .form-group-lp select:focus {
+1430:      border-color: rgba(255,255,255,.5);
+1431:      background: rgba(255,255,255,.16);
+1432:    }
+1433:
+1434:    .form-group-lp select option { background: #0f172a; color: #fff; }
+1435:
+1436:    .form-submit {
+1437:      width: 100%;
+1438:      padding: 15px;
+1439:      background: #fff;
+1440:      color: var(--orange);
+1441:      border-radius: 10px;
+1442:      font-size: 1rem;
+1443:      font-weight: 700;
+1444:      display: flex;
+1445:      align-items: center;
+1446:      justify-content: center;
+1447:      gap: 8px;
+1448:      transition: all .18s;
+1449:      margin-top: 20px;
+1450:      border: none;
+
+=== 1451-1700 ===
+1451:      cursor: pointer;
+1452:      font-family: inherit;
+1453:    }
+1454:
+1455:    .form-submit:hover {
+1456:      background: rgba(255,255,255,.92);
+1457:      transform: translateY(-1px);
+1458:      box-shadow: 0 6px 24px rgba(0,0,0,.15);
+1459:    }
+1460:
+1461:    /* ─── Revenda ──────────────────────────────────────────────────────────── */
+1462:    #revenda {
+1463:      padding: 96px 0;
+1464:      background: linear-gradient(135deg, var(--navy) 0%, #0c2d3f 50%, #134e5e 100%);
+1465:      position: relative;
+1466:      overflow: hidden;
+1467:    }
+1468:
+1469:    #revenda::before {
+1470:      content: '';
+1471:      position: absolute;
+1472:      top: -120px; right: -120px;
+1473:      width: 400px; height: 400px;
+1474:      border-radius: 50%;
+1475:      background: rgba(22,150,163,.12);
+1476:    }
+1477:
+1478:    #revenda::after {
+1479:      content: '';
+1480:      position: absolute;
+1481:      bottom: -80px; left: -80px;
+1482:      width: 300px; height: 300px;
+1483:      border-radius: 50%;
+1484:      background: rgba(255,122,13,.08);
+1485:    }
+1486:
+1487:    .revenda-inner {
+1488:      display: grid;
+1489:      grid-template-columns: 1fr 1fr;
+1490:      gap: 72px;
+1491:      align-items: center;
+1492:      position: relative;
+1493:      z-index: 1;
+1494:    }
+1495:
+1496:    .revenda-text .section-label { color: var(--teal); }
+1497:    .revenda-text .section-title { color: #fff; }
+1498:    .revenda-text .section-subtitle { color: rgba(255,255,255,.75); }
+1499:
+1500:    .revenda-benefits {
+1501:      display: flex;
+1502:      flex-direction: column;
+1503:      gap: 20px;
+1504:      margin-top: 32px;
+1505:    }
+1506:
+1507:    .revenda-benefit {
+1508:      display: flex;
+1509:      align-items: flex-start;
+1510:      gap: 16px;
+1511:    }
+1512:
+1513:    .revenda-benefit-icon {
+1514:      width: 44px;
+1515:      height: 44px;
+1516:      border-radius: 12px;
+1517:      background: rgba(22,150,163,.2);
+1518:      display: flex;
+1519:      align-items: center;
+1520:      justify-content: center;
+1521:      flex-shrink: 0;
+1522:    }
+1523:
+1524:    .revenda-benefit-content h4 {
+1525:      font-size: 0.9375rem;
+1526:      font-weight: 700;
+1527:      color: #fff;
+1528:      margin-bottom: 4px;
+1529:    }
+1530:
+1531:    .revenda-benefit-content p {
+1532:      font-size: 0.8125rem;
+1533:      color: rgba(255,255,255,.65);
+1534:      line-height: 1.5;
+1535:    }
+1536:
+1537:    .revenda-form {
+1538:      background: rgba(255,255,255,.08);
+1539:      backdrop-filter: blur(12px);
+1540:      border: 1px solid rgba(255,255,255,.15);
+1541:      border-radius: 20px;
+1542:      padding: 36px;
+1543:    }
+1544:
+1545:    .revenda-form h3 {
+1546:      font-size: 1.25rem;
+1547:      font-weight: 700;
+1548:      color: #fff;
+1549:      margin-bottom: 24px;
+1550:    }
+1551:
+1552:    .revenda-form .form-group-lp label { color: rgba(255,255,255,.75); }
+1553:    .revenda-form .form-group-lp input,
+1554:    .revenda-form .form-group-lp select {
+1555:      background: rgba(255,255,255,.1);
+1556:      border: 1px solid rgba(255,255,255,.18);
+1557:      color: #fff;
+1558:    }
+1559:    .revenda-form .form-group-lp input::placeholder { color: rgba(255,255,255,.35); }
+1560:    .revenda-form .form-group-lp input:focus,
+1561:    .revenda-form .form-group-lp select:focus {
+1562:      border-color: var(--teal);
+1563:      background: rgba(255,255,255,.14);
+1564:    }
+1565:    .revenda-form .form-group-lp select option { background: #0f172a; color: #fff; }
+1566:
+1567:    .revenda-form .form-submit {
+1568:      background: var(--teal);
+1569:      color: #fff;
+1570:    }
+1571:    .revenda-form .form-submit:hover {
+1572:      background: var(--teal-dark);
+1573:      transform: translateY(-1px);
+1574:      box-shadow: 0 6px 24px rgba(22,150,163,.3);
+1575:    }
+1576:
+1577:    /* ─── Footer ────────────────────────────────────────────────────────────── */
+1578:    footer {
+1579:      background: var(--navy);
+1580:      padding: 56px 0 32px;
+1581:    }
+1582:
+1583:    .footer-top {
+1584:      display: grid;
+1585:      grid-template-columns: 2fr 1fr 1fr 1fr;
+1586:      gap: 48px;
+1587:      padding-bottom: 48px;
+1588:      border-bottom: 1px solid rgba(255,255,255,.08);
+1589:    }
+1590:
+1591:    .footer-brand-text {
+1592:      font-size: 0.9375rem;
+1593:      color: rgba(255,255,255,.45);
+1594:      line-height: 1.65;
+1595:      margin-top: 12px;
+1596:      max-width: 280px;
+1597:    }
+1598:
+1599:    .footer-col-title {
+1600:      font-size: 0.75rem;
+1601:      font-weight: 700;
+1602:      text-transform: uppercase;
+1603:      letter-spacing: 0.08em;
+1604:      color: rgba(255,255,255,.35);
+1605:      margin-bottom: 16px;
+1606:    }
+1607:
+1608:    .footer-links {
+1609:      display: flex;
+1610:      flex-direction: column;
+1611:      gap: 10px;
+1612:    }
+1613:
+1614:    .footer-links a {
+1615:      font-size: 0.9375rem;
+1616:      color: rgba(255,255,255,.55);
+1617:      transition: color .15s;
+1618:    }
+1619:    .footer-links a:hover { color: rgba(255,255,255,.9); }
+1620:
+1621:    .footer-bottom {
+1622:      display: flex;
+1623:      align-items: center;
+1624:      justify-content: space-between;
+1625:      padding-top: 28px;
+1626:      font-size: 0.875rem;
+1627:      color: rgba(255,255,255,.3);
+1628:      flex-wrap: wrap;
+1629:      gap: 12px;
+1630:    }
+1631:
+1632:    .footer-bottom a { color: rgba(255,255,255,.4); }
+1633:    .footer-bottom a:hover { color: rgba(255,255,255,.7); }
+1634:
+1635:    /* ─── Mobile Menu ───────────────────────────────────────────────────────── */
+1636:    .mobile-menu {
+1637:      display: none;
+1638:      position: fixed;
+1639:      inset: 0;
+1640:      background: var(--navy);
+1641:      z-index: 950;
+1642:      flex-direction: column;
+1643:      padding: 80px 24px 40px;
+1644:      gap: 8px;
+1645:    }
+1646:
+1647:    .mobile-menu.open { display: flex; }
+1648:
+1649:    .mobile-menu a {
+1650:      font-size: 1.125rem;
+1651:      font-weight: 600;
+1652:      color: rgba(255,255,255,.75);
+1653:      padding: 14px 0;
+1654:      border-bottom: 1px solid rgba(255,255,255,.07);
+1655:    }
+1656:
+1657:    .mobile-menu-actions {
+1658:      display: flex;
+1659:      flex-direction: column;
+1660:      gap: 12px;
+1661:      margin-top: 24px;
+1662:    }
+1663:
+1664:    .mobile-menu-actions .btn {
+1665:      display: block;
+1666:      width: 100%;
+1667:      padding: 14px 20px;
+1668:      text-align: center;
+1669:      font-size: 1rem;
+1670:    }
+1671:
+1672:    .mobile-menu-close {
+1673:      position: absolute;
+1674:      top: 20px; right: 20px;
+1675:      width: 40px; height: 40px;
+1676:      border-radius: 50%;
+1677:      background: rgba(255,255,255,.08);
+1678:      display: flex;
+1679:      align-items: center;
+1680:      justify-content: center;
+1681:      font-size: 1.5rem;
+1682:      color: rgba(255,255,255,.7);
+1683:    }
+1684:
+1685:    /* Hero mockup light */
+1686:    [data-theme="light"] .mockup-window { background: #ffffff; box-shadow: 0 32px 80px rgba(0,0,0,.1), 0 0 0 1px rgba(0,0,0,.06); }
+1687:    [data-theme="light"] .mockup-titlebar { background: #f1f5f9; }
+1688:    [data-theme="light"] .mockup-url { background: #e2e8f0; }
+1689:    [data-theme="light"] .mockup-url-text { color: #94a3b8; }
+1690:    [data-theme="light"] .mockup-kpi { background: #f8fafc; }
+1691:    [data-theme="light"] .mockup-kpi-label { color: #94a3b8; }
+1692:    [data-theme="light"] .mockup-kpi-value { color: #0f172a; }
+1693:    [data-theme="light"] .mockup-chart { background: #f8fafc; }
+1694:    [data-theme="light"] .mockup-bar { background: rgba(22,150,163,.15); }
+1695:    [data-theme="light"] .mockup-table { background: #f8fafc; }
+1696:    [data-theme="light"] .mockup-table-row { border-bottom-color: #e2e8f0; }
+1697:    [data-theme="light"] .mockup-table-name { color: #475569; }
+1698:    [data-theme="light"] .mockup-sidebar { background: #f1f5f9; }
+1699:
+1700:    /* ─── Theme Toggle ─────────────────────────────────────────────────────── */
+
+=== 1701-1950 ===
+1701:    .theme-toggle {
+1702:      width: 36px;
+1703:      height: 36px;
+1704:      border-radius: 50%;
+1705:      background: rgba(255,255,255,.12);
+1706:      display: flex;
+1707:      align-items: center;
+1708:      justify-content: center;
+1709:      transition: background .2s;
+1710:      flex-shrink: 0;
+1711:    }
+1712:    .theme-toggle:hover { background: rgba(255,255,255,.22); }
+1713:    .theme-toggle svg { width: 18px; height: 18px; color: #fff; }
+1714:    .theme-toggle .icon-sun { display: none; }
+1715:    .theme-toggle .icon-moon { display: block; }
+1716:    [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+1717:    [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+1718:
+1719:    /* ─── Theme Transitions ──────────────────────────────────────────────── */
+1720:    body, #hero, #funcionalidades, #depoimentos, #faq,
+1721:    #planos, #contato, #revenda, footer,
+1722:    #navbar, .mobile-menu,
+1723:    .feature-card, .depoimento-card,
+1724:    .faq-question, .faq-answer, .faq-item,
+1725:    .spotlight-visual, .spot-card, .spot-stat,
+1726:    .mockup-floating, .section-title, .section-subtitle,
+1727:    .feature-title, .feature-desc, .spotlight-check,
+1728:    .depoimento-text, .depoimento-name, .spot-name,
+1729:    .spot-stat-value, .spot-meta, .mockup-floating-value,
+1730:    .mockup-floating-label, .badge-teal,
+1731:    .plano-card, .plano-name, .plano-desc, .plano-item,
+1732:    .plano-cta-ghost, .plano-badge,
+1733:    .contato-form, .contato-item,
+1734:    .revenda-form, .revenda-benefit-content h4, .revenda-benefit-content p,
+1735:    .hero-title, .hero-subtitle, .hero-eyebrow-text,
+1736:    .nav-links a, .btn-ghost, .theme-toggle,
+1737:    .footer-brand-text, .footer-col-title, .footer-links a, .footer-bottom,
+1738:    .form-group-lp input, .form-group-lp select, .form-group-lp label,
+1739:    .form-submit {
+1740:      transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
+1741:    }
+1742:
+1743:    /* ─── Responsive ────────────────────────────────────────────────────────── */
+1744:    @media (max-width: 1280px) {
+1745:      .planos-grid {
+1746:        grid-template-columns: repeat(3, 1fr);
+1747:      }
+1748:    }
+1749:
+1750:    @media (max-width: 1024px) {
+1751:      .hero-inner {
+1752:        grid-template-columns: 1fr;
+1753:        gap: 48px;
+1754:        text-align: center;
+1755:      }
+1756:      .hero-eyebrow { justify-content: center; }
+1757:      .hero-subtitle { max-width: none; }
+1758:      .hero-actions { justify-content: center; }
+1759:      .hero-trust { justify-content: center; }
+1760:      .hero-mockup {
+1761:        display: block;
+1762:      }
+1763:      .hero-mockup img {
+1764:        width: 100%;
+1765:        transform: none;
+1766:      }
+1767:
+1768:      .features-grid {
+1769:        grid-template-columns: repeat(2, 1fr);
+1770:      }
+1771:
+1772:      .spotlight-inner {
+1773:        grid-template-columns: 1fr;
+1774:        gap: 40px;
+1775:      }
+1776:      .spotlight-inner.reverse { direction: ltr; }
+1777:
+1778:      .spotlight-visual--img img {
+1779:        border-radius: 10px;
+1780:      }
+1781:
+1782:      .planos-grid {
+1783:        grid-template-columns: repeat(2, 1fr);
+1784:        max-width: 600px;
+1785:        margin-inline: auto;
+1786:      }
+1787:
+1788:      .plano-card.featured { transform: none; }
+1789:      .plano-card.featured:hover { transform: translateY(-4px); }
+1790:
+1791:      .depoimentos-grid {
+1792:        grid-template-columns: 1fr;
+1793:        max-width: 560px;
+1794:        margin-inline: auto;
+1795:      }
+1796:
+1797:      .contato-inner,
+1798:      .revenda-inner {
+1799:        grid-template-columns: 1fr;
+1800:        gap: 48px;
+1801:      }
+1802:
+1803:      .footer-top {
+1804:        grid-template-columns: 1fr 1fr;
+1805:        gap: 36px;
+1806:      }
+1807:    }
+1808:
+1809:    @media (max-width: 768px) {
+1810:      .nav-links,
+1811:      .nav-actions { display: none; }
+1812:      .nav-mobile-right { display: flex; }
+1813:      .theme-toggle-mobile { display: flex; }
+1814:      .nav-mobile-right .nav-hamburger { display: flex; }
+1815:
+1816:      .numeros-grid {
+1817:        grid-template-columns: 1fr;
+1818:        gap: 28px;
+1819:      }
+1820:      .numeros-item::before { display: none; }
+1821:
+1822:      .features-grid {
+1823:        grid-template-columns: 1fr;
+1824:      }
+1825:
+1826:      .planos-grid {
+1827:        grid-template-columns: 1fr;
+1828:        max-width: 440px;
+1829:      }
+1830:
+1831:      .footer-top {
+1832:        grid-template-columns: 1fr;
+1833:      }
+1834:
+1835:      .footer-bottom {
+1836:        flex-direction: column;
+1837:        text-align: center;
+1838:      }
+1839:
+1840:      .contato-form,
+1841:      .revenda-form { padding: 24px; }
+1842:
+1843:      .mockup-kpis { grid-template-columns: repeat(2, 1fr); }
+1844:
+1845:      .hero-mockup img {
+1846:        width: 100%;
+1847:        transform: none;
+1848:        border-radius: 10px;
+1849:      }
+1850:
+1851:      .spotlight-visual--img {
+1852:        border-radius: 10px;
+1853:      }
+1854:
+1855:      .whatsapp-wrap {
+1856:        bottom: 16px;
+1857:        right: 16px;
+1858:      }
+1859:
+1860:      .whatsapp-float {
+1861:        width: 52px;
+1862:        height: 52px;
+1863:      }
+1864:
+1865:      .whatsapp-float svg {
+1866:        width: 26px;
+1867:        height: 26px;
+1868:      }
+1869:
+1870:      .whatsapp-tooltip {
+1871:        display: none;
+1872:      }
+1873:    }
+1874:
+1875:    /* ─── Scroll reveal ─────────────────────────────────────────────────────── */
+1876:    .reveal {
+1877:      opacity: 0;
+1878:      transform: translateY(28px);
+1879:      transition: opacity .55s ease, transform .55s ease;
+1880:    }
+1881:
+1882:    .reveal.visible {
+1883:      opacity: 1;
+1884:      transform: none;
+1885:    }
+1886:
+1887:    .reveal-delay-1 { transition-delay: .1s; }
+1888:    .reveal-delay-2 { transition-delay: .2s; }
+1889:    .reveal-delay-3 { transition-delay: .3s; }
+1890:    .reveal-delay-4 { transition-delay: .4s; }
+1891:    .reveal-delay-5 { transition-delay: .5s; }
+1892:
+1893:    /* ─── Chat Widget ──────────────────────────────────────────────────────── */
+1894:    .chat-widget {
+1895:      position: fixed;
+1896:      bottom: 28px;
+1897:      right: 100px;
+1898:      z-index: 1000;
+1899:      font-family: 'Inter', system-ui, sans-serif;
+1900:    }
+1901:
+1902:    .chat-toggle {
+1903:      width: 60px;
+1904:      height: 60px;
+1905:      border-radius: 50%;
+1906:      background: var(--teal);
+1907:      display: flex;
+1908:      align-items: center;
+1909:      justify-content: center;
+1910:      box-shadow: 0 4px 16px rgba(22,150,163,.4);
+1911:      transition: transform .2s, box-shadow .2s;
+1912:      cursor: pointer;
+1913:      border: none;
+1914:      position: relative;
+1915:    }
+1916:    .chat-toggle::before {
+1917:      content: '';
+1918:      position: absolute;
+1919:      inset: -4px;
+1920:      border-radius: 50%;
+1921:      background: rgba(22,150,163,.3);
+1922:      animation: wpp-pulse 2s ease-in-out infinite;
+1923:    }
+1924:    .chat-toggle:hover {
+1925:      transform: scale(1.1);
+1926:      box-shadow: 0 6px 24px rgba(22,150,163,.5);
+1927:    }
+1928:    .chat-toggle:hover::before { animation: none; }
+1929:
+1930:    .chat-tooltip {
+1931:      position: absolute;
+1932:      right: 72px;
+1933:      top: 50%;
+1934:      transform: translateY(-50%);
+1935:      background: var(--bg-card, #1e293b);
+1936:      color: var(--color-text, #e2e8f0);
+1937:      padding: 8px 16px;
+1938:      border-radius: 10px;
+1939:      font-size: 0.85rem;
+1940:      font-weight: 500;
+1941:      white-space: nowrap;
+1942:      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+1943:      opacity: 0;
+1944:      pointer-events: none;
+1945:      transition: opacity .4s;
+1946:    }
+1947:    .chat-tooltip::after {
+1948:      content: '';
+1949:      position: absolute;
+1950:      right: -6px;
+
+=== 1951-2168 ===
+1951:      top: 50%;
+1952:      transform: translateY(-50%);
+1953:      border: 6px solid transparent;
+1954:      border-left-color: var(--bg-card, #1e293b);
+1955:      border-right: none;
+1956:    }
+1957:    .chat-tooltip.show { opacity: 1; }
+1958:    [data-theme="light"] .chat-tooltip { background: #fff; color: #0f172a; box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+1959:    [data-theme="light"] .chat-tooltip::after { border-left-color: #fff; }
+1960:    .chat-toggle svg {
+1961:      width: 28px;
+1962:      height: 28px;
+1963:      fill: #fff;
+1964:      position: relative;
+1965:      z-index: 1;
+1966:    }
+1967:
+1968:    .chat-panel {
+1969:      display: none;
+1970:      position: fixed;
+1971:      bottom: 100px;
+1972:      right: 28px;
+1973:      width: 380px;
+1974:      height: 520px;
+1975:      background: var(--bg-card);
+1976:      border-radius: 16px;
+1977:      box-shadow: var(--shadow-lg);
+1978:      flex-direction: column;
+1979:      overflow: hidden;
+1980:      z-index: 1001;
+1981:    }
+1982:    .chat-panel.open { display: flex; }
+1983:
+1984:    .chat-header {
+1985:      background: var(--teal);
+1986:      color: #fff;
+1987:      padding: 16px 20px;
+1988:      display: flex;
+1989:      align-items: center;
+1990:      justify-content: space-between;
+1991:      flex-shrink: 0;
+1992:    }
+1993:    .chat-header h4 {
+1994:      font-size: 0.9375rem;
+1995:      font-weight: 700;
+1996:      margin: 0;
+1997:    }
+1998:    .chat-header-close {
+1999:      background: none;
+2000:      border: none;
+2001:      color: rgba(255,255,255,.8);
+2002:      font-size: 1.25rem;
+2003:      cursor: pointer;
+2004:      padding: 4px;
+2005:      line-height: 1;
+2006:    }
+2007:    .chat-header-close:hover { color: #fff; }
+2008:
+2009:    .chat-start {
+2010:      flex: 1;
+2011:      display: flex;
+2012:      flex-direction: column;
+2013:      justify-content: center;
+2014:      padding: 32px 24px;
+2015:      gap: 16px;
+2016:    }
+2017:    .chat-start p {
+2018:      font-size: 0.875rem;
+2019:      color: var(--text-sm);
+2020:      text-align: center;
+2021:      line-height: 1.5;
+2022:    }
+2023:    .chat-start-field {
+2024:      display: flex;
+2025:      flex-direction: column;
+2026:      gap: 6px;
+2027:    }
+2028:    .chat-start-field label {
+2029:      font-size: 0.75rem;
+2030:      font-weight: 600;
+2031:      color: var(--text-sm);
+2032:      text-transform: uppercase;
+2033:      letter-spacing: .03em;
+2034:    }
+2035:    .chat-start-field input {
+2036:      border: 1px solid var(--border);
+2037:      border-radius: 8px;
+2038:      padding: 10px 14px;
+2039:      font-size: 0.875rem;
+2040:      font-family: inherit;
+2041:      color: var(--text);
+2042:      background: var(--bg-section);
+2043:      outline: none;
+2044:      transition: border-color .15s;
+2045:    }
+2046:    .chat-start-field input:focus {
+2047:      border-color: var(--teal);
+2048:    }
+2049:    .chat-start-btn {
+2050:      background: var(--teal);
+2051:      color: #fff;
+2052:      border: none;
+2053:      border-radius: 8px;
+2054:      padding: 12px;
+2055:      font-size: 0.875rem;
+2056:      font-weight: 700;
+2057:      cursor: pointer;
+2058:      font-family: inherit;
+2059:      transition: background .15s;
+2060:      margin-top: 8px;
+2061:    }
+2062:    .chat-start-btn:hover { background: var(--teal-dark); }
+2063:    .chat-start-btn:disabled {
+2064:      opacity: .6;
+2065:      cursor: not-allowed;
+2066:    }
+2067:
+2068:    .chat-messages {
+2069:      flex: 1;
+2070:      overflow-y: auto;
+2071:      padding: 16px;
+2072:      display: flex;
+2073:      flex-direction: column;
+2074:      gap: 10px;
+2075:    }
+2076:
+2077:    .chat-msg {
+2078:      max-width: 80%;
+2079:      padding: 10px 14px;
+2080:      border-radius: 12px;
+2081:      font-size: 0.8125rem;
+2082:      line-height: 1.5;
+2083:      white-space: pre-wrap;
+2084:      word-break: break-word;
+2085:    }
+2086:    .chat-msg.sistema,
+2087:    .chat-msg.suporte {
+2088:      background: var(--bg-alt);
+2089:      color: var(--text);
+2090:      align-self: flex-start;
+2091:      border-bottom-left-radius: 4px;
+2092:    }
+2093:    .chat-msg.cliente {
+2094:      background: var(--teal);
+2095:      color: #fff;
+2096:      align-self: flex-end;
+2097:      border-bottom-right-radius: 4px;
+2098:    }
+2099:
+2100:    .chat-input-wrap {
+2101:      display: flex;
+2102:      padding: 12px;
+2103:      gap: 8px;
+2104:      border-top: 1px solid var(--border);
+2105:      flex-shrink: 0;
+2106:    }
+2107:    .chat-input-wrap input {
+2108:      flex: 1;
+2109:      border: 1px solid var(--border);
+2110:      border-radius: 8px;
+2111:      padding: 10px 14px;
+2112:      font-size: 0.875rem;
+2113:      font-family: inherit;
+2114:      color: var(--text);
+2115:      background: var(--bg-section);
+2116:      outline: none;
+2117:    }
+2118:    .chat-input-wrap input:focus {
+2119:      border-color: var(--teal);
+2120:    }
+2121:    .chat-input-send {
+2122:      background: var(--teal);
+2123:      color: #fff;
+2124:      border: none;
+2125:      border-radius: 8px;
+2126:      width: 40px;
+2127:      display: flex;
+2128:      align-items: center;
+2129:      justify-content: center;
+2130:      cursor: pointer;
+2131:      transition: background .15s;
+2132:      flex-shrink: 0;
+2133:    }
+2134:    .chat-input-send:hover { background: var(--teal-dark); }
+2135:    .chat-input-send svg {
+2136:      width: 18px;
+2137:      height: 18px;
+2138:      fill: none;
+2139:      stroke: #fff;
+2140:      stroke-width: 2;
+2141:      stroke-linecap: round;
+2142:      stroke-linejoin: round;
+2143:    }
+2144:
+2145:    .chat-closed-msg {
+2146:      text-align: center;
+2147:      padding: 16px;
+2148:      font-size: 0.8125rem;
+2149:      color: var(--text-sm);
+2150:      border-top: 1px solid var(--border);
+2151:    }
+2152:
+2153:    @media (max-width: 480px) {
+2154:      .chat-panel {
+2155:        width: calc(100vw - 24px);
+2156:        right: 12px;
+2157:        bottom: 80px;
+2158:        height: 70vh;
+2159:      }
+2160:      .chat-widget { bottom: 16px; right: 16px; }
+2161:      .chat-toggle { width: 52px; height: 52px; }
+2162:      .chat-toggle svg { width: 24px; height: 24px; }
+2163:    }
+2164:  </style>
+2165:</head>
+2166:<body>
+2167:
+2168:<!-- ═══════════════════════════════════════════════════ NAVBAR -->
+

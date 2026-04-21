@@ -100,7 +100,7 @@
                             </p>
 
                             <a href="#" onclick="alert('Funcionalidade de indicação em breve! Você receberá seu link exclusivo por email.'); return false;"
-                               class="referral-btn inline-block px-5 py-2.5 rounded-lg font-semibold text-sm
+                               class="referral-btn inline-block px-5 py-2.5 rounded-full font-semibold text-sm
                                       bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600
                                       text-white shadow-lg">
                                 Quero Indicar
