@@ -20,7 +20,7 @@
             <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-subtle);font-weight:600;margin-bottom:6px;">Seu cupom de indicacao</div>
             <div id="codigo-cupom" style="font-size:32px;font-weight:800;color:var(--color-primary);letter-spacing:3px;margin-bottom:12px;">{{ $cupom->codigo }}</div>
             <button onclick="copiarCupom()" id="btn-copiar"
-                style="padding:8px 20px;background:var(--color-primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;">
+                style="padding:8px 20px;background:var(--color-primary);color:#fff;border:none;border-radius:9999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;">
                 <i class="fa-solid fa-copy"></i> Copiar Cupom
             </button>
         </div>
@@ -49,7 +49,7 @@
                 value="{{ url('/register?cupom=' . $cupom->codigo) }}"
                 style="flex:1;padding:10px 12px;border:1px solid var(--color-border);border-radius:8px;font-size:13px;color:var(--color-text-muted);background:var(--color-bg-inset);">
             <button onclick="copiarLink()" id="btn-copiar-link"
-                style="padding:10px 16px;background:var(--color-bg-inset);border:1px solid var(--color-border);border-radius:8px;font-size:13px;color:var(--color-text-muted);cursor:pointer;white-space:nowrap;transition:all .2s;">
+                style="padding:10px 16px;background:var(--color-bg-inset);border:1px solid var(--color-border);border-radius:9999px;font-size:13px;color:var(--color-text-muted);cursor:pointer;white-space:nowrap;transition:all .2s;">
                 <i class="fa-solid fa-copy"></i>
             </button>
         </div>

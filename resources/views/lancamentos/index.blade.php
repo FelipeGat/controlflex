@@ -174,7 +174,7 @@
             </div>
             <div style="display:flex;gap:6px;">
                 <a href="{{ $urlHoje }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:9999px;text-decoration:none;white-space:nowrap;
                           border:1px solid {{ $ehHoje ? 'var(--color-primary)' : 'var(--color-border)' }};
                           background:{{ $ehHoje ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
                           color:{{ $ehHoje ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};transition:all .15s;">
@@ -182,7 +182,7 @@
                 </a>
                 @if(!$ehMesAtual && !$ehHoje)
                 <a href="{{ $urlMesAtualReal }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);transition:all .15s;">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:9999px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);transition:all .15s;">
                     <i class="fa-solid fa-rotate-left"></i> Mês Atual
                 </a>
                 @endif

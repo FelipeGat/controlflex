@@ -42,7 +42,7 @@
             </div>
             <div style="display:flex;gap:6px;">
                 <a href="{{ $urlRHoje }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:9999px;text-decoration:none;white-space:nowrap;
                           border:1px solid {{ $ehHojeR ? 'var(--color-primary)' : 'var(--color-border)' }};
                           background:{{ $ehHojeR ? 'var(--color-primary)' : 'var(--color-bg-card)' }};
                           color:{{ $ehHojeR ? 'var(--color-bg-card)' : 'var(--color-text-muted)' }};">
@@ -50,7 +50,7 @@
                 </a>
                 @if(!$ehMesAtualR && !$ehHojeR)
                 <a href="{{ $urlRMesAtu }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:9999px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-border);background:var(--color-bg-card);color:var(--color-text-muted);">
                     <i class="fa-solid fa-rotate-left"></i> Mês Atual
                 </a>
                 @endif
@@ -144,7 +144,7 @@
 
         @if($temFiltroAtivoR)
         <a href="{{ route('receitas.index', array_filter(['inicio'=>$inicio,'fim'=>$fim,'familiar_id'=>$familiarId])) }}"
-           style="font-size:12px;color:var(--color-text-muted);text-decoration:none;padding:5px 10px;border:1px solid var(--color-border);border-radius:6px;white-space:nowrap;">
+           style="font-size:12px;color:var(--color-text-muted);text-decoration:none;padding:5px 10px;border:1px solid var(--color-border);border-radius:9999px;white-space:nowrap;">
             <i class="fa-solid fa-xmark"></i> Limpar filtros
         </a>
         @endif

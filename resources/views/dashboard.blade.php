@@ -39,7 +39,7 @@
                 @endif
                 @if($filtroAtivo)
                 <a href="{{ route('dashboard') }}"
-                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:6px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-danger);background:var(--color-danger-soft);color:var(--color-danger);">
+                   style="padding:6px 11px;font-size:12px;font-weight:600;border-radius:9999px;text-decoration:none;white-space:nowrap;border:1px solid var(--color-danger);background:var(--color-danger-soft);color:var(--color-danger);">
                     <i class="fa-solid fa-xmark"></i> Limpar
                 </a>
                 @endif

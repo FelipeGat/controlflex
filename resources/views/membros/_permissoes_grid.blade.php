@@ -17,7 +17,7 @@ $acoes = ['ver' => 'Ver', 'criar' => 'Criar', 'editar' => 'Editar', 'excluir' =>
         <button type="button"
             class="perm-toggle-all"
             onclick="toggleAllPermissoes(this)"
-            style="font-size:11px;font-weight:600;color:var(--color-primary);background:none;border:1px solid var(--color-primary);border-radius:4px;padding:3px 10px;cursor:pointer;line-height:1.4;">
+            style="font-size:11px;font-weight:600;color:var(--color-primary);background:none;border:1px solid var(--color-primary);border-radius:9999px;padding:3px 10px;cursor:pointer;line-height:1.4;">
             <i class="fa-solid fa-check-double" style="margin-right:4px;"></i>Marcar todas
         </button>
     </div>

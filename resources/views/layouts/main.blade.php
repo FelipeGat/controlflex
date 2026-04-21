@@ -1094,7 +1094,7 @@
     <div style="font-size:12px;color:#6b7280;margin-top:2px;">Acesso rápido na tela inicial</div>
   </div>
   <button @click="install()"
-          style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;">
+          style="background:#2563eb;color:#fff;border:none;border-radius:9999px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;">
     Instalar
   </button>
   <button @click="close()"
@@ -1253,7 +1253,7 @@
                     onclick="alfaPushToggle(this)"
                     title="Ativar notificações"
                     aria-label="Ativar notificações push"
-                    style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg);color:#9ca3af;cursor:pointer;transition:background .15s,color .15s;flex-shrink:0;">
+                    style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--color-border);border-radius:9999px;background:var(--color-bg);color:#9ca3af;cursor:pointer;transition:background .15s,color .15s;flex-shrink:0;">
                 <i class="fa-regular fa-bell" style="font-size:15px;"></i>
             </button>
             <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar modo claro/escuro">
