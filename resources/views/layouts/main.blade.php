@@ -441,6 +441,12 @@
             background: var(--color-bg-container, #111827); border-color: var(--color-border);
             color: #E5E7EB;
         }
+        body.dark-mode input[type="date"],
+        body.dark-mode input[type="datetime-local"],
+        body.dark-mode input[type="month"],
+        body.dark-mode input[type="time"] {
+            color-scheme: dark;
+        }
         body.dark-mode .form-control::placeholder { color: #6B7280; }
         body.dark-mode .form-control:focus {
             border-color: var(--color-primary); background: var(--color-bg-container, #111827);
