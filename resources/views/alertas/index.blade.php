@@ -161,7 +161,7 @@ $config = [
         background: var(--cor);
         color: #fff;
         padding: 10px 22px;
-        border-radius: 10px;
+        border-radius: 9999px;
         font-size: 13px;
         font-weight: 700;
         text-decoration: none;
@@ -438,7 +438,7 @@ $config = [
         gap: 5px;
         color: #fff;
         padding: 6px 16px;
-        border-radius: 8px;
+        border-radius: 9999px;
         font-size: 11px;
         font-weight: 700;
         text-decoration: none;
@@ -514,7 +514,7 @@ $config = [
 @if($alertas->count() > 8)
 <div id="ver-todos-wrap" style="text-align:center; margin-top:16px;">
     <button onclick="mostrarTodos()" id="btn-ver-todos"
-            style="background:var(--color-bg-container); border:1px solid var(--color-border); color:var(--color-text-muted); padding:10px 24px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;">
+            style="background:var(--color-bg-container); border:1px solid var(--color-border); color:var(--color-text-muted); padding:10px 24px; border-radius:9999px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;">
         <i class="fa-solid fa-chevron-down" style="margin-right:6px;"></i>
         Ver todos os alertas ({{ $alertas->count() - 1 }} restantes)
     </button>
