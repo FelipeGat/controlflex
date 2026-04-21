@@ -1,5 +1,12 @@
 # Changelog
 
+## AlfaHome — 21/04/2026 — Visual dos botões atualizado para bordas arredondadas
+
+### Melhorias
+- Todos os botões do sistema agora exibem bordas totalmente arredondadas (pill), proporcionando uma aparência mais moderna e consistente em todas as telas.
+
+---
+
 ## AlfaHome — 21/04/2026 — Ícone de calendário visível no modo escuro
 
 ### Correções
