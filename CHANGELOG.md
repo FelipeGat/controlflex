@@ -1,5 +1,12 @@
 # Changelog
 
+## AlfaHome — 22/04/2026 — Padronização completa dos botões com bordas arredondadas
+
+### Melhorias
+- Todos os botões do sistema agora têm bordas totalmente arredondadas (estilo "pill"), incluindo botões de filtro (Hoje, Mês Atual, Limpar filtros) nas telas de Despesas, Receitas e Lançamentos, botões de cupom e convite, botão de permissões de membros, botão de instalação do app e ícone de notificações.
+
+---
+
 ## AlfaHome — 21/04/2026 — Visual dos botões atualizado para bordas arredondadas
 
 ### Melhorias
