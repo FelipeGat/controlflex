@@ -30,8 +30,8 @@
             --sidebar-w-collapsed: 70px;
             --topbar-h: 64px;
             --bottom-nav-h: 60px;
-            --color-primary: #1696a3;
-            --color-primary-hover: #117a85;
+            --color-primary: #57BA87;
+            --color-primary-hover: #47a877;
             --color-success: #16a34a;
             --color-danger:  #dc2626;
             --color-warning: #d97706;
