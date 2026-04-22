@@ -1,5 +1,12 @@
 # Changelog
 
+## AlfaHome — 21/04/2026 — Cor de destaque atualizada para verde
+
+### Melhorias
+- A cor de destaque do sistema (botões, links, indicadores ativos) foi alterada para o verde `#57BA87`.
+
+---
+
 ## AlfaHome — 22/04/2026 — Padronização completa dos botões com bordas arredondadas
 
 ### Melhorias
