@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Familiar extends Model
 {
-    use BelongsToTenant;
+    use HasFactory, BelongsToTenant;
 
     protected $table = 'familiares';
     protected $fillable = ['tenant_id', 'user_id', 'nome', 'foto', 'salario', 'limite_cartao', 'limite_cheque'];

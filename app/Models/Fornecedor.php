@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Fornecedor extends Model
 {
-    use BelongsToTenant;
+    use HasFactory, BelongsToTenant;
 
     protected $table = 'fornecedores';
     protected $fillable = ['tenant_id', 'user_id', 'nome', 'icone', 'grupo', 'contato', 'cnpj', 'telefone', 'observacoes'];
