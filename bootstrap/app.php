@@ -24,13 +24,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'permissao'    => \App\Http\Middleware\CheckPermission::class,
-            'tenant.ativo' => \App\Http\Middleware\EnsureTenantActive::class,
-            'role'         => \App\Http\Middleware\CheckRole::class,
-            'manutencao'   => \App\Http\Middleware\CheckManutencao::class,
+            'permissao'        => \App\Http\Middleware\CheckPermission::class,
+            'tenant.ativo'     => \App\Http\Middleware\EnsureTenantActive::class,
+            'tenant.ativo.api' => \App\Http\Middleware\EnsureTenantActiveApi::class,
+            'role'             => \App\Http\Middleware\CheckRole::class,
+            'manutencao'       => \App\Http\Middleware\CheckManutencao::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // API requests must always receive JSON, never redirects/HTML.
+        $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
+
         $exceptions->render(function (HttpException $e, Request $request) {
             if ($e->getStatusCode() !== 419) {
                 return null;
