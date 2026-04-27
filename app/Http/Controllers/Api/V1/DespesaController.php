@@ -114,6 +114,26 @@ class DespesaController extends Controller
     }
 
     /**
+     * GET /api/v1/despesas/grupo/{grupoId}
+     *
+     * Lista todas as despesas pertencentes ao mesmo grupo de recorrência,
+     * ordenadas por data crescente. Permite ao app mostrar todas as parcelas
+     * de uma compra parcelada ou de uma recorrência.
+     */
+    public function grupo(Request $request, string $grupoId)
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $items = Despesa::with(['categoria', 'familiar', 'fornecedor', 'banco'])
+            ->where('tenant_id', $tenantId)
+            ->where('grupo_recorrencia_id', $grupoId)
+            ->orderBy('data_compra')
+            ->get();
+
+        return DespesaResource::collection($items);
+    }
+
+    /**
      * GET /api/v1/despesas/{despesa}
      */
     public function show(Request $request, Despesa $despesa): DespesaResource

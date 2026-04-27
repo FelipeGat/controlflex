@@ -228,6 +228,62 @@ class DespesaTest extends TestCase
         $this->assertSoftDeleted('despesas', ['id' => $despesa->id]);
     }
 
+    // ─── GRUPO ────────────────────────────────────────────────────────────
+
+    public function test_grupo_returns_all_parcelas_ordered_by_date(): void
+    {
+        $grupoId = '11111111-1111-1111-1111-111111111111';
+        Despesa::factory()->create([
+            'tenant_id' => $this->user->tenant_id,
+            'grupo_recorrencia_id' => $grupoId,
+            'data_compra' => '2026-04-10',
+            'parcelas' => 3,
+        ]);
+        Despesa::factory()->create([
+            'tenant_id' => $this->user->tenant_id,
+            'grupo_recorrencia_id' => $grupoId,
+            'data_compra' => '2026-05-10',
+            'parcelas' => 3,
+        ]);
+        Despesa::factory()->create([
+            'tenant_id' => $this->user->tenant_id,
+            'grupo_recorrencia_id' => $grupoId,
+            'data_compra' => '2026-06-10',
+            'parcelas' => 3,
+        ]);
+        // outra despesa solta — não deve aparecer
+        Despesa::factory()->create([
+            'tenant_id' => $this->user->tenant_id,
+            'grupo_recorrencia_id' => null,
+            'data_compra' => '2026-04-11',
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        $resp = $this->getJson("/api/v1/despesas/grupo/{$grupoId}");
+
+        $resp->assertOk();
+        $datas = collect($resp->json('data'))->pluck('data_compra')->all();
+        $this->assertEquals(['2026-04-10', '2026-05-10', '2026-06-10'], $datas);
+    }
+
+    public function test_grupo_does_not_return_other_tenant_data(): void
+    {
+        $grupoId = '22222222-2222-2222-2222-222222222222';
+        $otherTenant = Tenant::factory()->create();
+        Despesa::factory()->create([
+            'tenant_id' => $otherTenant->id,
+            'grupo_recorrencia_id' => $grupoId,
+            'data_compra' => now()->format('Y-m-d'),
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        $resp = $this->getJson("/api/v1/despesas/grupo/{$grupoId}");
+        $resp->assertOk();
+        $this->assertCount(0, $resp->json('data'));
+    }
+
     public function test_destroy_blocked_when_user_lacks_permissoes(): void
     {
         $despesa = Despesa::factory()->create([

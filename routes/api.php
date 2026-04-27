@@ -66,9 +66,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('bancos',       [CatalogosController::class, 'bancos'])->name('bancos.index');
 
         // ── Despesas (CRUD) ──────────────────────────────────────────────
-        Route::get(   'despesas',           [ApiDespesaController::class, 'index'])->name('despesas.index');
-        Route::post(  'despesas',           [ApiDespesaController::class, 'store'])->name('despesas.store');
-        Route::get(   'despesas/{despesa}', [ApiDespesaController::class, 'show'])->name('despesas.show');
+        Route::get(   'despesas',                   [ApiDespesaController::class, 'index'])->name('despesas.index');
+        Route::post(  'despesas',                   [ApiDespesaController::class, 'store'])->name('despesas.store');
+        Route::get(   'despesas/grupo/{grupoId}',   [ApiDespesaController::class, 'grupo'])->name('despesas.grupo');
+        Route::get(   'despesas/{despesa}',         [ApiDespesaController::class, 'show'])->name('despesas.show');
         Route::put(   'despesas/{despesa}', [ApiDespesaController::class, 'update'])->name('despesas.update');
         Route::delete('despesas/{despesa}', [ApiDespesaController::class, 'destroy'])->name('despesas.destroy');
 
